@@ -1,0 +1,20 @@
+/* Ép khung giao diện bao trọn 100% chiều cao màn hình */
+.min-h-screen {
+    min-height: 100vh;
+}
+
+/* Tùy chỉnh CSS cho Sidebar AntD để giống hệt tấm hình Dashboard sếp đưa */
+.ant-layout-sider-children {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Hiệu ứng chuyển động mượt mà cho Logo */
+.ant-layout-sider-children .logo {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Khi người dùng bấm thu gọn Sidebar -> Ẩn chữ đi, chỉ chừa lại cái Icon Cúp vàng */
+.ant-layout-sider-collapsed .ant-layout-sider-children .logo span {
+    display: none;
+}

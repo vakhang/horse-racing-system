@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* --- Tùy chỉnh thêm cho Ant Design --- */
+/* Thêm bóng đổ (shadow) cho mấy cái nút bấm chính màu xanh để nhìn nổi và lung linh hơn */
+.ant-btn-primary {
+    @apply shadow-lg;
+}
+
+/* Đảm bảo body không bị lề mặc định làm xấu giao diện */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f3f4f6; /* Màu nền xám nhạt của Tailwind */
+}
