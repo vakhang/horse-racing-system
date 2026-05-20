@@ -44,7 +44,8 @@ public class UserServiceImpl implements UserService {
                 .email(request.getEmail())
                 .role(request.getRole())
                 .dob(request.getDob())
-                .idCardUrl(request.getIdCardUrl())
+                // ĐÃ SỬA CHỖ NÀY: Thay idCardUrl thành kycDocumentUrl để khớp với DTO và Entity
+                .kycDocumentUrl(request.getKycDocumentUrl())
                 .status(UserStatus.PENDING) // Mặc định là chờ Admin duyệt
                 .build();
 

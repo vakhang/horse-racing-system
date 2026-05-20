@@ -24,16 +24,17 @@ public class User {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RoleEnum role;
 
-    // --- 3 CỘT MỚI THÊM CHO LUỒNG KYC ---
+    // --- CỘT KYC ---
     private LocalDate dob;
 
-    @Column(name = "id_card_url")
-    private String idCardUrl;
+    // ĐÃ SỬA: Map đúng vào cột kyc_document_url trong Database mới
+    @Column(name = "kyc_document_url", columnDefinition = "TEXT")
+    private String kycDocumentUrl;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private UserStatus status;
-    // ------------------------------------
+    // ---------------
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

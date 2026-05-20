@@ -1,45 +1,43 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, DatePicker, Select, Upload, Card, Typography, message, Space, Row, Col } from 'antd';
-import { UserOutlined, MailOutlined, LockOutlined, CalendarOutlined, IdcardOutlined, UploadOutlined, TrophyOutlined } from '@ant-design/icons';
+import { Form, Input, Button, DatePicker, Select, Typography, message, Row, Col, ConfigProvider, theme } from 'antd';
+import { UserOutlined, MailOutlined, LockOutlined, CalendarOutlined, IdcardOutlined, TrophyOutlined, FireOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import api from '../config/api.js';
+
+// Import tấm ảnh nền của sếp vào đây
+import horseBg from '../assets/horseracing2.png';
 
 const { Title, Text } = Typography;
 
 const RegisterPage = () => {
     const [loading, setLoading] = useState(false);
-    const [imageUrl, setImageUrl] = useState(null); // Lưu link ảnh CCCD giả
     const navigate = useNavigate();
 
-    // Luồng KYC: Logic kiểm tra tuổi >= 21 (Cần import dayjs)
+    // Luồng KYC: Logic kiểm tra tuổi >= 21
     const disabledDate = (current) => {
-        // Không cho chọn những ngày trong tương lai
         return current && current > dayjs().endOf('day');
     };
 
     const handleRegister = async (values) => {
         setLoading(true);
-        // Chuẩn bị dữ liệu gửi xuống Backend (Khớp 100% RegisterRequestDTO)
+        // Chuẩn bị dữ liệu gửi xuống Backend (Đã sửa idCardUrl thành kycDocumentUrl cho chuẩn DB mới)
         const registerData = {
             username: values.username,
             password: values.password,
             email: values.email,
             role: values.role,
-            dob: values.dob.format('YYYY-MM-DD'), // Format ngày cho BE đọc
-            idCardUrl: values.idCardUrl // Link ảnh (Trong thực tế phải upload lên Cloudinary trước)
+            dob: values.dob.format('YYYY-MM-DD'),
+            kycDocumentUrl: values.kycDocumentUrl // Khớp với Backend mới
         };
 
         try {
-            // Bắn xuống Backend Spring Boot ở cổng 8080 (Nhờ api.js)
             const response = await api.post('/auth/register', registerData);
-
             message.success(`Đăng ký thành công! ID tài khoản: ${response.data.id}`);
             message.info("Vui lòng đợi Admin duyệt KYC mới có thể đăng nhập.");
-            navigate('/login'); // Chuyển về trang đăng nhập
+            navigate('/login');
 
         } catch (error) {
-            // Hiển thị lỗi từ BE (Ví dụ: Trùng email hoặc Chưa đủ 21 tuổi)
             if (error.response && error.response.data) {
                 message.error(error.response.data.error || 'Có lỗi xảy ra!');
             } else {
@@ -51,76 +49,114 @@ const RegisterPage = () => {
     };
 
     return (
-        // Dùng Tailwind dàn trang giữa màn hình
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-            <Card bordered={false} className="shadow-2xl rounded-2xl p-6 w-full max-w-4xl bg-white">
-                <Row gutter={32}>
-                    {/* Cột trái: Giới thiệu dự án (Tăng độ "lung linh") */}
-                    <Col span={10} className="bg-blue-600 rounded-xl p-8 flex flex-col items-center justify-center text-white text-center">
-                        <TrophyOutlined className="text-7xl text-yellow-300 mb-6" />
-                        <Title level={2} className="text-white">HORSE RACE</Title>
-                        <Text className="text-white text-lg">Chào mừng bạn đến với hệ thống cá cược đua ngựa chuyên nghiệp.</Text>
-                        <div className="mt-8">
-                            <Text className="text-white opacity-80">Đã có tài khoản?</Text><br/>
-                            <Link to="/login"><Button ghost className="mt-2">Đăng Nhập Ngay</Button></Link>
-                        </div>
-                    </Col>
+        // Ép toàn bộ form này dùng Dark Mode của AntD
+        <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorPrimary: '#facc15' } }}>
+            <div
+                className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
+                style={{
+                    backgroundImage: `url(${horseBg})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
+                }}
+            >
+                {/* ĐÃ SỬA: Bỏ backdrop-blur-sm đi để hình nền sắc nét hoàn toàn */}
+                <div className="absolute inset-0 bg-gray-950/75 z-0"></div>
 
-                    {/* Cột phải: Form Đăng Ký */}
-                    <Col span={14}>
-                        <Title level={2} className="text-center mb-6">Đăng Ký Tài Khoản</Title>
+                {/* Container tổng: Hiệu ứng kính mờ (Glassmorphism) */}
+                <div className="z-10 w-full max-w-5xl bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-[0_0_50px_rgba(250,204,21,0.15)] flex overflow-hidden transition-all duration-500 hover:shadow-[0_0_60px_rgba(250,204,21,0.3)]">
 
-                        <Form name="register" layout="vertical" onFinish={handleRegister} scrollToFirstError>
-                            <Space size="large" className="w-full">
-                                {/* Thông tin Tài Khoản */}
-                                <div className="flex-1 space-y-4">
-                                    <Form.Item name="username" label="Tên đăng nhập" rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}>
-                                        <Input prefix={<UserOutlined />} placeholder="Ví dụ: Nguyên" />
-                                    </Form.Item>
+                    <Row className="w-full m-0">
+                        {/* CỘT TRÁI: Branding & Chuyển hướng Login */}
+                        <Col xs={0} md={10} className="bg-black/40 p-10 flex flex-col items-center justify-center text-center border-r border-white/10">
+                            <div className="animate-pulse">
+                                <TrophyOutlined className="text-8xl text-yellow-400 mb-6 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" />
+                            </div>
+                            <Title level={2} style={{ color: 'white', margin: 0, textTransform: 'uppercase', letterSpacing: '3px' }}>
+                                HORSE RACE
+                            </Title>
+                            <Text className="text-yellow-400 font-medium tracking-widest text-xs uppercase flex items-center justify-center gap-1 mt-2 mb-8">
+                                <FireOutlined /> Đẳng Cấp Thượng Lưu <FireOutlined />
+                            </Text>
 
-                                    <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ!' }]}>
-                                        <Input prefix={<MailOutlined />} placeholder="Ví dụ: khang@gmail.com" />
-                                    </Form.Item>
+                            <Text className="text-gray-300 text-base mb-8 px-4">
+                                Hệ thống cá cược và quản lý giải đua ngựa chuyên nghiệp hàng đầu. Vui lòng hoàn thành KYC để tham gia.
+                            </Text>
 
-                                    <Form.Item name="password" label="Mật khẩu" rules={[{ required: true, min: 6, message: 'Mật khẩu ít nhất 6 ký tự!' }]}>
-                                        <Input.Password prefix={<LockOutlined />} />
-                                    </Form.Item>
-                                </div>
+                            <div className="w-full px-6">
+                                <Text className="text-gray-400">Đã có tài khoản?</Text><br/>
+                                <Link to="/login">
+                                    <Button
+                                        ghost
+                                        block
+                                        size="large"
+                                        className="mt-3 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold rounded-xl transition-all"
+                                    >
+                                        ĐĂNG NHẬP NGAY
+                                    </Button>
+                                </Link>
+                            </div>
+                        </Col>
 
-                                {/* Thông tin KYC & Role */}
-                                <div className="flex-1 space-y-4">
-                                    {/* Tư duy quản lý 5 Role bằng AntD Select */}
-                                    <Form.Item name="role" label="Bạn tham gia với tư cách" rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]} initialValue="SPECTATOR">
-                                        <Select>
-                                            <Select.Option value="SPECTATOR">Khán giả (Được cấp ví)</Select.Option>
-                                            <Select.Option value="OWNER">Chủ ngựa (Được cấp ví)</Select.Option>
-                                            <Select.Option value="JOCKEY">Nài ngựa (Được cấp ví)</Select.Option>
-                                            <Select.Option value="REFEREE">Trọng tài</Select.Option>
-                                        </Select>
-                                    </Form.Item>
+                        {/* CỘT PHẢI: Form Đăng Ký */}
+                        <Col xs={24} md={14} className="p-10">
+                            <Title level={3} className="text-center mb-8 text-white uppercase tracking-wider">Tạo Tài Khoản Mới</Title>
 
-                                    {/* Luồng KYC: Chọn ngày sinh (Bắt buộc) */}
-                                    <Form.Item name="dob" label="Ngày sinh (Phải >= 21 tuổi)" rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}>
-                                        <DatePicker className="w-full" disabledDate={disabledDate} prefix={<CalendarOutlined />} />
-                                    </Form.Item>
+                            <Form name="register" layout="vertical" onFinish={handleRegister} scrollToFirstError size="large">
+                                <Row gutter={24}>
+                                    {/* Cột 1 của Form: Thông tin cơ bản */}
+                                    <Col span={12}>
+                                        <Form.Item name="username" label={<span className="text-gray-300">Tên đăng nhập</span>} rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}>
+                                            <Input prefix={<UserOutlined className="text-gray-400" />} placeholder="Ví dụ: Khang" className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
+                                        </Form.Item>
 
-                                    {/* Luồng KYC: Upload ảnh CCCD (Dùng input TEXT giả để làm FE trước) */}
-                                    <Form.Item name="idCardUrl" label="Link ảnh CCCD/Passport" rules={[{ required: true, message: 'Vui lòng nhập link ảnh!' }]}>
-                                        <Input prefix={<IdcardOutlined />} placeholder="Nhập URL ảnh giả" />
-                                    </Form.Item>
-                                </div>
-                            </Space>
+                                        <Form.Item name="email" label={<span className="text-gray-300">Email</span>} rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ!' }]}>
+                                            <Input prefix={<MailOutlined className="text-gray-400" />} placeholder="khang@gmail.com" className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
+                                        </Form.Item>
 
-                            <Form.Item className="mt-8 text-center">
-                                <Button type="primary" htmlType="submit" size="large" loading={loading} block>
-                                    Đăng Ký KYC & Chờ Duyệt
-                                </Button>
-                            </Form.Item>
-                        </Form>
-                    </Col>
-                </Row>
-            </Card>
-        </div>
+                                        <Form.Item name="password" label={<span className="text-gray-300">Mật khẩu</span>} rules={[{ required: true, min: 6, message: 'Mật khẩu ít nhất 6 ký tự!' }]}>
+                                            <Input.Password prefix={<LockOutlined className="text-gray-400" />} placeholder="••••••••" className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
+                                        </Form.Item>
+                                    </Col>
+
+                                    {/* Cột 2 của Form: KYC & Vai trò */}
+                                    <Col span={12}>
+                                        <Form.Item name="role" label={<span className="text-gray-300">Tham gia với tư cách</span>} rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]} initialValue="SPECTATOR">
+                                            <Select popupClassName="bg-gray-800" className="[&>div]:bg-black/50 [&>div]:border-gray-600 [&>div]:rounded-xl [&>div]:text-white">
+                                                <Select.Option value="SPECTATOR">Khán giả (Cá cược)</Select.Option>
+                                                <Select.Option value="OWNER">Chủ ngựa</Select.Option>
+                                                <Select.Option value="JOCKEY">Nài ngựa</Select.Option>
+                                                <Select.Option value="REFEREE">Trọng tài</Select.Option>
+                                            </Select>
+                                        </Form.Item>
+
+                                        <Form.Item name="dob" label={<span className="text-gray-300">Ngày sinh (&gt;= 21 tuổi)</span>} rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}>
+                                            <DatePicker className="w-full bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" disabledDate={disabledDate} prefix={<CalendarOutlined className="text-gray-400" />} />
+                                        </Form.Item>
+
+                                        <Form.Item name="kycDocumentUrl" label={<span className="text-gray-300">Link CCCD / Bằng cấp</span>} rules={[{ required: true, message: 'Vui lòng cung cấp link tài liệu KYC!' }]}>
+                                            <Input prefix={<IdcardOutlined className="text-gray-400" />} placeholder="https://..." className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Form.Item className="mt-6 mb-0">
+                                    <Button
+                                        type="primary"
+                                        htmlType="submit"
+                                        loading={loading}
+                                        block
+                                        className="h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 border-none text-black font-bold text-lg rounded-xl shadow-[0_4px_15px_rgba(250,204,21,0.5)] hover:scale-105 transition-transform duration-300 mt-2"
+                                    >
+                                        {loading ? 'ĐANG XỬ LÝ...' : 'GỬI YÊU CẦU KYC'}
+                                    </Button>
+                                </Form.Item>
+                            </Form>
+                        </Col>
+                    </Row>
+                </div>
+            </div>
+        </ConfigProvider>
     );
 };
 
