@@ -1,8 +1,18 @@
 package com.swp.horseracing.service;
 
 import com.swp.horseracing.dto.RegisterRequestDTO;
-import com.swp.horseracing.model.User;
+import com.swp.horseracing.dto.UserResponseDTO;
+import com.swp.horseracing.dto.UserUpdateRequestDTO;
+
+import java.util.List;
 
 public interface UserService {
-    User registerUser(RegisterRequestDTO request);
+    UserResponseDTO registerUser(RegisterRequestDTO request);
+
+    List<UserResponseDTO> getAllUsers();
+    UserResponseDTO getUserById(Integer id);
+
+    UserResponseDTO updateUser(Integer id, UserUpdateRequestDTO request);
+
+    void deleteUser(Integer id);
 }
