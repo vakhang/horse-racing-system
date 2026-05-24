@@ -19,4 +19,5 @@ public class UserResponseDTO {
     private String kycDocumentUrl;
     private UserStatus status;
     private LocalDateTime createdAt;
+
 }

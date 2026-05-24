@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ConfigProvider, theme, Spin } from 'antd';
 import { useAuth } from './context/AuthContext';
 import MainLayout from './components/MainLayout';
+import AdminKycApprovalPage from "./pages/AdminKycApprovalPage.jsx";
 
 // Sử dụng React.lazy để load trang khi cần thiết (Tối ưu công nghệ React)
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -52,7 +53,7 @@ function App() {
                         <Route path="/betting" element={<ProtectedRoute><h1>Trang Cá Cược</h1></ProtectedRoute>} />
                         <Route path="/my-horses" element={<ProtectedRoute><h1>Quản Lý Ngựa</h1></ProtectedRoute>} />
                         <Route path="/admin/kyc" element={<ProtectedRoute><h1>Duyệt KYC</h1></ProtectedRoute>} />
-
+                        <Route path="/admin/kyc-approval" element={<AdminKycApprovalPage />} />
                         {/* Bắt các link sai về Home */}
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>

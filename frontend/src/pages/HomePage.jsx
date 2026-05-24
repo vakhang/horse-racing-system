@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Statistic, Typography, Timeline, Tag, Alert } from 'antd';
 import { TrophyOutlined, TeamOutlined, HeartOutlined, ClockCircleOutlined } from '@ant-design/icons';
-import { useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 
@@ -28,10 +28,10 @@ const HomePage = () => {
             </Row>
 
             <Row gutter={[16, 16]}>
-                {/* 1. Thống kê chung (Cards AntD cực đẹp) */}
+                {/* 1. Thống kê chung */}
                 <Col span={6}>
                     <Card bordered={false} hoverable>
-                        <Statistic title="Số dư ví" value={user?.balance} precision={2} prefix={<Text className="text-2xl text-blue-600">Đ</Text>} />
+                        <Statistic title="Số dư ví" value={user?.balance || 0} precision={2} prefix={<Text className="text-2xl text-blue-600">Đ</Text>} />
                     </Card>
                 </Col>
                 <Col span={6}>

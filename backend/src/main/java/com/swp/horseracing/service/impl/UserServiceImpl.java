@@ -1,5 +1,6 @@
 package com.swp.horseracing.service.impl;
 
+import com.swp.horseracing.dto.LoginRequestDTO;
 import com.swp.horseracing.dto.RegisterRequestDTO;
 import com.swp.horseracing.dto.UserResponseDTO;
 import com.swp.horseracing.dto.UserUpdateRequestDTO;
@@ -72,7 +73,29 @@ public class UserServiceImpl implements UserService {
 
         return mapToResponseDTO(savedUser);
     }
+    @Override
+    public UserResponseDTO loginUser(LoginRequestDTO request) {
+        // 1. Tìm user theo email
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không chính xác!"));
 
+        // 2. Kiểm tra mật khẩu (Vì anh em mình chưa xài Bcrypt nên đang so sánh thẳng chữ thường)
+        if (!user.getPassword().equals(request.getPassword())) {
+            throw new RuntimeException("Email hoặc mật khẩu không chính xác!");
+        }
+
+        // 3. KIỂM TRA TRẠNG THÁI KYC (Cực kỳ quan trọng)
+        if (user.getStatus() == UserStatus.PENDING) {
+            throw new RuntimeException("Tài khoản của bạn đang chờ Admin duyệt KYC. Vui lòng quay lại sau!");
+        }
+        if (user.getStatus() == UserStatus.REJECTED) {
+            throw new RuntimeException("Tài liệu KYC của bạn đã bị từ chối. Không thể đăng nhập!");
+        }
+
+        // 4. Đăng nhập thành công -> Trả về thông tin User
+        // (Chỗ này mốt sếp học tới JWT thì anh em mình nhét thêm cái Token vào đây sau nha)
+        return mapToResponseDTO(user);
+    }
     @Override
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -129,4 +152,5 @@ public class UserServiceImpl implements UserService {
                 .createdAt(user.getCreatedAt())
                 .build();
     }
+
 }

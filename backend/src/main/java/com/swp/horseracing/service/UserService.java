@@ -1,5 +1,6 @@
 package com.swp.horseracing.service;
 
+import com.swp.horseracing.dto.LoginRequestDTO;
 import com.swp.horseracing.dto.RegisterRequestDTO;
 import com.swp.horseracing.dto.UserResponseDTO;
 import com.swp.horseracing.dto.UserUpdateRequestDTO;
@@ -13,6 +14,6 @@ public interface UserService {
     UserResponseDTO getUserById(Integer id);
 
     UserResponseDTO updateUser(Integer id, UserUpdateRequestDTO request);
-
+    UserResponseDTO loginUser(LoginRequestDTO request);
     void deleteUser(Integer id);
 }
