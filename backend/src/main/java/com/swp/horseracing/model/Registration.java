@@ -6,7 +6,11 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "registrations")
+
+@Table(name = "registrations", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"race_id", "horse_id"}),
+        @UniqueConstraint(columnNames = {"race_id", "jockey_id"})
+})
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Registration {
 
@@ -30,7 +34,7 @@ public class Registration {
     @JoinColumn(name = "jockey_id", referencedColumnName = "id")
     private User jockey;
 
-    private Float odds;
+
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

@@ -16,7 +16,6 @@ public class RegistrationResponseDTO {
     private String ownerUsername;
     private Integer jockeyId;
     private String jockeyUsername;
-    private Float odds;
     private RegistrationStatus status;
     private String note;
 }
