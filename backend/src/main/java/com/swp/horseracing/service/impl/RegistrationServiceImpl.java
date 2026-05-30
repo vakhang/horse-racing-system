@@ -42,7 +42,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .horse(horse)
                 .owner(owner)
                 .jockey(jockey)
-                .odds(request.getOdds())
+                // ĐÃ XÓA odds Ở ĐÂY VÌ ĐƠN ĐĂNG KÝ KHÔNG CÒN DÍNH DÁNG TỚI TỶ LỆ CƯỢC NỮA
                 .status(request.getStatus() != null ? request.getStatus() : RegistrationStatus.WAITING_JOCKEY)
                 .note(request.getNote())
                 .build();
@@ -89,7 +89,7 @@ public class RegistrationServiceImpl implements RegistrationService {
             reg.setJockey(jockey);
         }
 
-        if (request.getOdds() != null) reg.setOdds(request.getOdds());
+        // ĐÃ XÓA LỆNH CẬP NHẬT odds Ở ĐÂY
         if (request.getStatus() != null) reg.setStatus(request.getStatus());
         if (request.getNote() != null) reg.setNote(request.getNote());
 
@@ -116,7 +116,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .ownerUsername(reg.getOwner() != null ? reg.getOwner().getUsername() : null)
                 .jockeyId(reg.getJockey() != null ? reg.getJockey().getId() : null)
                 .jockeyUsername(reg.getJockey() != null ? reg.getJockey().getUsername() : null)
-                .odds(reg.getOdds())
+                // ĐÃ XÓA TRẢ VỀ odds Ở ĐÂY
                 .status(reg.getStatus())
                 .note(reg.getNote())
                 .build();
