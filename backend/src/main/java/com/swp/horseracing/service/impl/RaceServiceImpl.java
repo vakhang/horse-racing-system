@@ -1,11 +1,15 @@
 package com.swp.horseracing.service.impl;
 
+import com.swp.horseracing.dto.LiveOddsResponseDTO;
 import com.swp.horseracing.dto.RaceRequestDTO;
 import com.swp.horseracing.dto.RaceResponseDTO;
 import com.swp.horseracing.model.Race;
 import com.swp.horseracing.model.RaceStatus;
+import com.swp.horseracing.model.Registration;
 import com.swp.horseracing.model.Tournament;
+import com.swp.horseracing.repository.BetRepository;
 import com.swp.horseracing.repository.RaceRepository;
+import com.swp.horseracing.repository.RegistrationRepository;
 import com.swp.horseracing.repository.TournamentRepository;
 import com.swp.horseracing.service.RaceService;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,9 @@ public class RaceServiceImpl implements RaceService {
 
     private final RaceRepository raceRepository;
     private final TournamentRepository tournamentRepository; // Tiêm vào để check khóa ngoại
+
+    private final RegistrationRepository registrationRepository;
+    private final BetRepository betRepository;
 
     @Override
     @Transactional
@@ -99,5 +106,50 @@ public class RaceServiceImpl implements RaceService {
                 .raceTime(race.getRaceTime())
                 .status(race.getStatus())
                 .build();
+    }
+
+    @Override
+    public List<LiveOddsResponseDTO> getLiveOdds(Integer raceId) {
+        // 1. Tìm thông tin chặng đua
+        Race race = raceRepository.findById(raceId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
+
+        // 2. Lấy tổng tiền quỹ (total_pool) và phần trăm phí nhà cái (rake_percentage) từ Race
+        java.math.BigDecimal totalPool = race.getTotalPool();
+        java.math.BigDecimal rakePercentage = race.getRakePercentage();
+
+        // 3. Tính số tiền thực tế còn lại trong quỹ sau khi trừ phế nhà cái (Net Pool)
+        // Công thức: NetPool = TotalPool * (100 - rakePercentage) / 100
+        java.math.BigDecimal netPool = totalPool.multiply(
+                java.math.BigDecimal.valueOf(100).subtract(rakePercentage)
+        ).divide(java.math.BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
+
+        // 4. Lấy danh sách toàn bộ ngựa (Registration) đã được duyệt tham gia chặng này
+        List<Registration> registrations = registrationRepository.findByRaceId(raceId);
+
+        List<LiveOddsResponseDTO> oddsList = new java.util.ArrayList<>();
+
+        // 5. Duyệt qua từng con ngựa để tính tỷ lệ cược real-time
+        for (Registration reg : registrations) {
+            // Query tổng số tiền cược vào con ngựa (registration) này trong chặng đua đó
+            java.math.BigDecimal totalBetOnHorse = betRepository.sumAmountByRaceIdAndRegistrationId(raceId, reg.getId());
+
+            java.math.BigDecimal calculatedOdds = java.math.BigDecimal.ZERO;
+
+            // Công thức: Odds = NetPool / TotalBetOnHorse
+            if (totalBetOnHorse.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                calculatedOdds = netPool.divide(totalBetOnHorse, 2, java.math.RoundingMode.HALF_UP);
+            }
+
+            // Đóng gói dữ liệu đưa vào danh sách trả về
+            oddsList.add(LiveOddsResponseDTO.builder()
+                    .registrationId(reg.getId())
+                    .horseName(reg.getHorse().getName())
+                    .totalBetOnHorse(totalBetOnHorse)
+                    .calculatedOdds(calculatedOdds)
+                    .build());
+        }
+
+        return oddsList;
     }
 }

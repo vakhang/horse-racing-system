@@ -12,4 +12,7 @@ public interface RaceService {
     RaceResponseDTO getRaceById(Integer id);
     RaceResponseDTO updateRace(Integer id, RaceRequestDTO request);
     void deleteRace(Integer id);
+
+    java.util.List<com.swp.horseracing.dto.LiveOddsResponseDTO> getLiveOdds(Integer raceId);
+
 }

@@ -59,4 +59,14 @@ public class RaceController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/{id}/live-odds")
+    public ResponseEntity<?> getLiveOdds(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(raceService.getLiveOdds(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }

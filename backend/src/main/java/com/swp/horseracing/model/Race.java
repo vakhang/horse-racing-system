@@ -35,3 +35,4 @@ public class Race {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RaceStatus status;
 }
+

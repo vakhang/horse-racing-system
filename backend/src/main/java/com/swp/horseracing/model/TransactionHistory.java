@@ -1,0 +1,43 @@
+package com.swp.horseracing.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "transaction_histories")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class TransactionHistory {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    // 🔥 BỔ SUNG TRƯỜNG NÀY ĐỂ KHỚP VỚI DATABASE CỦA NHÓM
+    @Column(name = "transaction_code", nullable = false)
+    private String transactionCode;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "wallet_id", referencedColumnName = "id")
+    private Wallet wallet;
+
+    private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private TransactionType type; // DEPOSIT, BET, PAYOUT
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private TransactionDirection direction; // IN, OUT
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
