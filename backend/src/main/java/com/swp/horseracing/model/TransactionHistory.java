@@ -37,6 +37,13 @@ public class TransactionHistory {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TransactionDirection direction; // IN, OUT
 
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private TransactionStatus status; // PENDING, COMPLETED
+
+    @Column(name = "proof_url", columnDefinition = "TEXT")
+    private String proofUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

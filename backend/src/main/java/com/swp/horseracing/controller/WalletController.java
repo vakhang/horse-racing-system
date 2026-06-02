@@ -34,4 +34,14 @@ public class WalletController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // API rút toàn bộ tiền
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> requestWithdrawal(@RequestBody com.swp.horseracing.dto.WithdrawRequestDTO request) {
+        try {
+            return ResponseEntity.ok(walletService.requestWithdrawal(request.getUserId()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
