@@ -33,6 +33,10 @@ public class Bet {
 
     private BigDecimal odds; // Ban đầu để trống (null) theo yêu cầu sếp dặn
 
+    @Enumerated(EnumType.STRING)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
+    private BetStatus status = BetStatus.PENDING;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
