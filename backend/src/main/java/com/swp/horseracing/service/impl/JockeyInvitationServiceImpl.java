@@ -51,6 +51,17 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
             throw new RuntimeException("Lời mời này đã được xử lý trước đó!");
         }
 
+        // RÀNG BUỘC: Kiểm tra trùng giờ
+        Registration currentReg = invitation.getRegistration();
+        java.time.LocalDateTime currentRaceTime = currentReg.getRace().getRaceTime();
+        
+        java.util.List<Registration> overlappingRegs = registrationRepository.findByJockeyAndRaceTime(
+                invitation.getJockey().getId(), currentRaceTime);
+        
+        if (!overlappingRegs.isEmpty()) {
+            throw new RuntimeException("Bạn đã nhận một chặng đua khác diễn ra cùng giờ!");
+        }
+
         // 1. Cập nhật thiệp mời
         invitation.setStatus(InvitationStatus.ACCEPTED);
         invitation.setRespondedAt(LocalDateTime.now());

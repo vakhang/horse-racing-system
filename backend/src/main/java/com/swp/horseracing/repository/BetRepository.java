@@ -17,4 +17,7 @@ public interface BetRepository extends JpaRepository<Bet, Integer> {
     // Tính tổng tiền cược của một con ngựa (Registration) trong một chặng đua cụ thể
     @Query("SELECT COALESCE(SUM(b.amount), 0) FROM Bet b WHERE b.race.id = :raceId AND b.registration.id = :regId")
     BigDecimal sumAmountByRaceIdAndRegistrationId(@Param("raceId") Integer raceId, @Param("regId") Integer regId);
+
+    // Truy xuất lịch sử cược của User
+    List<Bet> findByUserIdOrderByCreatedAtDesc(Integer userId);
 }

@@ -35,6 +35,7 @@ public class Bet {
 
     @Enumerated(EnumType.STRING)
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
+    @Builder.Default
     private BetStatus status = BetStatus.PENDING;
 
     @CreationTimestamp

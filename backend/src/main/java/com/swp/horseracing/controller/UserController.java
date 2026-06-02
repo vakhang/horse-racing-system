@@ -52,4 +52,24 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    // Lịch sử Cược
+    @GetMapping("/my-bets")
+    public ResponseEntity<?> getMyBets(@RequestParam Integer userId) {
+        try {
+            return ResponseEntity.ok(userService.getMyBets(userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // Lịch sử Giao dịch
+    @GetMapping("/my-transactions")
+    public ResponseEntity<?> getMyTransactions(@RequestParam Integer userId) {
+        try {
+            return ResponseEntity.ok(userService.getMyTransactions(userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

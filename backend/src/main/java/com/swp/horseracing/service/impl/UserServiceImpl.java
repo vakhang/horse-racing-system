@@ -153,4 +153,32 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public List<com.swp.horseracing.dto.BetHistoryResponseDTO> getMyBets(Integer userId) {
+        List<com.swp.horseracing.model.Bet> bets = ((com.swp.horseracing.repository.BetRepository) org.springframework.web.context.support.WebApplicationContextUtils.getRequiredWebApplicationContext(((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes()).getRequest().getServletContext()).getBean(com.swp.horseracing.repository.BetRepository.class)).findByUserIdOrderByCreatedAtDesc(userId);
+        return bets.stream().map(bet -> com.swp.horseracing.dto.BetHistoryResponseDTO.builder()
+                .id(bet.getId())
+                .raceName(bet.getRace().getName())
+                .horseName(bet.getRegistration().getHorse().getName())
+                .amount(bet.getAmount())
+                .odds(bet.getOdds())
+                .rewardAmount(bet.getStatus() == com.swp.horseracing.model.BetStatus.WON ? bet.getAmount().multiply(bet.getOdds()) : BigDecimal.ZERO)
+                .status(bet.getStatus())
+                .createdAt(bet.getCreatedAt())
+                .build()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<com.swp.horseracing.dto.TransactionHistoryResponseDTO> getMyTransactions(Integer userId) {
+        List<com.swp.horseracing.model.TransactionHistory> txs = ((com.swp.horseracing.repository.TransactionHistoryRepository) org.springframework.web.context.support.WebApplicationContextUtils.getRequiredWebApplicationContext(((org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes()).getRequest().getServletContext()).getBean(com.swp.horseracing.repository.TransactionHistoryRepository.class)).findByWallet_UserIdOrderByCreatedAtDesc(userId);
+        return txs.stream().map(tx -> com.swp.horseracing.dto.TransactionHistoryResponseDTO.builder()
+                .transactionCode(tx.getTransactionCode())
+                .amount(tx.getAmount())
+                .type(tx.getType())
+                .direction(tx.getDirection())
+                .status(tx.getStatus())
+                .proofUrl(tx.getProofUrl())
+                .createdAt(tx.getCreatedAt())
+                .build()).collect(Collectors.toList());
+    }
 }
