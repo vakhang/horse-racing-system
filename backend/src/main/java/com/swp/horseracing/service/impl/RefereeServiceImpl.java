@@ -1,9 +1,10 @@
-package com.swp.horseracing.service;
+package com.swp.horseracing.service.impl;
 
 import com.swp.horseracing.dto.RefereeReportRequestDTO;
 import com.swp.horseracing.dto.RefereeResultRequestDTO;
 import com.swp.horseracing.model.*;
 import com.swp.horseracing.repository.*;
+import com.swp.horseracing.service.RefereeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,7 @@ public class RefereeServiceImpl implements RefereeService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final RefereeReportRepository refereeReportRepository;
     private final UserRepository userRepository;
-
+    private final RegistrationRepository registrationRepository;
     @Override
     @Transactional
     public String submitRaceResult(RefereeResultRequestDTO request) {
@@ -47,8 +48,8 @@ public class RefereeServiceImpl implements RefereeService {
                 betRepository.save(bet);
 
                 // 3. Trả thưởng
-                Wallet wallet = walletRepository.findByUserId(bet.getUser().getId())
-                        .orElseThrow(() -> new RuntimeException("Wallet not found for user " + bet.getUser().getId()));
+                Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
+                        .orElseThrow(() -> new RuntimeException("Wallet not found for user " + bet.getSpectator().getId()));
                 
                 // Tính tiền = Tiền cược * Tỉ lệ cược
                 BigDecimal odds = bet.getOdds() != null ? bet.getOdds() : BigDecimal.ONE;
@@ -62,7 +63,7 @@ public class RefereeServiceImpl implements RefereeService {
                         .transactionCode("REWARD-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                         .wallet(wallet)
                         .amount(rewardAmount)
-                        .type(TransactionType.PAYOUT) // Dùng PAYOUT thay cho REWARD
+                        .type(TransactionType.REWARD)// Dùng PAYOUT thay cho REWARD
                         .direction(TransactionDirection.IN)
                         .build();
                 transactionHistoryRepository.save(tx);
@@ -82,19 +83,19 @@ public class RefereeServiceImpl implements RefereeService {
                 .orElseThrow(() -> new RuntimeException("Race not found"));
         User referee = userRepository.findById(request.getRefereeId())
                 .orElseThrow(() -> new RuntimeException("Referee not found"));
-        User violator = null;
-        if (request.getViolatorId() != null) {
-            violator = userRepository.findById(request.getViolatorId())
-                    .orElse(null);
-        }
 
+        // 1. Phạt theo Registration thay vì Violator
+        Registration registration = registrationRepository.findById(request.getRegistrationId())
+                .orElseThrow(() -> new RuntimeException("Registration not found"));
+
+        // 2. Build report với các trường đã cập nhật theo DB
         RefereeReport report = RefereeReport.builder()
                 .race(race)
                 .referee(referee)
-                .violator(violator)
-                .description(request.getDescription())
+                .registration(registration) // Đổi .violator thành .registration
+                .violationDetails(request.getViolationDetails()) // Đổi .description thành .violationDetails
                 .build();
-        
+
         refereeReportRepository.save(report);
 
         return "Lập biên bản vi phạm thành công!";

@@ -21,31 +21,30 @@ const LoginPage = () => {
     const handleLogin = async (values) => {
         setLoading(true);
         try {
-            // Chọt thẳng xuống API Spring Boot
             const response = await api.post('/auth/login', {
                 email: values.email,
                 password: values.password
             });
 
-            // Lấy thông tin User trả về
             const userData = response.data;
 
-            // Lưu Token
-            setToken(userData.id.toString());
+            // LƯU Ý CỰC MẠNH: Phải lưu userData.token nhé, sếp cũ đang lưu id là sai đó!
+            setToken(userData.token);
             localStorage.setItem('currentUser', JSON.stringify(userData));
 
-            // BÁO CÁO CHO HỆ THỐNG BIẾT LÀ ĐÃ ĐĂNG NHẬP (Chốt chặn quan trọng)
             login(userData);
-
-            // Bắn pháo hoa chào mừng
             message.success(`Chào mừng ${userData.username} trở lại trường đua!`);
 
-            // Đá thẳng về trang Home
-            navigate('/');
+            // ĐÁ THẲNG ADMIN TỚI TRANG DUYỆT KYC, CÁC ROLE KHÁC VỀ TRANG CHỦ
+            if (userData.role === 'ADMIN') {
+                navigate('/admin/kyc');
+            } else {
+                navigate('/');
+            }
 
         } catch (error) {
             if (error.response && error.response.data) {
-                message.error(error.response.data);
+                message.error(error.response.data.error || error.response.data);
             } else {
                 message.error('Máy chủ đang ngủ gật. Vui lòng thử lại sau!');
             }

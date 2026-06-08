@@ -6,6 +6,6 @@ import lombok.Data;
 public class RefereeReportRequestDTO {
     private Integer raceId;
     private Integer refereeId;
-    private Integer violatorId;
-    private String description;
+    private Integer registrationId; // Đổi từ violatorId
+    private String violationDetails; // Đổi từ description
 }

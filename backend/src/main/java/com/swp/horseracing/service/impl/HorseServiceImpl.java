@@ -32,8 +32,9 @@ public class HorseServiceImpl implements HorseService {
                 .name(request.getName())
                 .owner(owner)
                 .age(request.getAge())
-                .healthStatus(request.getHealthStatus())
-                .winRate(0.0f) // Mặc định tạo mới là 0%
+                // Đã thay healthStatus và winRate bằng breed và color
+                .breed(request.getBreed())
+                .color(request.getColor())
                 .documentUrl(request.getDocumentUrl())
                 .status(request.getStatus() != null ? request.getStatus() : HorseStatus.PENDING)
                 .build();
@@ -76,7 +77,11 @@ public class HorseServiceImpl implements HorseService {
 
         if (request.getName() != null) horse.setName(request.getName());
         if (request.getAge() != null) horse.setAge(request.getAge());
-        if (request.getHealthStatus() != null) horse.setHealthStatus(request.getHealthStatus());
+
+        // Cập nhật theo thuộc tính mới
+        if (request.getBreed() != null) horse.setBreed(request.getBreed());
+        if (request.getColor() != null) horse.setColor(request.getColor());
+
         if (request.getDocumentUrl() != null) horse.setDocumentUrl(request.getDocumentUrl());
         if (request.getStatus() != null) horse.setStatus(request.getStatus());
 
@@ -99,8 +104,9 @@ public class HorseServiceImpl implements HorseService {
                 .ownerId(horse.getOwner() != null ? horse.getOwner().getId() : null)
                 .ownerUsername(horse.getOwner() != null ? horse.getOwner().getUsername() : null)
                 .age(horse.getAge())
-                .healthStatus(horse.getHealthStatus())
-                .winRate(horse.getWinRate())
+                // Đã cập nhật thuộc tính trả về
+                .breed(horse.getBreed())
+                .color(horse.getColor())
                 .documentUrl(horse.getDocumentUrl())
                 .status(horse.getStatus())
                 .build();

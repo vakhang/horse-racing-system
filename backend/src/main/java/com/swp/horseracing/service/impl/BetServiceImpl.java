@@ -8,10 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class BetServiceImpl implements BetService {
-
     private final BetRepository betRepository;
     private final UserRepository userRepository;
     private final RaceRepository raceRepository;
@@ -22,46 +23,54 @@ public class BetServiceImpl implements BetService {
     @Override
     @Transactional
     public Bet createBet(BetRequestDTO request) {
-        User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
+        User spectator = userRepository.findById(request.getSpectatorId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Khán giả!"));
+
         Race race = raceRepository.findById(request.getRaceId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
-        Registration reg = registrationRepository.findById(request.getRegistrationId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đăng ký ngựa!"));
 
-        Wallet wallet = walletRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new RuntimeException("Tài khoản chưa khởi tạo ví!"));
-
-        // LOGIC THEO SẾP DẶN:
-        // 1. Check Ví xem đủ tiền không -> Đủ thì trừ tiền.
-        if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new RuntimeException("Số dư tài khoản không đủ để đặt cược!");
+        // RÀO CẢN: Chỉ được cược khi chặng đua chưa bắt đầu (PENDING)
+        if (race.getStatus() != RaceStatus.PENDING) {
+            throw new RuntimeException("Chỉ có thể đặt cược vào chặng đua chưa bắt đầu!");
         }
+
+        Registration reg = registrationRepository.findById(request.getRegistrationId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ngựa đăng ký!"));
+
+        Wallet wallet = walletRepository.findByUserId(spectator.getId())
+                .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
+
+        if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new RuntimeException("Số dư không đủ để đặt cược!");
+        }
+
+        // Trừ tiền ví
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
         walletRepository.save(wallet);
 
-        // 2. Lưu Phiếu cược Bet (Cột odds để trống null).
+        // Lưu vé cược
         Bet bet = Bet.builder()
-                .user(user)
+                .spectator(spectator)
                 .race(race)
                 .registration(reg)
                 .amount(request.getAmount())
-                .odds(null) // Để null theo đúng yêu cầu logic gắt
+                .status(BetStatus.PENDING)
                 .build();
         Bet savedBet = betRepository.save(bet);
 
-        // 3. Lưu Lịch sử giao dịch (Type BET, Chiều OUT).
+        // Ghi lịch sử trừ tiền
         TransactionHistory history = TransactionHistory.builder()
-                .transactionCode("BET-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase()) // <-- THÊM DÒNG NÀY ĐỂ FIX LỖI
+                .transactionCode("BET-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .wallet(wallet)
                 .amount(request.getAmount())
                 .type(TransactionType.BET)
                 .direction(TransactionDirection.OUT)
+                .bet(savedBet)
+                .status(TransactionStatus.COMPLETED)
                 .build();
-
         transactionRepository.save(history);
 
-        // 4. Cộng cái amount đó vào thẳng total_pool của bảng Race.
+        // Cộng vào tổng pool
         race.setTotalPool(race.getTotalPool().add(request.getAmount()));
         raceRepository.save(race);
 

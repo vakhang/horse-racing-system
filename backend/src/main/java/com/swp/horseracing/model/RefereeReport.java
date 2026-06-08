@@ -7,10 +7,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "referee_reports")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class RefereeReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,15 +18,15 @@ public class RefereeReport {
     private Race race;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "registration_id", referencedColumnName = "id", nullable = false)
+    private Registration registration; // Đổi violator_id thành registration_id theo DB
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "referee_id", referencedColumnName = "id", nullable = false)
     private User referee;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "violator_id", referencedColumnName = "id")
-    private User violator; // Có thể null nếu vi phạm không xác định rõ
-
-    @Column(nullable = false, length = 1000)
-    private String description;
+    @Column(name = "violation_details", columnDefinition = "TEXT")
+    private String violationDetails; // Đổi description thành violationDetails
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

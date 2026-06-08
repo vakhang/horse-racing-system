@@ -11,7 +11,4 @@ public class RegisterRequestDTO {
     private String email;
     private RoleEnum role;
     private LocalDate dob;
-
-    // ĐÃ SỬA: Đổi idCardUrl thành kycDocumentUrl
-    private String kycDocumentUrl;
 }

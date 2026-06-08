@@ -19,7 +19,6 @@ public class TransactionHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // 🔥 BỔ SUNG TRƯỜNG NÀY ĐỂ KHỚP VỚI DATABASE CỦA NHÓM
     @Column(name = "transaction_code", nullable = false)
     private String transactionCode;
 
@@ -27,19 +26,24 @@ public class TransactionHistory {
     @JoinColumn(name = "wallet_id", referencedColumnName = "id")
     private Wallet wallet;
 
+    // 🔥 ĐOẠN MỚI THÊM VÀO ĐÂY NHÉ:
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "bet_id")
+    private Bet bet;
+
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private TransactionType type; // DEPOSIT, BET, PAYOUT
+    private TransactionType type;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private TransactionDirection direction; // IN, OUT
+    private TransactionDirection direction;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
-    private TransactionStatus status; // PENDING, COMPLETED
+    private TransactionStatus status;
 
     @Column(name = "proof_url", columnDefinition = "TEXT")
     private String proofUrl;

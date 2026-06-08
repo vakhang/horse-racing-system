@@ -16,8 +16,8 @@ public class UserResponseDTO {
     private String email;
     private RoleEnum role;
     private LocalDate dob;
-    private String kycDocumentUrl;
+
     private UserStatus status;
     private LocalDateTime createdAt;
-
+    private String token;
 }

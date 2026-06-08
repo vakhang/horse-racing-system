@@ -19,5 +19,6 @@ public interface BetRepository extends JpaRepository<Bet, Integer> {
     BigDecimal sumAmountByRaceIdAndRegistrationId(@Param("raceId") Integer raceId, @Param("regId") Integer regId);
 
     // Truy xuất lịch sử cược của User
-    List<Bet> findByUserIdOrderByCreatedAtDesc(Integer userId);
+    // Đổi UserId thành SpectatorId
+    List<Bet> findBySpectatorIdOrderByCreatedAtDesc(Integer spectatorId);
 }

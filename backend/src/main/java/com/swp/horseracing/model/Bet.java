@@ -8,10 +8,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "bets")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
 public class Bet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +16,7 @@ public class Bet {
 
     @ManyToOne
     @JoinColumn(name = "spectator_id", referencedColumnName = "id", nullable = false)
-    private User user; // Hoặc private Spectator spectator;
+    private User spectator;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "race_id")
@@ -27,16 +24,17 @@ public class Bet {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "registration_id")
-    private Registration registration; // Ngựa đăng ký tham gia chặng đua này
+    private Registration registration;
 
     private BigDecimal amount;
-
-    private BigDecimal odds; // Ban đầu để trống (null) theo yêu cầu sếp dặn
+    private BigDecimal odds;
 
     @Enumerated(EnumType.STRING)
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     @Builder.Default
     private BetStatus status = BetStatus.PENDING;
+
+    private BigDecimal reward; // THÊM TỪ DB: Tiền thưởng khi thắng
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

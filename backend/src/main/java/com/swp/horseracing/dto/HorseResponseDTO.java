@@ -12,7 +12,8 @@ public class HorseResponseDTO {
     private Integer ownerId;
     private String ownerUsername; // Tiện cho FE hiển thị tên chủ ngựa
     private Integer age;
-    private String healthStatus;
+    private String breed;
+    private String color;
     private Float winRate;
     private String documentUrl;
     private HorseStatus status;
