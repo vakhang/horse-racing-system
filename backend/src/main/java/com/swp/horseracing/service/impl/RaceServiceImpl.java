@@ -3,10 +3,7 @@ package com.swp.horseracing.service.impl;
 import com.swp.horseracing.dto.LiveOddsResponseDTO;
 import com.swp.horseracing.dto.RaceRequestDTO;
 import com.swp.horseracing.dto.RaceResponseDTO;
-import com.swp.horseracing.model.Race;
-import com.swp.horseracing.model.RaceStatus;
-import com.swp.horseracing.model.Registration;
-import com.swp.horseracing.model.Tournament;
+import com.swp.horseracing.model.*;
 import com.swp.horseracing.repository.BetRepository;
 import com.swp.horseracing.repository.RaceRepository;
 import com.swp.horseracing.repository.RegistrationRepository;
@@ -74,7 +71,6 @@ public class RaceServiceImpl implements RaceService {
         Race race = raceRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Chặng đua với ID: " + id));
 
-        // Nếu có update cả giải đấu chứa chặng đua này
         if (request.getTournamentId() != null && !race.getTournament().getId().equals(request.getTournamentId())) {
             Tournament newTournament = tournamentRepository.findById(request.getTournamentId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy Giải đấu mới với ID: " + request.getTournamentId()));
@@ -83,7 +79,29 @@ public class RaceServiceImpl implements RaceService {
 
         if (request.getName() != null) race.setName(request.getName());
         if (request.getRaceTime() != null) race.setRaceTime(request.getRaceTime());
-        if (request.getStatus() != null) race.setStatus(request.getStatus());
+
+        // --- LOGIC MỚI: CHỐT TỶ LỆ CƯỢC KHI BẮT ĐẦU ĐUA ---
+        if (request.getStatus() != null) {
+            // Nếu Admin đổi trạng thái từ PENDING -> RUNNING
+            if (race.getStatus() == RaceStatus.PENDING && request.getStatus() == RaceStatus.RUNNING) {
+                // 1. Tính toán tỷ lệ cược chốt sổ
+                List<LiveOddsResponseDTO> finalOdds = this.getLiveOdds(id);
+                // 2. Lấy tất cả vé cược của chặng này
+                List<Bet> bets = betRepository.findByRaceId(id);
+
+                // 3. Cập nhật odds cho từng vé cược
+                for (Bet bet : bets) {
+                    java.math.BigDecimal odds = finalOdds.stream()
+                            .filter(o -> o.getRegistrationId().equals(bet.getRegistration().getId()))
+                            .findFirst()
+                            .map(LiveOddsResponseDTO::getCalculatedOdds)
+                            .orElse(java.math.BigDecimal.ZERO);
+                    bet.setOdds(odds);
+                    betRepository.save(bet);
+                }
+            }
+            race.setStatus(request.getStatus());
+        }
 
         return mapToResponseDTO(raceRepository.save(race));
     }

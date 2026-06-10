@@ -1,50 +1,45 @@
+import horseRacingBg from '../assets/horseracing.png';
 import React, { useState } from 'react';
-import { Form, Input, Button, Typography, message, Divider, ConfigProvider, theme } from 'antd';
+import { Form, Input, Button, Typography, message, ConfigProvider, theme } from 'antd';
 import { MailOutlined, LockOutlined, TrophyOutlined, FireOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-
-// Import các công cụ cần thiết
-import api from '../config/api';
-import { setToken } from '../utils/auth';
-import { useAuth } from '../context/AuthContext'; // ĐÃ THÊM CONTEXT VÀO ĐÂY
-
-import horseRacingBg from '../assets/horseracing.png';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth(); // KÉO HÀM LOGIN RA ĐỂ ĐÁNH THỨC HỆ THỐNG
+    const { login } = useAuth(); // Lôi hàm login ra từ Context
 
     // HÀM CALL API THẬT XUỐNG SPRING BOOT
     const handleLogin = async (values) => {
         setLoading(true);
         try {
-            const response = await api.post('/auth/login', {
+            const response = await axios.post('http://localhost:8080/api/auth/login', {
                 email: values.email,
                 password: values.password
             });
 
             const userData = response.data;
 
-            // LƯU Ý CỰC MẠNH: Phải lưu userData.token nhé, sếp cũ đang lưu id là sai đó!
-            setToken(userData.token);
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-
+            // KÍCH HOẠT CONTEXT: Hàm login này sẽ tự động lưu localStorage và cập nhật State
             login(userData);
+
             message.success(`Chào mừng ${userData.username} trở lại trường đua!`);
 
             // ĐÁ THẲNG ADMIN TỚI TRANG DUYỆT KYC, CÁC ROLE KHÁC VỀ TRANG CHỦ
             if (userData.role === 'ADMIN') {
-                navigate('/admin/kyc');
+                navigate('/admin/kyc-approval'); // Đã sửa khớp với App.jsx của bạn
             } else {
                 navigate('/');
             }
 
         } catch (error) {
+            // Hiển thị chính xác lỗi Backend ném ra (Ví dụ: "Tài khoản đang chờ duyệt")
             if (error.response && error.response.data) {
-                message.error(error.response.data.error || error.response.data);
+                message.error(error.response.data.error || 'Đăng nhập thất bại');
             } else {
                 message.error('Máy chủ đang ngủ gật. Vui lòng thử lại sau!');
             }
@@ -58,12 +53,13 @@ const LoginPage = () => {
             <div
                 className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
                 style={{
-                    backgroundImage: `url(${horseRacingBg})`,
+                    backgroundImage: `url(${horseRacingBg})`, // Dùng biến import ảnh local ở đây
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
                 }}
             >
+                {/* Lớp phủ đen mờ */}
                 <div className="absolute inset-0 z-0 bg-black/60"></div>
 
                 <div className="z-10 w-full max-w-md p-10 rounded-3xl shadow-[0_0_50px_rgba(250,204,21,0.15)] bg-black/40 backdrop-blur-md border border-white/10 transition-all hover:shadow-[0_0_60px_rgba(250,204,21,0.3)]">

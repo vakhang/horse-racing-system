@@ -48,7 +48,7 @@ public class WalletServiceImpl implements WalletService {
                 .type(TransactionType.DEPOSIT)
                 .direction(TransactionDirection.IN)
                 .build();
-
+        transactionRepository.save(history);
         return savedWallet;
     }
 

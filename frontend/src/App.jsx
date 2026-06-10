@@ -2,13 +2,17 @@ import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ConfigProvider, theme, Spin } from 'antd';
 import { useAuth } from './context/AuthContext';
-import MainLayout from './components/MainLayout';
+import MainLayout from './components/layout/MainLayout';
 import AdminKycApprovalPage from "./pages/AdminKycApprovalPage.jsx";
 
 // Sử dụng React.lazy để load trang khi cần thiết (Tối ưu công nghệ React)
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+
+// 1. ĐÃ THÊM: Import trang Hồ sơ cá nhân vào đây
+const ProfilePage = lazy(() => import('./pages/user/ProfilePage'));
+const BettingPage = lazy(() => import('./pages/user/BettingPage'));
 
 // Component bảo vệ Route (Chỉ cho user đã đăng nhập vào)
 const ProtectedRoute = ({ children }) => {
@@ -49,11 +53,15 @@ function App() {
                         {/* Route bảo vệ (Cần đăng nhập) */}
                         <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
 
+                        {/* 2. ĐÃ THÊM: Đăng ký đường dẫn /profile sẽ mở trang Hồ Sơ Cá Nhân */}
+                        <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+
                         {/* Sẽ tạo thêm các trang này sau dựa trên 5 Role */}
-                        <Route path="/betting" element={<ProtectedRoute><h1>Trang Cá Cược</h1></ProtectedRoute>} />
+                        <Route path="/betting" element={<ProtectedRoute><BettingPage /></ProtectedRoute>} />
                         <Route path="/my-horses" element={<ProtectedRoute><h1>Quản Lý Ngựa</h1></ProtectedRoute>} />
                         <Route path="/admin/kyc" element={<ProtectedRoute><h1>Duyệt KYC</h1></ProtectedRoute>} />
                         <Route path="/admin/kyc-approval" element={<AdminKycApprovalPage />} />
+
                         {/* Bắt các link sai về Home */}
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>

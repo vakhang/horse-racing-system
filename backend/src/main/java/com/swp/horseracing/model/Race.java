@@ -27,9 +27,11 @@ public class Race {
     @Column(name = "race_time")
     private LocalDateTime raceTime;
     @Column(name = "total_pool")
+    @Builder.Default
     private BigDecimal totalPool = BigDecimal.ZERO; // Tổng tiền quỹ
 
     @Column(name = "rake_percentage")
+    @Builder.Default
     private BigDecimal rakePercentage = new BigDecimal("20.00"); // 20% cắt phế nhà cái
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

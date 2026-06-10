@@ -1,82 +1,116 @@
-import React from 'react';
-import { Row, Col, Card, Statistic, Typography, Timeline, Tag, Alert } from 'antd';
-import { TrophyOutlined, TeamOutlined, HeartOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Card, Statistic, Table, Tabs, Tag, message } from 'antd';
+import { WalletOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
-
-const { Title, Text } = Typography;
+import axios from 'axios';
 
 const HomePage = () => {
+    const [balance, setBalance] = useState(0);
+    const [bets, setBets] = useState([]);
+    const [transactions, setTransactions] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const { user } = useAuth();
+    const userId = user?.id; // Lấy ID từ Context
+    const token = user?.token; // Lấy Token từ Context
+
+    // Setup Axios đính kèm Token
+    const api = axios.create({
+        baseURL: 'http://localhost:8080/api',
+        headers: { Authorization: `Bearer ${token}` }
+    });
+
+    useEffect(() => {
+        if (userId && token) {
+            fetchDashboardData();
+        }
+    }, []);
+
+    const fetchDashboardData = async () => {
+        setLoading(true);
+        try {
+            const [walletRes, betsRes, transRes] = await Promise.all([
+                api.get(`/wallets/my-wallet?userId=${userId}`),
+                api.get(`/users/my-bets?userId=${userId}`),
+                api.get(`/users/my-transactions?userId=${userId}`)
+            ]);
+            setBalance(walletRes.data.balance);
+            setBets(betsRes.data);
+            setTransactions(transRes.data);
+        } catch (error) {
+            console.error(error);
+            message.error('Không thể tải dữ liệu tổng quan!');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- Cột bảng Cược ---
+    const betColumns = [
+        { title: 'Chặng Đua', dataIndex: 'raceName', key: 'raceName' },
+        { title: 'Ngựa Đặt', dataIndex: 'horseName', key: 'horseName', render: (val) => <span className="font-semibold text-blue-600">{val}</span> },
+        { title: 'Tiền Cược', dataIndex: 'amount', key: 'amount', render: (val) => `${val.toLocaleString()} đ` },
+        { title: 'Tỷ lệ', dataIndex: 'odds', key: 'odds', render: (val) => val ? val : 'Đang tính...' },
+        {
+            title: 'Trạng Thái',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => {
+                let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
+                return <Tag color={color}>{status}</Tag>;
+            }
+        },
+        { title: 'Thưởng', dataIndex: 'rewardAmount', key: 'rewardAmount', render: (val) => <span className="text-green-600 font-bold">+{val.toLocaleString()} đ</span> },
+    ];
+
+    // --- Cột bảng Giao dịch ---
+    const transColumns = [
+        { title: 'Mã GD', dataIndex: 'transactionCode', key: 'transactionCode' },
+        { title: 'Loại', dataIndex: 'type', key: 'type', render: (val) => <Tag color="blue">{val}</Tag> },
+        {
+            title: 'Số Tiền',
+            key: 'amount',
+            render: (record) => {
+                const isIncome = record.direction === 'IN';
+                return (
+                    <span className={isIncome ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
+                        {isIncome ? '+' : '-'}{record.amount.toLocaleString()} đ
+                    </span>
+                );
+            }
+        },
+        {
+            title: 'Trạng Thái',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status) => <Tag color={status === 'COMPLETED' ? 'green' : 'gold'}>{status}</Tag>
+        },
+        { title: 'Thời Gian', dataIndex: 'createdAt', key: 'createdAt', render: (val) => new Date(val).toLocaleString() },
+    ];
 
     return (
-        <div>
-            <Row gutter={[16, 16]} className="mb-6">
-                <Col span={24}>
-                    <Title level={2}>Chào mừng trở lại, {user?.username}!</Title>
+        <div className="flex flex-col gap-6">
+            <h1 className="text-2xl font-bold text-gray-800">Tổng Quan Tài Khoản</h1>
 
-                    {/* Luồng KYC: Cảnh báo nếu tài khoản chưa được duyệt */}
-                    {user?.status === 'PENDING' && (
-                        <Alert
-                            message="Tài khoản đang chờ duyệt KYC"
-                            description="Vui lòng đợi Admin kiểm tra hình ảnh CCCD của bạn. Bạn chưa thể đặt cược lúc này."
-                            type="warning"
-                            showIcon
-                            className="mb-4"
-                        />
-                    )}
-                </Col>
-            </Row>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="shadow-md rounded-xl border-l-4 border-blue-500 hover:-translate-y-1 transition duration-300">
+                    <Statistic
+                        title={<span className="text-gray-500 font-medium">Số dư ví hiện tại</span>}
+                        value={balance}
+                        precision={0}
+                        suffix="VNĐ"
+                        prefix={<WalletOutlined className="text-blue-500 mr-2" />}
+                        valueStyle={{ color: '#1d4ed8', fontWeight: 'bold', fontSize: '28px' }}
+                    />
+                </Card>
+            </div>
 
-            <Row gutter={[16, 16]}>
-                {/* 1. Thống kê chung */}
-                <Col span={6}>
-                    <Card bordered={false} hoverable>
-                        <Statistic title="Số dư ví" value={user?.balance || 0} precision={2} prefix={<Text className="text-2xl text-blue-600">Đ</Text>} />
-                    </Card>
-                </Col>
-                <Col span={6}>
-                    <Card bordered={false} hoverable>
-                        <Statistic title="Giải đấu đang diễn ra" value={3} prefix={<TrophyOutlined className="text-yellow-500" />} />
-                    </Card>
-                </Col>
-                <Col span={6}>
-                    <Card bordered={false} hoverable>
-                        <Statistic title="Tổng số ngựa" value={120} prefix={<TeamOutlined className="text-green-600" />} />
-                    </Card>
-                </Col>
-                <Col span={6}>
-                    <Card bordered={false} hoverable>
-                        <Statistic title="Tỷ lệ thắng cược" value={65.5} suffix="%" prefix={<HeartOutlined className="text-red-500" />} />
-                    </Card>
-                </Col>
-            </Row>
-
-            <Row gutter={[16, 16]} className="mt-6">
-                {/* 2. Lịch giải đấu sắp tới */}
-                <Col span={16}>
-                    <Card title="Lịch Giải Đua Sắp Tới" bordered={false}>
-                        <Timeline
-                            mode="alternate"
-                            items={[
-                                { children: 'Giải Đua Xuân 2026 - Vòng 1', color: 'green', dot: <ClockCircleOutlined /> },
-                                { children: 'Giải vô địch Quốc gia - Vòng loại', color: 'blue' },
-                                { children: 'Đua Ngựa Vòng Tròn Châu Á (Sắp diễn ra)', color: 'gray' },
-                            ]}
-                        />
-                    </Card>
-                </Col>
-
-                {/* 3. Hoạt động gần đây */}
-                <Col span={8}>
-                    <Card title="Hoạt Động Gần Đây" bordered={false}>
-                        <div className="space-y-3">
-                            <Text>Đặt cược <Tag color="green">+500 điểm</Tag> vào Ngựa Xích Thố.</Text><br/>
-                            <Text>Nạp tiền <Tag color="blue">+1000 điểm</Tag> qua ví Mock.</Text><br/>
-                            <Text>Hồ sơ KYC được <Tag color="orange">Admin tiếp nhận</Tag>.</Text>
-                        </div>
-                    </Card>
-                </Col>
-            </Row>
+            <Card className="shadow-sm rounded-lg mt-4">
+                <Tabs defaultActiveKey="1" items={[
+                    { key: '1', label: <span><HistoryOutlined /> Lịch sử Đặt Cược</span>, children: <Table dataSource={bets} columns={betColumns} rowKey="id" loading={loading} /> },
+                    { key: '2', label: <span><WalletOutlined /> Lịch sử Giao Dịch</span>, children: <Table dataSource={transactions} columns={transColumns} rowKey="transactionCode" loading={loading} /> }
+                ]} />
+            </Card>
         </div>
     );
 };

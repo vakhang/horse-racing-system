@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Service
@@ -71,7 +72,8 @@ public class BetServiceImpl implements BetService {
         transactionRepository.save(history);
 
         // Cộng vào tổng pool
-        race.setTotalPool(race.getTotalPool().add(request.getAmount()));
+        BigDecimal currentPool = race.getTotalPool() != null ? race.getTotalPool() : BigDecimal.ZERO;
+        race.setTotalPool(currentPool.add(request.getAmount()));
         raceRepository.save(race);
 
         return savedBet;
