@@ -39,9 +39,10 @@ public class WalletController {
     @PostMapping("/withdraw")
     public ResponseEntity<?> requestWithdrawal(@RequestBody com.swp.horseracing.dto.WithdrawRequestDTO request) {
         try {
-            return ResponseEntity.ok(walletService.requestWithdrawal(request.getUserId()));
+            String transCode = walletService.requestWithdrawal(request.getUserId(), request.getAmount());
+            return ResponseEntity.ok(java.util.Map.of("transactionCode", transCode));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

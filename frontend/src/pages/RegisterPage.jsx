@@ -80,17 +80,16 @@ const RegisterPage = () => {
                             </Text>
 
                             <Text className="text-gray-300 text-base mb-8 px-4">
-                                Hệ thống cá cược và quản lý giải đua ngựa chuyên nghiệp hàng đầu. Vui lòng hoàn thành KYC để tham gia.
+                                Hệ thống cá cược và quản lý giải đua ngựa chuyên nghiệp hàng đầu. Vui lòng hoàn thành điền đầy đủ thông tin cá nhân để tham gia.<br/><br/>
                             </Text>
 
                             <div className="w-full px-6">
                                 <Text className="text-gray-400">Đã có tài khoản?</Text><br/>
                                 <Link to="/login">
                                     <Button
-                                        ghost
-                                        block
-                                        size="large"
-                                        className="mt-3 border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black font-bold rounded-xl transition-all"
+                                        type="button"
+                                        className="w-full mt-6 bg-transparent border-2 border-yellow-500 text-yellow-500 font-bold text-base h-12 rounded-xl hover:bg-yellow-500 hover:text-black hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] hover:-translate-y-1 transition-all duration-300"
+                                        onClick={() => navigate('/login')}
                                     >
                                         ĐĂNG NHẬP NGAY
                                     </Button>

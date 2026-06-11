@@ -123,6 +123,7 @@ public class UserServiceImpl implements UserService {
         if (request.getRole() != null) user.setRole(request.getRole());
         if (request.getDob() != null) user.setDob(request.getDob());
         if (request.getStatus() != null) user.setStatus(request.getStatus());
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
 
         User updatedUser = userRepository.save(user);
         return mapToResponseDTO(updatedUser);
@@ -146,6 +147,7 @@ public class UserServiceImpl implements UserService {
                 .dob(user.getDob())
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
+                .phoneNumber(user.getPhoneNumber())
                 .build();
     }
 

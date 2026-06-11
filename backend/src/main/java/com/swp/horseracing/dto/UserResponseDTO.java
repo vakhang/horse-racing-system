@@ -16,7 +16,7 @@ public class UserResponseDTO {
     private String email;
     private RoleEnum role;
     private LocalDate dob;
-
+    private String phoneNumber;
     private UserStatus status;
     private LocalDateTime createdAt;
     private String token;

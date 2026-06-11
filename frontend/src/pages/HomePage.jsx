@@ -90,7 +90,7 @@ const HomePage = () => {
 
     return (
         <div className="flex flex-col gap-6">
-            <h1 className="text-2xl font-bold text-gray-800">Tổng Quan Tài Khoản</h1>
+            <h1 className="text-2xl font-bold text-gray-800">THÔNG TIN VÍ CỦA TÔI</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="shadow-md rounded-xl border-l-4 border-blue-500 hover:-translate-y-1 transition duration-300">

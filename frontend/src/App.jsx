@@ -9,8 +9,8 @@ import AdminKycApprovalPage from "./pages/AdminKycApprovalPage.jsx";
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
-
-// 1. ĐÃ THÊM: Import trang Hồ sơ cá nhân vào đây
+const WalletPage = lazy(() => import('./pages/user/WalletPage'));
+const LandingPage = lazy(() => import('./pages/user/LandingPage'));
 const ProfilePage = lazy(() => import('./pages/user/ProfilePage'));
 const BettingPage = lazy(() => import('./pages/user/BettingPage'));
 
@@ -51,18 +51,24 @@ function App() {
                         <Route path="/register" element={<RegisterPage />} />
 
                         {/* Route bảo vệ (Cần đăng nhập) */}
-                        <Route path="/" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+                        {/* Vừa vào web (/) sẽ tự động chuyển hướng sang Trang Chủ Quảng Cáo (/home) */}
+                        <Route path="/" element={<Navigate to="/home" replace />} />
+                        <Route path="/home" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
 
-                        {/* 2. ĐÃ THÊM: Đăng ký đường dẫn /profile sẽ mở trang Hồ Sơ Cá Nhân */}
+                        {/* Trang Lịch sử giao dịch/cược cũ giờ sẽ nằm ở link /dashboard */}
+                        <Route path="/dashboard" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+
+                        {/* Các trang chức năng của Khán Giả (Spectator) */}
+                        <Route path="/betting" element={<ProtectedRoute><BettingPage /></ProtectedRoute>} />
+                        <Route path="/wallet" element={<ProtectedRoute><WalletPage /></ProtectedRoute>} />
                         <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
 
-                        {/* Sẽ tạo thêm các trang này sau dựa trên 5 Role */}
-                        <Route path="/betting" element={<ProtectedRoute><BettingPage /></ProtectedRoute>} />
+                        {/* Sẽ tạo thêm các trang này sau dựa trên các Role khác */}
                         <Route path="/my-horses" element={<ProtectedRoute><h1>Quản Lý Ngựa</h1></ProtectedRoute>} />
                         <Route path="/admin/kyc" element={<ProtectedRoute><h1>Duyệt KYC</h1></ProtectedRoute>} />
                         <Route path="/admin/kyc-approval" element={<AdminKycApprovalPage />} />
 
-                        {/* Bắt các link sai về Home */}
+                        {/* Bắt các link sai (ví dụ gõ bậy bạ) tự động đá về Home */}
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                 </Suspense>

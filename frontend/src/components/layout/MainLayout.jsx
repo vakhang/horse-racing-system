@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { DashboardOutlined, DollarOutlined, UserOutlined } from '@ant-design/icons';
+import { HomeOutlined, HistoryOutlined, DollarOutlined, BankOutlined } from '@ant-design/icons';
 import Header from './Header';
 
 const { Content, Sider } = Layout;
@@ -13,9 +13,11 @@ const MainLayout = ({ children }) => {
 
     // SỬA LỖI MENU: Đổi key của Hồ Sơ Cá Nhân thành "/profile"
     const menuItems = [
-        { key: '/', icon: <DashboardOutlined />, label: 'Bảng Điều Khiển' },
+        { key: '/home', icon: <HomeOutlined />, label: 'Trang Chủ' },
+        { key: '/dashboard', icon: <HistoryOutlined />, label: 'Ví của tôi' }, // Đổi tên & Icon
         { key: '/betting', icon: <DollarOutlined />, label: 'Cá Cược Ngay' },
-        { key: '/profile', icon: <UserOutlined />, label: 'Hồ Sơ Cá Nhân' },
+        { key: '/wallet', icon: <BankOutlined />, label: 'Nạp / Rút Tiền' },
+        //{ key: '/profile', icon: <UserOutlined />, label: 'Hồ Sơ Cá Nhân' },
     ];
 
     return (

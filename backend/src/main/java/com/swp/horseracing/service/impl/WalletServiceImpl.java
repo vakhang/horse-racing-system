@@ -54,30 +54,38 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     @Transactional
-    public String requestWithdrawal(Integer userId) {
+    public String requestWithdrawal(Integer userId, BigDecimal amount) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của người dùng này!"));
 
-        BigDecimal amount = wallet.getBalance();
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Ví của bạn đang rỗng, không thể rút!");
+        // 1. Kiểm tra đầu vào
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new RuntimeException("Số tiền rút phải lớn hơn 0!");
         }
 
-        // 1. Ép ví về 0
-        wallet.setBalance(BigDecimal.ZERO);
+        // 2. Kiểm tra số dư có đủ để rút không
+        if (wallet.getBalance().compareTo(amount) < 0) {
+            throw new RuntimeException("Số dư trong ví không đủ để thực hiện lệnh rút!");
+        }
+
+        // 3. Thực hiện TRỪ TIỀN thay vì ép về 0
+        wallet.setBalance(wallet.getBalance().subtract(amount));
         walletRepository.save(wallet);
 
-        // 2. Sinh mã lệnh rút & Ghi vào lịch sử giao dịch (PENDING)
+        // 4. Sinh mã lệnh rút & Ghi vào lịch sử giao dịch (PENDING)
+        String transCode = "WDR-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
         TransactionHistory history = TransactionHistory.builder()
-                .transactionCode("WITHDRAW-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .transactionCode(transCode)
                 .wallet(wallet)
                 .amount(amount)
                 .type(TransactionType.WITHDRAW)
                 .direction(TransactionDirection.OUT)
-                .status(com.swp.horseracing.model.TransactionStatus.PENDING) // Import trực tiếp
+                .status(com.swp.horseracing.model.TransactionStatus.PENDING)
                 .build();
         transactionRepository.save(history);
 
-        return "Tạo lệnh rút tiền thành công! Vui lòng chờ Admin duyệt.";
+        // 5. Trả về đúng mã giao dịch này để Frontend hứng lấy
+        return transCode;
     }
 }

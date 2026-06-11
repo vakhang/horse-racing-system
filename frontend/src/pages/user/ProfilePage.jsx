@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag } from 'antd';
-import { UserOutlined, MailOutlined, CalendarOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -19,7 +19,8 @@ const ProfilePage = () => {
             // Nạp dữ liệu hiện tại vào form
             form.setFieldsValue({
                 username: user.username,
-                email: user.email, // Email thường không cho sửa
+                email: user.email,
+                phoneNumber: user.phoneNumber, // Dữ liệu SĐT từ Backend
                 dob: user.dob ? dayjs(user.dob) : null,
             });
         }
@@ -30,8 +31,8 @@ const ProfilePage = () => {
         try {
             const updateData = {
                 username: values.username,
+                phoneNumber: values.phoneNumber, // Gửi SĐT xuống Backend
                 dob: values.dob ? values.dob.format('YYYY-MM-DD') : null,
-                // role và status giữ nguyên, không truyền lên để tránh bị đè
             };
 
             const response = await axios.put(`http://localhost:8080/api/users/${user.id}`, updateData, {
@@ -44,7 +45,6 @@ const ProfilePage = () => {
 
             message.success('Cập nhật hồ sơ thành công!');
         } catch (error) {
-            console.error(error);
             message.error(error.response?.data?.error || 'Cập nhật thất bại!');
         } finally {
             setLoading(false);
@@ -83,6 +83,15 @@ const ProfilePage = () => {
                         <Input prefix={<UserOutlined />} placeholder="Nhập tên hiển thị của bạn" />
                     </Form.Item>
 
+                    {/* TRƯỜNG SỐ ĐIỆN THOẠI MỚI */}
+                    <Form.Item
+                        label="Số điện thoại liên hệ"
+                        name="phoneNumber"
+                        rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
+                    >
+                        <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại của bạn" />
+                    </Form.Item>
+
                     <Form.Item
                         label="Ngày tháng năm sinh (Phải >= 21 tuổi)"
                         name="dob"
@@ -97,6 +106,13 @@ const ProfilePage = () => {
                         </Button>
                     </Form.Item>
                 </Form>
+
+                {/* NGÀY TẠO TÀI KHOẢN */}
+                {user?.createdAt && (
+                    <div className="mt-8 pt-4 border-t border-dashed text-center text-gray-400 text-sm">
+                        <em>Tài khoản được tạo từ ngày: <span className="font-semibold text-gray-500">{dayjs(user.createdAt).format('DD/MM/YYYY lúc HH:mm')}</span></em>
+                    </div>
+                )}
             </Card>
         </div>
     );

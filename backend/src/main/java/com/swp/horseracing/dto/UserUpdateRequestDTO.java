@@ -13,4 +13,5 @@ public class UserUpdateRequestDTO {
     private LocalDate dob;
     private String kycDocumentUrl;
     private UserStatus status;
+    private String phoneNumber;
 }
