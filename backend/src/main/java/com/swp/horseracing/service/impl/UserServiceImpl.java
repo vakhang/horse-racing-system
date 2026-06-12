@@ -55,15 +55,20 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(newUser);
 
-        BigDecimal initialBalance = (request.getRole() == RoleEnum.SPECTATOR)
-                ? new BigDecimal("100000.00")
-                : BigDecimal.ZERO;
+        // NẾU LÀ KHÁN GIẢ HOẶC CHỦ NGỰA THÌ MỚI TẠO VÍ
+        if (request.getRole() == RoleEnum.SPECTATOR || request.getRole() == RoleEnum.OWNER) {
 
-        Wallet wallet = Wallet.builder()
-                .user(savedUser)
-                .balance(initialBalance)
-                .build();
-        walletRepository.save(wallet);
+            // Khán giả thì tặng 100k, Chủ ngựa thì ví 0 đồng
+            BigDecimal initialBalance = (request.getRole() == RoleEnum.SPECTATOR)
+                    ? new BigDecimal("100000.00")
+                    : BigDecimal.ZERO;
+
+            Wallet wallet = Wallet.builder()
+                    .user(savedUser)
+                    .balance(initialBalance)
+                    .build();
+            walletRepository.save(wallet);
+        }
 
         return mapToResponseDTO(savedUser);
     }
@@ -80,12 +85,18 @@ public class UserServiceImpl implements UserService {
         if (user.getStatus() == UserStatus.PENDING) {
             throw new RuntimeException("Tài khoản của bạn đang chờ Admin duyệt KYC. Vui lòng quay lại sau!");
         }
+
         if (user.getStatus() == UserStatus.REJECTED) {
             throw new RuntimeException("Tài liệu KYC của bạn đã bị từ chối. Không thể đăng nhập!");
         }
 
-        // --- ĐOẠN NÀY LÀ TẠO VÀ NHÉT TOKEN VÀO ---
-        String token = jwtUtils.generateToken(user.getId());
+
+        // --- TẠO TOKEN KÈM ROLE ---
+        String token = jwtUtils.generateToken(
+                user.getId(),
+                user.getRole().name()
+        );
+
 
         return UserResponseDTO.builder()
                 .id(user.getId())
@@ -95,10 +106,9 @@ public class UserServiceImpl implements UserService {
                 .dob(user.getDob())
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
-                .token(token) // <--- VÉ VIP CỦA SẾP ĐÂY
+                .token(token)
                 .build();
     }
-
     @Override
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream()

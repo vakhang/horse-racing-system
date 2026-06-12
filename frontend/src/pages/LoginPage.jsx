@@ -22,27 +22,15 @@ const LoginPage = () => {
                 password: values.password
             });
 
-            const userData = response.data;
+            login(response.data); // Gọi hàm login trong AuthContext
 
-            // KÍCH HOẠT CONTEXT: Hàm login này sẽ tự động lưu localStorage và cập nhật State
-            login(userData);
-
-            message.success(`Chào mừng ${userData.username} trở lại trường đua!`);
-
-            // ĐÁ THẲNG ADMIN TỚI TRANG DUYỆT KYC, CÁC ROLE KHÁC VỀ TRANG CHỦ
-            if (userData.role === 'ADMIN') {
-                navigate('/admin/kyc-approval'); // Đã sửa khớp với App.jsx của bạn
+            if (response.data.role === 'ADMIN') {
+                navigate('/admin/kyc'); // Khớp với route trong App.jsx
             } else {
                 navigate('/');
             }
-
         } catch (error) {
-            // Hiển thị chính xác lỗi Backend ném ra (Ví dụ: "Tài khoản đang chờ duyệt")
-            if (error.response && error.response.data) {
-                message.error(error.response.data.error || 'Đăng nhập thất bại');
-            } else {
-                message.error('Máy chủ đang ngủ gật. Vui lòng thử lại sau!');
-            }
+            message.error('Đăng nhập thất bại!');
         } finally {
             setLoading(false);
         }

@@ -3,36 +3,32 @@ import { createContext, useState, useContext, useEffect } from 'react';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // Lưu thông tin user thật
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Mock dữ liệu đăng nhập để làm FE trước (Khi có BE Login thật sẽ thay thế chỗ này)
     useEffect(() => {
-        const fakeUser = JSON.parse(localStorage.getItem('user'));
-        if (fakeUser) {
-            setUser(fakeUser);
+        const savedUser = JSON.parse(localStorage.getItem('user'));
+        if (savedUser) {
+            setUser(savedUser);
         }
         setLoading(false);
     }, []);
 
     const login = (userData) => {
-        // Trong thực tế, userData sẽ chứa JWT Token và info user
+        // userData chứa: { token, username, role, id, ... }
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('accessToken', userData.token); // Lưu token riêng cho api.js
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem('user');
-    };
-
-    // Kiểm tra xem User có quyền truy cập không dựa trên Role
-    const hasRole = (roles) => {
-        return user && roles.includes(user.role);
+        localStorage.removeItem('accessToken');
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, hasRole, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, Space, message, Card, Typography, Popconfirm, Tabs, Input, Row, Col, Modal, Image, Tooltip } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, SearchOutlined, ReloadOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
-import api from '../config/api.js';
+import api from "../../config/api.js";
 
 const { Title, Text } = Typography;
 
