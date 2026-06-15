@@ -3,7 +3,8 @@ import { Layout, Menu, Button, Avatar, Space, Typography } from 'antd';
 import {
     MenuFoldOutlined, MenuUnfoldOutlined,
     SafetyCertificateOutlined, TrophyOutlined,
-    LogoutOutlined, UserOutlined, SettingOutlined
+    LogoutOutlined, UserOutlined, SettingOutlined,
+    FileSearchOutlined // Thêm icon này cho trang Duyệt Ngựa
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
@@ -17,7 +18,7 @@ const AdminLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // MENU DÀNH RIÊNG CHO ADMIN: Nhét 2 trang của sếp vào đây
+    // MENU DÀNH RIÊNG CHO ADMIN
     const menuItems = [
         {
             key: '/admin/kyc',
@@ -25,13 +26,17 @@ const AdminLayout = ({ children }) => {
             label: 'Kiểm Duyệt KYC',
         },
         {
+            key: '/admin/horses', // ĐÃ THÊM MENU DUYỆT NGỰA
+            icon: <FileSearchOutlined />,
+            label: 'Duyệt Chiến Mã',
+        },
+        {
             key: '/admin/tournaments',
             icon: <TrophyOutlined />,
             label: 'Giải Đấu & Chặng Đua',
         },
-        // Chừa sẵn chỗ, mốt sếp làm trang nào thì nhét thêm vào đây:
+        // Chừa sẵn chỗ cho Kế toán
         // { key: '/admin/finance', icon: <DollarOutlined />, label: 'Kế Toán (Nạp/Rút)' },
-        // { key: '/admin/horses', icon: <TeamOutlined />, label: 'Duyệt Ngựa' },
     ];
 
     const handleLogout = () => {
@@ -68,7 +73,6 @@ const AdminLayout = ({ children }) => {
                     />
 
                     <Space size="large" className="mr-4">
-                        {/* Cục chớp đỏ báo hiệu hệ thống đang Live (nhìn cho ngầu) */}
                         <div className="flex items-center gap-3 bg-red-50 px-4 py-1.5 rounded-full border border-red-100 hidden sm:flex">
                             <span className="relative flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -91,7 +95,7 @@ const AdminLayout = ({ children }) => {
                     </Space>
                 </Header>
 
-                {/* CONTENT ADMIN: Nơi 2 trang của sếp hiện ra */}
+                {/* CONTENT ADMIN */}
                 <Content className="m-0 p-0 overflow-auto">
                     {children}
                 </Content>

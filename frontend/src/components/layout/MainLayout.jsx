@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HomeOutlined, HistoryOutlined, DollarOutlined, BankOutlined } from '@ant-design/icons';
+// Import thêm icon cho Owner
+import { HomeOutlined, HistoryOutlined, DollarOutlined, BankOutlined, FlagOutlined, AppstoreAddOutlined } from '@ant-design/icons';
 import Header from './Header';
+
+// Thêm hook lấy thông tin user đăng nhập
+import { useAuth } from '../../context/AuthContext'; // Sếp chú ý đường dẫn xem đúng thư mục chưa nha
 
 const { Content, Sider } = Layout;
 
@@ -11,14 +15,43 @@ const MainLayout = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // SỬA LỖI MENU: Đổi key của Hồ Sơ Cá Nhân thành "/profile"
-    const menuItems = [
+    // Lấy thông tin user để biết Role
+    const { user } = useAuth();
+
+    // 1. MENU CHUNG (Ai cũng thấy)
+    const baseMenuItems = [
         { key: '/home', icon: <HomeOutlined />, label: 'Trang Chủ' },
-        { key: '/dashboard', icon: <HistoryOutlined />, label: 'Ví của tôi' }, // Đổi tên & Icon
+    ];
+
+    // 2. MENU DÀNH RIÊNG CHO KHÁN GIẢ (SPECTATOR)
+    const spectatorMenuItems = [
+        ...baseMenuItems,
+        { key: '/dashboard', icon: <HistoryOutlined />, label: 'Ví của tôi' },
         { key: '/betting', icon: <DollarOutlined />, label: 'Cá Cược Ngay' },
         { key: '/wallet', icon: <BankOutlined />, label: 'Nạp / Rút Tiền' },
-        //{ key: '/profile', icon: <UserOutlined />, label: 'Hồ Sơ Cá Nhân' },
     ];
+
+    // 3. MENU DÀNH RIÊNG CHO CHỦ NGỰA (OWNER)
+    const ownerMenuItems = [
+        ...baseMenuItems,
+        { key: '/my-horses', icon: <AppstoreAddOutlined />, label: 'Quản Lý Ngựa' },
+        { key: '/owner/races', icon: <FlagOutlined />, label: 'Đăng Ký Thi Đấu' },
+    ];
+
+    // Sếp có thể tạo sẵn menu cho JOCKEY ở đây luôn cho tiện về sau
+    const jockeyMenuItems = [
+        ...baseMenuItems,
+        { key: '/jockey/invitations', icon: <FlagOutlined />, label: 'Lời Mời Thi Đấu' }, // Mẫu trước, tính sau
+    ];
+
+    // 4. QUYẾT ĐỊNH HIỂN THỊ MENU NÀO
+    let currentMenuItems = spectatorMenuItems; // Mặc định là khán giả
+
+    if (user?.role === 'OWNER') {
+        currentMenuItems = ownerMenuItems;
+    } else if (user?.role === 'JOCKEY') {
+        currentMenuItems = jockeyMenuItems;
+    }
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
@@ -41,11 +74,13 @@ const MainLayout = ({ children }) => {
                 <div className="h-16 flex items-center justify-center text-white font-bold text-xl tracking-wider m-4 bg-white/10 rounded-lg cursor-pointer" onClick={() => navigate('/')}>
                     {collapsed ? 'HR' : 'HORSE RACE'}
                 </div>
+
+                {/* TRUYỀN BIẾN currentMenuItems ĐÃ CHIA Ở TRÊN VÀO ĐÂY */}
                 <Menu
                     theme="dark"
                     mode="inline"
                     selectedKeys={[location.pathname]}
-                    items={menuItems}
+                    items={currentMenuItems}
                     onClick={(e) => navigate(e.key)}
                 />
             </Sider>

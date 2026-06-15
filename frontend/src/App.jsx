@@ -16,9 +16,15 @@ const LandingPage = lazy(() => import('./pages/user/LandingPage'));
 const ProfilePage = lazy(() => import('./pages/user/ProfilePage'));
 const BettingPage = lazy(() => import('./pages/user/BettingPage'));
 
-// --- ĐÃ SỬA ĐƯỜNG DẪN 2 TRANG ADMIN VÀO ĐÚNG THƯ MỤC ---
+// Các trang của Admin
 const AdminKycApprovalPage = lazy(() => import('./pages/admin/AdminKycApprovalPage'));
 const AdminTournamentPage = lazy(() => import('./pages/admin/AdminTournamentPage'));
+// --- ĐÃ THÊM: IMPORT COMPONENT DUYỆT NGỰA ---
+const AdminHorseApprovalPage = lazy(() => import('./pages/admin/AdminHorseApprovalPage'));
+
+// Các trang của Owner
+const OwnerRaceRegistrationPage = lazy(() => import('./pages/owner/OwnerRaceRegistrationPage'));
+const OwnerHorseManagementPage = lazy(() => import('./pages/owner/OwnerHorseManagementPage'));
 
 // 1. COMPONENT BẢO VỆ ROUTE CHUNG
 const ProtectedRoute = ({ children }) => {
@@ -34,8 +40,9 @@ const RootRedirect = () => {
     if (loading) return <div className="flex h-screen items-center justify-center"><Spin size="large"/></div>;
     if (!user) return <Navigate to="/login" />;
 
-    // Nếu là Admin thì đá thẳng vào trang duyệt KYC
+    // Phân luồng đăng nhập
     if (user.role === 'ADMIN') return <Navigate to="/admin/kyc" replace />;
+    if (user.role === 'OWNER') return <Navigate to="/my-horses" replace />;
 
     // Các role khác thì cho ra trang chủ
     return <Navigate to="/home" replace />;
@@ -66,18 +73,32 @@ function App() {
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
 
-                        {/* Khi user gõ localhost:3000/ sẽ chạy qua Trạm kiểm soát */}
                         <Route path="/" element={<RootRedirect />} />
 
                         {/* ========================================================= */}
-                        {/* NHÓM 1: CÁC TRANG CỦA KHÁN GIẢ (Bọc bằng MainLayout)      */}
+                        {/* NHÓM 1: CÁC TRANG CỦA KHÁN GIẢ & CHỦ NGỰA (Bọc bằng MainLayout) */}
                         {/* ========================================================= */}
                         <Route path="/home" element={<ProtectedRoute><MainLayout><LandingPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/dashboard" element={<ProtectedRoute><MainLayout><HomePage /></MainLayout></ProtectedRoute>} />
                         <Route path="/betting" element={<ProtectedRoute><MainLayout><BettingPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/wallet" element={<ProtectedRoute><MainLayout><WalletPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
-                        <Route path="/my-horses" element={<ProtectedRoute><MainLayout><h1>Quản Lý Ngựa</h1></MainLayout></ProtectedRoute>} />
+
+                        <Route path="/my-horses" element={
+                            <ProtectedRoute>
+                                <MainLayout>
+                                    <OwnerHorseManagementPage />
+                                </MainLayout>
+                            </ProtectedRoute>
+                        } />
+
+                        <Route path="/owner/races" element={
+                            <ProtectedRoute>
+                                <MainLayout>
+                                    <OwnerRaceRegistrationPage />
+                                </MainLayout>
+                            </ProtectedRoute>
+                        } />
 
                         {/* ========================================================= */}
                         {/* NHÓM 2: CÁC TRANG CỦA ADMIN (Bọc bằng AdminLayout)        */}
@@ -90,6 +111,15 @@ function App() {
                             </ProtectedRoute>
                         } />
 
+                        {/* --- ĐÃ SỬA: GẮN ROUTE DUYỆT NGỰA VÀO ĐÂY --- */}
+                        <Route path="/admin/horses" element={
+                            <ProtectedRoute>
+                                <AdminLayout>
+                                    <AdminHorseApprovalPage />
+                                </AdminLayout>
+                            </ProtectedRoute>
+                        } />
+
                         <Route path="/admin/tournaments" element={
                             <ProtectedRoute>
                                 <AdminLayout>
@@ -98,7 +128,6 @@ function App() {
                             </ProtectedRoute>
                         } />
 
-                        {/* Bắt các link sai tự động đá về Home */}
                         <Route path="*" element={<Navigate to="/" />} />
                     </Routes>
                 </Suspense>
