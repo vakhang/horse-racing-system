@@ -10,11 +10,15 @@ public class HorseResponseDTO {
     private Integer id;
     private String name;
     private Integer ownerId;
-    private String ownerUsername; // Tiện cho FE hiển thị tên chủ ngựa
+    private String ownerUsername;
     private Integer age;
     private String breed;
     private String color;
-    private Float winRate;
     private String documentUrl;
     private HorseStatus status;
+
+    private Integer totalRaces;
+    private Integer winRaces;
+    private Float winRate; // Tính bằng %
+    private String healthStatus;
 }

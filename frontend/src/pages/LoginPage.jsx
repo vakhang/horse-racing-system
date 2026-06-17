@@ -25,7 +25,7 @@ const LoginPage = () => {
             login(response.data); // Gọi hàm login trong AuthContext
 
             if (response.data.role === 'ADMIN') {
-                navigate('/admin/kyc'); // Khớp với route trong App.jsx
+                navigate('/admin/users'); // Khớp với route trong App.jsx
             } else {
                 navigate('/');
             }

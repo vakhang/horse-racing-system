@@ -22,8 +22,8 @@ public class Horse {
     private User owner;
 
     private Integer age;
-    private String breed; // Thêm từ DB
-    private String color; // Thêm từ DB
+    private String breed;
+    private String color;
 
     @Column(name = "document_url", columnDefinition = "TEXT")
     private String documentUrl;
@@ -32,7 +32,20 @@ public class Horse {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private HorseStatus status;
 
+    // --- CÁC TRƯỜNG MỚI ĐỂ ADMIN QUẢN LÝ ---
+    @Column(name = "total_races")
+    @Builder.Default
+    private Integer totalRaces = 0;
+
+    @Column(name = "win_races")
+    @Builder.Default
+    private Integer winRaces = 0;
+
+    @Column(name = "health_status")
+    @Builder.Default
+    private String healthStatus = "READY"; // Sẵn sàng (READY) hoặc Chấn thương (INJURED)
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt; // Thêm từ DB
+    private LocalDateTime createdAt;
 }

@@ -54,10 +54,10 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         // RÀNG BUỘC: Kiểm tra trùng giờ
         Registration currentReg = invitation.getRegistration();
         java.time.LocalDateTime currentRaceTime = currentReg.getRace().getRaceTime();
-        
+
         java.util.List<Registration> overlappingRegs = registrationRepository.findByJockeyAndRaceTime(
                 invitation.getJockey().getId(), currentRaceTime);
-        
+
         if (!overlappingRegs.isEmpty()) {
             throw new RuntimeException("Bạn đã nhận một chặng đua khác diễn ra cùng giờ!");
         }
@@ -104,5 +104,11 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
                 .invitedAt(inv.getInvitedAt())
                 .respondedAt(inv.getRespondedAt())
                 .build();
+    }
+    @Override
+    public java.util.List<InvitationResponseDTO> getInvitationsByJockeyId(Integer jockeyId) {
+        return invitationRepository.findByJockeyId(jockeyId).stream()
+                .map(this::mapToDTO)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

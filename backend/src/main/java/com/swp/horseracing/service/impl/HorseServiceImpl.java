@@ -98,17 +98,25 @@ public class HorseServiceImpl implements HorseService {
     }
 
     private HorseResponseDTO mapToResponseDTO(Horse horse) {
+        Float winRate = 0f;
+        if (horse.getTotalRaces() != null && horse.getTotalRaces() > 0) {
+            winRate = (float) horse.getWinRaces() / horse.getTotalRaces() * 100;
+        }
+
         return HorseResponseDTO.builder()
                 .id(horse.getId())
                 .name(horse.getName())
                 .ownerId(horse.getOwner() != null ? horse.getOwner().getId() : null)
                 .ownerUsername(horse.getOwner() != null ? horse.getOwner().getUsername() : null)
                 .age(horse.getAge())
-                // Đã cập nhật thuộc tính trả về
                 .breed(horse.getBreed())
                 .color(horse.getColor())
                 .documentUrl(horse.getDocumentUrl())
                 .status(horse.getStatus())
+                .totalRaces(horse.getTotalRaces())
+                .winRaces(horse.getWinRaces())
+                .winRate(winRate)
+                .healthStatus(horse.getHealthStatus())
                 .build();
     }
 }

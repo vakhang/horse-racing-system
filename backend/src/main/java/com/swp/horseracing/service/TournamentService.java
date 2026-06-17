@@ -10,4 +10,7 @@ public interface TournamentService {
     TournamentResponseDTO getTournamentById(Integer id);
     TournamentResponseDTO updateTournament(Integer id, TournamentRequestDTO request);
     void deleteTournament(Integer id);
+
+    // THÊM DÒNG NÀY:
+    void cancelTournament(Integer id);
 }

@@ -39,4 +39,13 @@ public class JockeyInvitationController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    // API LẤY DANH SÁCH LỜI MỜI CHO NÀI NGỰA
+    @GetMapping
+    public ResponseEntity<?> getInvitations(@RequestParam Integer jockeyId) {
+        try {
+            return ResponseEntity.ok(invitationService.getInvitationsByJockeyId(jockeyId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

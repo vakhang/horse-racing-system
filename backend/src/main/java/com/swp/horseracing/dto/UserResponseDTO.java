@@ -4,7 +4,7 @@ import com.swp.horseracing.model.RoleEnum;
 import com.swp.horseracing.model.UserStatus;
 import lombok.Builder;
 import lombok.Data;
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -20,4 +20,6 @@ public class UserResponseDTO {
     private UserStatus status;
     private LocalDateTime createdAt;
     private String token;
+
+    private BigDecimal balance; // ADMIN CẦN XEM SỐ DƯ
 }

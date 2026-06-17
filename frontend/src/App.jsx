@@ -15,6 +15,12 @@ const WalletPage = lazy(() => import('./pages/user/WalletPage'));
 const LandingPage = lazy(() => import('./pages/user/LandingPage'));
 const ProfilePage = lazy(() => import('./pages/user/ProfilePage'));
 const BettingPage = lazy(() => import('./pages/user/BettingPage'));
+const JockeyInvitationPage = lazy(() => import('./pages/jockey/JockeyInvitationPage'));
+const RefereeDashboardPage = lazy(() => import('./pages/referee/RefereeDashboardPage'));
+const AdminUserManagementPage = lazy(() => import('./pages/admin/AdminUserManagementPage'));
+const AdminFinancePage = lazy(() => import('./pages/admin/AdminFinancePage'));
+const OwnerJockeyDirectoryPage = lazy(() => import('./pages/owner/OwnerJockeyDirectoryPage'));
+const AdminNewsPage = lazy(() => import('./pages/admin/AdminNewsPage'));
 
 // Các trang của Admin
 const AdminKycApprovalPage = lazy(() => import('./pages/admin/AdminKycApprovalPage'));
@@ -43,6 +49,9 @@ const RootRedirect = () => {
     // Phân luồng đăng nhập
     if (user.role === 'ADMIN') return <Navigate to="/admin/kyc" replace />;
     if (user.role === 'OWNER') return <Navigate to="/my-horses" replace />;
+    if (user.role === 'JOCKEY') return <Navigate to="/jockey/invitations" replace />;
+    if (user.role === 'REFEREE') return <Navigate to="/referee/dashboard" replace />;
+    if (user.role === 'ADMIN') return <Navigate to="/admin/users" replace />;
 
     // Các role khác thì cho ra trang chủ
     return <Navigate to="/home" replace />;
@@ -83,7 +92,12 @@ function App() {
                         <Route path="/betting" element={<ProtectedRoute><MainLayout><BettingPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/wallet" element={<ProtectedRoute><MainLayout><WalletPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/profile" element={<ProtectedRoute><MainLayout><ProfilePage /></MainLayout></ProtectedRoute>} />
-
+                        <Route path="/admin/users" element={
+                            <ProtectedRoute><AdminLayout><AdminUserManagementPage /></AdminLayout></ProtectedRoute>
+                        } />
+                        <Route path="/admin/finance" element={
+                            <ProtectedRoute><AdminLayout><AdminFinancePage /></AdminLayout></ProtectedRoute>
+                        } />
                         <Route path="/my-horses" element={
                             <ProtectedRoute>
                                 <MainLayout>
@@ -99,6 +113,20 @@ function App() {
                                 </MainLayout>
                             </ProtectedRoute>
                         } />
+
+                        {/* --- TRANG CỦA NÀI NGỰA & TRỌNG TÀI --- */}
+                        <Route path="/jockey/invitations" element={
+                            <ProtectedRoute><MainLayout><JockeyInvitationPage /></MainLayout></ProtectedRoute>
+                        } />
+
+                        <Route path="/referee/dashboard" element={
+                            <ProtectedRoute><MainLayout><RefereeDashboardPage /></MainLayout></ProtectedRoute>
+                        } />
+                        {/* Nhóm của OWNER */}
+                        <Route path="/owner/jockeys" element={<ProtectedRoute><MainLayout><OwnerJockeyDirectoryPage /></MainLayout></ProtectedRoute>} />
+
+                        {/* Nhóm của ADMIN */}
+                        <Route path="/admin/news" element={<ProtectedRoute><AdminLayout><AdminNewsPage /></AdminLayout></ProtectedRoute>} />
 
                         {/* ========================================================= */}
                         {/* NHÓM 2: CÁC TRANG CỦA ADMIN (Bọc bằng AdminLayout)        */}

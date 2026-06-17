@@ -149,6 +149,11 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
+        // Lấy số dư ví để hiển thị cho Admin
+        BigDecimal balance = walletRepository.findByUserId(user.getId())
+                .map(Wallet::getBalance)
+                .orElse(BigDecimal.ZERO);
+
         return UserResponseDTO.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -158,6 +163,7 @@ public class UserServiceImpl implements UserService {
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
                 .phoneNumber(user.getPhoneNumber())
+                .balance(balance)
                 .build();
     }
 
