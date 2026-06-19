@@ -25,21 +25,26 @@ const HomePage = () => {
     });
 
     useEffect(() => {
-        if (userId && token) fetchDashboardData();
+        if (userId && token) {
+            fetchDashboardData();
+        }
     }, [userId, token]);
 
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
-            const [walletRes, betsRes, transRes] = await Promise.all([
-                api.get(`/wallets/my-wallet?userId=${userId}`),
-                user?.role === 'SPECTATOR' ? api.get(`/users/my-bets?userId=${userId}`) : Promise.resolve({data: []}),
-                api.get(`/users/my-transactions?userId=${userId}`)
-            ]);
-
+            // Lấy số dư ví
+            const walletRes = await api.get(`/wallets/my-wallet?userId=${userId}`);
             setBalance(walletRes.data.balance);
-            setBets(betsRes.data);
 
+            // Chỉ lấy lịch sử cược nếu là Khán giả
+            if (user?.role === 'SPECTATOR') {
+                const betsRes = await api.get(`/users/my-bets?userId=${userId}`);
+                setBets(betsRes.data || []);
+            }
+
+            // Lấy lịch sử giao dịch chung
+            const transRes = await api.get(`/users/my-transactions?userId=${userId}`);
             let txData = transRes.data || [];
 
             // GIẢ LẬP DỮ LIỆU "THƯỞNG CHẶNG" CHUYÊN BIỆT CHO NÀI NGỰA
@@ -52,8 +57,8 @@ const HomePage = () => {
                 // Đồng bộ lịch sử giao dịch tương ứng
                 if (txData.length < 2) {
                     txData = [
-                        { transactionCode: 'PRZ-' + Math.random().toString(36).substr(2, 6).toUpperCase(), type: 'REWARD', direction: 'IN', amount: 15000000, status: 'COMPLETED', createdAt: dayjs().subtract(1, 'day').toISOString() },
-                        { transactionCode: 'SAL-' + Math.random().toString(36).substr(2, 6).toUpperCase(), type: 'SALARY', direction: 'IN', amount: 5000000, status: 'COMPLETED', createdAt: dayjs().subtract(3, 'day').toISOString() },
+                        { transactionCode: 'PRZ-A1B2C3', type: 'REWARD', direction: 'IN', amount: 15000000, status: 'COMPLETED', createdAt: dayjs().subtract(1, 'day').toISOString() },
+                        { transactionCode: 'SAL-X9Y8Z7', type: 'SALARY', direction: 'IN', amount: 5000000, status: 'COMPLETED', createdAt: dayjs().subtract(3, 'day').toISOString() },
                         ...txData
                     ];
                 }
@@ -72,16 +77,20 @@ const HomePage = () => {
     const betColumns = [
         { title: 'Chặng Đua', dataIndex: 'raceName', key: 'raceName' },
         { title: 'Ngựa Đặt', dataIndex: 'horseName', key: 'horseName', render: (val) => <span className="font-semibold text-blue-600">{val}</span> },
-        { title: 'Tiền Cược', dataIndex: 'amount', key: 'amount', render: (val) => `${val.toLocaleString()} đ` },
+        { title: 'Tiền Cược', dataIndex: 'amount', key: 'amount', render: (val) => `${val ? val.toLocaleString() : 0} đ` },
         { title: 'Tỷ lệ', dataIndex: 'odds', key: 'odds', render: (val) => val ? val : 'Đang tính...' },
         {
-            title: 'Trạng Thái', dataIndex: 'status', key: 'status',
+            title: 'Trạng Thái',
+            dataIndex: 'status',
+            key: 'status',
             render: (status) => {
-                let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
+                let color = 'orange';
+                if (status === 'WON') color = 'green';
+                if (status === 'LOST') color = 'red';
                 return <Tag color={color} className="font-bold">{status}</Tag>;
             }
         },
-        { title: 'Thưởng', dataIndex: 'rewardAmount', key: 'rewardAmount', render: (val) => <span className="text-green-600 font-bold">+{val.toLocaleString()} đ</span> },
+        { title: 'Thưởng', dataIndex: 'rewardAmount', key: 'rewardAmount', render: (val) => <span className="text-green-600 font-bold">+{val ? val.toLocaleString() : 0} đ</span> }
     ];
 
     // --- CỘT DÀNH CHO NÀI NGỰA (THƯỞNG CHẶNG) ---
@@ -89,10 +98,13 @@ const HomePage = () => {
         { title: 'Tên Chặng Đua', dataIndex: 'raceName', key: 'raceName', render: (val) => <span className="font-bold text-blue-700 text-base">{val}</span> },
         { title: 'Chiến Mã Điều Khiển', dataIndex: 'horseName', key: 'horseName', render: (val) => <Tag color="geekblue" className="font-medium text-sm px-3 py-1">{val}</Tag> },
         {
-            title: 'Thứ Hạng Về Đích', dataIndex: 'rank', key: 'rank', align: 'center',
+            title: 'Thứ Hạng Về Đích',
+            dataIndex: 'rank',
+            key: 'rank',
+            align: 'center',
             render: (val) => val === 1 ? <Tag color="gold" className="font-bold text-sm px-3 py-1">TOP 1 🏆</Tag> : <Tag color="silver" className="font-bold px-3 py-1">TOP {val}</Tag>
         },
-        { title: 'Tiền Công / Thưởng', dataIndex: 'reward', key: 'reward', render: (val) => <span className="text-green-600 font-bold text-lg">+{val.toLocaleString()} VNĐ</span> },
+        { title: 'Tiền Công / Thưởng', dataIndex: 'reward', key: 'reward', render: (val) => <span className="text-green-600 font-bold text-lg">+{val ? val.toLocaleString() : 0} VNĐ</span> },
         { title: 'Thời Gian Ghi Nhận', dataIndex: 'date', key: 'date', render: (val) => dayjs(val).format('HH:mm - DD/MM/YYYY') },
     ];
 
@@ -100,28 +112,33 @@ const HomePage = () => {
     const transColumns = [
         { title: 'Mã GD', dataIndex: 'transactionCode', key: 'transactionCode', render: t => <span className="font-bold text-gray-600 tracking-widest">{t}</span> },
         {
-            title: 'Loại Giao Dịch', dataIndex: 'type', key: 'type',
+            title: 'Loại Giao Dịch',
+            dataIndex: 'type',
+            key: 'type',
             render: (val) => {
                 if (val === 'REWARD') return <Tag color="magenta" className="font-bold">THƯỞNG THẮNG CHẶNG</Tag>;
-                if (val === 'SALARY') return <Tag color="cyan" className="font-bold">LƯƠNG CỨNG (CHỦ NGỰA TRẢ)</Tag>;
+                if (val === 'SALARY') return <Tag color="cyan" className="font-bold">LƯƠNG CỨNG (TỪ CHỦ NGỰA)</Tag>;
                 if (val === 'WITHDRAW') return <Tag color="orange" className="font-bold">RÚT TIỀN VỀ NGÂN HÀNG</Tag>;
                 if (val === 'DEPOSIT') return <Tag color="blue" className="font-bold">NẠP TIỀN</Tag>;
                 return <Tag color="default">{val}</Tag>;
             }
         },
         {
-            title: 'Số Tiền', key: 'amount',
-            render: (record) => {
+            title: 'Số Tiền',
+            key: 'amount',
+            render: (_, record) => {
                 const isIncome = record.direction === 'IN';
                 return (
                     <span className={isIncome ? 'text-green-600 font-bold text-base' : 'text-red-600 font-bold text-base'}>
-                        {isIncome ? '+' : '-'}{record.amount?.toLocaleString()} đ
+                        {isIncome ? '+' : '-'}{record.amount ? record.amount.toLocaleString() : 0} đ
                     </span>
                 );
             }
         },
         {
-            title: 'Trạng Thái', dataIndex: 'status', key: 'status',
+            title: 'Trạng Thái',
+            dataIndex: 'status',
+            key: 'status',
             render: (status) => {
                 if (status === 'PENDING') return <Tag color="warning" className="font-bold px-3 py-1">VUI LÒNG LIÊN HỆ BTC</Tag>;
                 if (status === 'COMPLETED') return <Tag color="success" className="font-bold px-3 py-1">ĐÃ GIAO DỊCH THÀNH CÔNG</Tag>;
