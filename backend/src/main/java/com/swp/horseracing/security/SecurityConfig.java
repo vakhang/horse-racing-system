@@ -29,10 +29,15 @@ public class SecurityConfig {
                 // Ép hệ thống không lưu session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // Phân luồng API
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll() // Đăng ký, đăng nhập đi tự do
-                        .anyRequest().authenticated()                // Các API khác phải đưa vé
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // --- Cụm API phục vụ trang WalletPage ---
+                        .requestMatchers("/api/wallets/deposit").permitAll()
+                        .requestMatchers("/api/wallets/my-wallet").permitAll()
+                        .requestMatchers("/api/users/my-transactions").permitAll() // 🎯 Thêm luôn ông này cho chắc chắn
+
+                        .anyRequest().authenticated()
                 )
 
                 // Gắn ông bảo vệ vào soát vé
