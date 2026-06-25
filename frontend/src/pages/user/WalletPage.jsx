@@ -173,11 +173,14 @@ const WalletPage = () => {
 
     const defaultActiveKey = (user?.role === 'SPECTATOR' || user?.role === 'OWNER') ? 'deposit' : 'history';
 
-    // Định nghĩa cấu hình thông tin ngân hàng thụ hưởng giả lập của dự án
-    const BANK_ID = "MB";          // Bạn có thể đổi thành Vietcombank, Techcombank...
-    const ACCOUNT_NO = "999988889999"; // Số tài khoản admin giả định nhận tiền
-    const qrImageUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-qr_only.png?amount=${depositAmount}&addInfo=${generatedTxCode}`;
+// 🎯 1. ĐIỀN THÔNG TIN TÀI KHOẢN ACB THẬT CỦA BẠN:
+    const BANK_ID = "ACB";                 // Mã định danh ngân hàng Á Châu
+    const ACCOUNT_NO = "31093847";         // Số tài khoản của bạn
+    const ACCOUNT_NAME = "TRUONG LE TRI NGUYEN"; // Tên chủ tài khoản viết hoa không dấu
 
+// 🎯 2. CẬP NHẬT ĐƯỜNG DẪN URL TẠO MÃ QR ĐỘNG:
+// Link này sẽ tự động map đúng số tiền, nội dung chuyển khoản theo định dạng chuẩn VietQR
+    const qrImageUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-qr_only.png?amount=${depositAmount}&addInfo=${generatedTxCode}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
     return (
         <div className="max-w-5xl mx-auto p-6">
             <Title level={3} className="mb-6 border-b pb-2">
