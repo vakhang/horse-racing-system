@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Input, Tabs, Alert } from 'antd';
+import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Input, Tabs, Alert, Popconfirm } from 'antd';
 import { FileProtectOutlined, SafetyCertificateOutlined, WarningOutlined, PlayCircleOutlined, PauseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
@@ -23,7 +23,6 @@ const RefereeDashboardPage = () => {
 
     const [reportsHistory, setReportsHistory] = useState([]);
 
-    // States cho Đồng hồ bấm giờ
     const [time, setTime] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const timerRef = useRef(null);
@@ -37,7 +36,6 @@ const RefereeDashboardPage = () => {
         setLoading(true);
         try {
             const response = await api.get('/races');
-            // Sắp xếp các chặng chưa đua/đang đua lên đầu
             const sorted = response.data.sort((a, b) => (a.status === 'FINISHED' ? 1 : -1));
             setRaces(sorted);
         } catch (error) { message.error('Lỗi tải danh sách chặng đua!'); }
@@ -51,7 +49,21 @@ const RefereeDashboardPage = () => {
         } catch (error) { message.error('Lỗi tải danh sách thi đấu!'); }
     };
 
-    // --- MỞ MODAL CHỐT KẾT QUẢ ---
+    // --- TRỌNG TÀI ẤN NÚT BẮT ĐẦU ĐUA ---
+    const handleStartRace = async (race) => {
+        try {
+            await api.put(`/races/${race.id}`, {
+                tournamentId: race.tournamentId,
+                name: race.name,
+                status: 'RUNNING'
+            });
+            message.success('Đã phát lệnh bắt đầu! Tỷ lệ cược đã được chốt sổ tự động.');
+            fetchRaces();
+        } catch (error) {
+            message.error('Có lỗi xảy ra khi bắt đầu chặng đua!');
+        }
+    };
+
     const openResultModal = async (race) => {
         setSelectedRace(race);
         await fetchRegistrations(race.id);
@@ -62,7 +74,6 @@ const RefereeDashboardPage = () => {
         setIsResultModalVisible(true);
     };
 
-    // --- MỞ MODAL LẬP BIÊN BẢN ---
     const openReportModal = async (race) => {
         setSelectedRace(race);
         await fetchRegistrations(race.id);
@@ -70,7 +81,6 @@ const RefereeDashboardPage = () => {
         setIsReportModalVisible(true);
     };
 
-    // --- XỬ LÝ NÚT ĐỒNG HỒ ---
     const startTimer = () => {
         if (!isRunning) {
             setIsRunning(true);
@@ -93,7 +103,6 @@ const RefereeDashboardPage = () => {
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
     };
 
-    // --- GỬI API CHỐT SỔ & TRẢ THƯỞNG ---
     const handleSubmitResult = async (values) => {
         try {
             await api.post('/referees/results', {
@@ -106,7 +115,6 @@ const RefereeDashboardPage = () => {
         } catch (error) { message.error(error.response?.data?.message || 'Có lỗi khi chốt kết quả!'); }
     };
 
-    // --- GỬI API LẬP BIÊN BẢN ---
     const handleSubmitReport = async (values) => {
         try {
             const fullDetails = `[${values.penaltyType}] ${values.reason}`;
@@ -136,7 +144,6 @@ const RefereeDashboardPage = () => {
 
     const statusMap = { PENDING: 'orange', RUNNING: 'red', FINISHED: 'green', CANCELED: 'default' };
 
-    // TÍNH NĂNG MỞ RỘNG (XỔ DANH SÁCH THI ĐẤU)
     const expandedRowRender = (race) => {
         return (
             <Card size="small" className="bg-blue-50 border-dashed border-blue-200 ml-10">
@@ -156,7 +163,7 @@ const RefereeDashboardPage = () => {
     const columns = [
         { title: 'Tên Giải', dataIndex: 'tournamentName', key: 'tournamentName' },
         { title: 'Chặng Đua', dataIndex: 'name', key: 'name', render: t => <Text strong className="text-blue-700">{t}</Text> },
-        { title: 'Giờ Xuất Phát', dataIndex: 'raceTime', render: v => dayjs(v).format('HH:mm DD/MM/YYYY') },
+        { title: 'Giờ Lên Lịch', dataIndex: 'raceTime', render: v => dayjs(v).format('HH:mm DD/MM/YYYY') },
         { title: 'Trạng Thái', dataIndex: 'status', render: s => <Tag color={statusMap[s]} className="font-bold">{s === 'RUNNING' ? 'LIVE (Đang đua)' : s}</Tag> },
         {
             title: 'Nghiệp Vụ',
@@ -166,10 +173,21 @@ const RefereeDashboardPage = () => {
                 if (record.status === 'FINISHED') return <Text type="success" className="font-bold"><SafetyCertificateOutlined /> Đã Ký Duyệt & Phát Thưởng</Text>;
                 if (record.status === 'CANCELED') return <Text type="secondary">Chặng Bị Hủy</Text>;
 
-                // CHỈ CHO PHÉP BẤM KHI TRẬN ĐẤU ĐANG DIỄN RA (RUNNING)
                 const isRunning = record.status === 'RUNNING';
+                const isPending = record.status === 'PENDING';
+
                 return (
                     <Space>
+                        {isPending && (
+                            <Popconfirm
+                                title="Phát lệnh bắt đầu cuộc đua?"
+                                description="Tỷ lệ cược của khán giả sẽ bị chốt lại ngay lập tức."
+                                onConfirm={() => handleStartRace(record)}
+                                okText="Bắt đầu" cancelText="Hủy"
+                            >
+                                <Button type="primary" className="bg-green-600 font-bold" icon={<PlayCircleOutlined />}>Bắt Đầu Đua</Button>
+                            </Popconfirm>
+                        )}
                         <Button danger icon={<WarningOutlined />} onClick={() => openReportModal(record)} disabled={!isRunning}>
                             Phạt Vi Phạm
                         </Button>
@@ -213,10 +231,8 @@ const RefereeDashboardPage = () => {
                 ]} />
             </Card>
 
-            {/* MODAL GIAO DIỆN LIVE-DASHBOARD (BẤM GIỜ & KÝ KẾT QUẢ) */}
             <Modal title={<span className="text-xl">Bảng Điều Khiển Live: <span className="text-blue-600 uppercase">{selectedRace?.name}</span></span>} open={isResultModalVisible} onCancel={() => setIsResultModalVisible(false)} footer={null} width={800} centered>
 
-                {/* Khu vực bấm giờ điện tử */}
                 <div className="bg-gray-900 rounded-2xl p-6 text-center mb-6 shadow-inner border-4 border-gray-700">
                     <Text className="text-gray-400 block mb-2 uppercase tracking-widest text-xs font-bold">Đồng Hồ Bấm Giờ (Timer)</Text>
                     <div className="text-6xl font-black text-green-400 tracking-wider mb-6" style={{ fontFamily: 'monospace' }}>
@@ -260,12 +276,10 @@ const RefereeDashboardPage = () => {
                 </Form>
             </Modal>
 
-            {/* MODAL LẬP BIÊN BẢN VI PHẠM TƯỜNG MINH */}
             <Modal title={<span className="text-xl text-red-600"><WarningOutlined/> Lập Biên Bản Vi Phạm Trực Tiếp</span>} open={isReportModalVisible} onCancel={() => setIsReportModalVisible(false)} footer={null} centered>
                 <Form form={formReport} layout="vertical" onFinish={handleSubmitReport} className="mt-4">
                     <Form.Item name="registrationId" label={<Text strong>Chọn Đối Tượng Vi Phạm</Text>} rules={[{ required: true, message: 'Vui lòng chọn đối tượng' }]}>
                         <Select placeholder="-- Chọn Ngựa hoặc Nài ngựa vi phạm --" size="large">
-                            {/* Phân nhóm OptGroup rõ ràng */}
                             <OptGroup label="🐴 Lỗi do Chiến Mã (Ép ép, cắn, bỏ đường đua)">
                                 {registrations.map(r => <Option key={'h_'+r.id} value={r.id}>Ngựa: {r.horseName}</Option>)}
                             </OptGroup>

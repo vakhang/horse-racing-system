@@ -8,6 +8,7 @@ import com.swp.horseracing.repository.BetRepository;
 import com.swp.horseracing.repository.RaceRepository;
 import com.swp.horseracing.repository.RegistrationRepository;
 import com.swp.horseracing.repository.TournamentRepository;
+import com.swp.horseracing.repository.UserRepository;
 import com.swp.horseracing.service.RaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,24 +22,32 @@ import java.util.stream.Collectors;
 public class RaceServiceImpl implements RaceService {
 
     private final RaceRepository raceRepository;
-    private final TournamentRepository tournamentRepository; // Tiêm vào để check khóa ngoại
-
+    private final TournamentRepository tournamentRepository;
     private final RegistrationRepository registrationRepository;
     private final BetRepository betRepository;
+    private final UserRepository userRepository; // Tiêm vào để tìm Trọng tài
 
     @Override
     @Transactional
     public RaceResponseDTO createRace(RaceRequestDTO request) {
-        // 1. Kiểm tra xem Giải đấu có tồn tại không
         Tournament tournament = tournamentRepository.findById(request.getTournamentId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Giải đấu với ID: " + request.getTournamentId()));
 
-        // 2. Tạo Chặng đua và gán Giải đấu vào
+        User referee = null;
+        if (request.getRefereeId() != null) {
+            referee = userRepository.findById(request.getRefereeId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Trọng tài!"));
+        }
+
         Race race = Race.builder()
                 .tournament(tournament)
                 .name(request.getName())
                 .raceTime(request.getRaceTime())
                 .status(request.getStatus() != null ? request.getStatus() : RaceStatus.PENDING)
+                .referee(referee)
+                .prize1(request.getPrize1())
+                .prize2(request.getPrize2())
+                .prize3(request.getPrize3())
                 .build();
 
         return mapToResponseDTO(raceRepository.save(race));
@@ -80,16 +89,21 @@ public class RaceServiceImpl implements RaceService {
         if (request.getName() != null) race.setName(request.getName());
         if (request.getRaceTime() != null) race.setRaceTime(request.getRaceTime());
 
-        // --- LOGIC MỚI: CHỐT TỶ LỆ CƯỢC KHI BẮT ĐẦU ĐUA ---
+        if (request.getRefereeId() != null) {
+            User referee = userRepository.findById(request.getRefereeId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Trọng tài!"));
+            race.setReferee(referee);
+        }
+        if (request.getPrize1() != null) race.setPrize1(request.getPrize1());
+        if (request.getPrize2() != null) race.setPrize2(request.getPrize2());
+        if (request.getPrize3() != null) race.setPrize3(request.getPrize3());
+
         if (request.getStatus() != null) {
-            // Nếu Admin đổi trạng thái từ PENDING -> RUNNING
+            // Chốt tỷ lệ cược khi Trọng tài ấn Bắt đầu đua (PENDING -> RUNNING)
             if (race.getStatus() == RaceStatus.PENDING && request.getStatus() == RaceStatus.RUNNING) {
-                // 1. Tính toán tỷ lệ cược chốt sổ
                 List<LiveOddsResponseDTO> finalOdds = this.getLiveOdds(id);
-                // 2. Lấy tất cả vé cược của chặng này
                 List<Bet> bets = betRepository.findByRaceId(id);
 
-                // 3. Cập nhật odds cho từng vé cược
                 for (Bet bet : bets) {
                     java.math.BigDecimal odds = finalOdds.stream()
                             .filter(o -> o.getRegistrationId().equals(bet.getRegistration().getId()))
@@ -123,43 +137,37 @@ public class RaceServiceImpl implements RaceService {
                 .name(race.getName())
                 .raceTime(race.getRaceTime())
                 .status(race.getStatus())
+                .refereeId(race.getReferee() != null ? race.getReferee().getId() : null)
+                .refereeUsername(race.getReferee() != null ? race.getReferee().getUsername() : null)
+                .prize1(race.getPrize1())
+                .prize2(race.getPrize2())
+                .prize3(race.getPrize3())
                 .build();
     }
 
     @Override
     public List<LiveOddsResponseDTO> getLiveOdds(Integer raceId) {
-        // 1. Tìm thông tin chặng đua
         Race race = raceRepository.findById(raceId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
 
-        // 2. Lấy tổng tiền quỹ (total_pool) và phần trăm phí nhà cái (rake_percentage) từ Race
         java.math.BigDecimal totalPool = race.getTotalPool();
         java.math.BigDecimal rakePercentage = race.getRakePercentage();
 
-        // 3. Tính số tiền thực tế còn lại trong quỹ sau khi trừ phế nhà cái (Net Pool)
-        // Công thức: NetPool = TotalPool * (100 - rakePercentage) / 100
         java.math.BigDecimal netPool = totalPool.multiply(
                 java.math.BigDecimal.valueOf(100).subtract(rakePercentage)
         ).divide(java.math.BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
 
-        // 4. Lấy danh sách toàn bộ ngựa (Registration) đã được duyệt tham gia chặng này
         List<Registration> registrations = registrationRepository.findByRaceId(raceId);
-
         List<LiveOddsResponseDTO> oddsList = new java.util.ArrayList<>();
 
-        // 5. Duyệt qua từng con ngựa để tính tỷ lệ cược real-time
         for (Registration reg : registrations) {
-            // Query tổng số tiền cược vào con ngựa (registration) này trong chặng đua đó
             java.math.BigDecimal totalBetOnHorse = betRepository.sumAmountByRaceIdAndRegistrationId(raceId, reg.getId());
-
             java.math.BigDecimal calculatedOdds = java.math.BigDecimal.ZERO;
 
-            // Công thức: Odds = NetPool / TotalBetOnHorse
             if (totalBetOnHorse.compareTo(java.math.BigDecimal.ZERO) > 0) {
                 calculatedOdds = netPool.divide(totalBetOnHorse, 2, java.math.RoundingMode.HALF_UP);
             }
 
-            // Đóng gói dữ liệu đưa vào danh sách trả về
             oddsList.add(LiveOddsResponseDTO.builder()
                     .registrationId(reg.getId())
                     .horseName(reg.getHorse().getName())
@@ -170,5 +178,4 @@ public class RaceServiceImpl implements RaceService {
 
         return oddsList;
     }
-
 }

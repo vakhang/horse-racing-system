@@ -13,12 +13,10 @@ const AdminTournamentPage = () => {
     const [referees, setReferees] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // State cho Giải đấu
     const [isTourModalVisible, setIsTourModalVisible] = useState(false);
     const [tourForm] = Form.useForm();
     const [editingTourId, setEditingTourId] = useState(null);
 
-    // State cho Chặng đua
     const [isRaceModalVisible, setIsRaceModalVisible] = useState(false);
     const [raceForm] = Form.useForm();
     const [selectedTourId, setSelectedTourId] = useState(null);
@@ -36,7 +34,6 @@ const AdminTournamentPage = () => {
         }
     };
 
-    // Kéo danh sách Trọng tài (REFEREE)
     const fetchReferees = async () => {
         try {
             const response = await api.get('/users');
@@ -78,28 +75,23 @@ const AdminTournamentPage = () => {
 
     const handleSaveRace = async (values) => {
         try {
+            // Đã tích hợp gửi thẳng dữ liệu thật lên Backend
             const payload = {
                 tournamentId: selectedTourId,
                 name: values.name,
                 raceTime: values.raceTime.format('YYYY-MM-DDTHH:mm:ss'),
-                status: values.status || 'PENDING'
-            };
-
-            let raceId = editingRaceId;
-            if (editingRaceId) {
-                await api.put(`/races/${editingRaceId}`, payload);
-            } else {
-                const res = await api.post('/races', payload);
-                raceId = res.data.id;
-            }
-
-            const raceConfig = {
+                status: values.status || 'PENDING',
                 refereeId: values.refereeId,
                 prize1: values.prize1 || 0,
                 prize2: values.prize2 || 0,
                 prize3: values.prize3 || 0
             };
-            localStorage.setItem(`race_config_${raceId}`, JSON.stringify(raceConfig));
+
+            if (editingRaceId) {
+                await api.put(`/races/${editingRaceId}`, payload);
+            } else {
+                await api.post('/races', payload);
+            }
 
             message.success('Thiết lập chặng đua thành công!');
             setIsRaceModalVisible(false);
@@ -122,16 +114,14 @@ const AdminTournamentPage = () => {
         setEditingRaceId(record.id);
         setSelectedTourId(record.tournamentId);
 
-        const config = JSON.parse(localStorage.getItem(`race_config_${record.id}`) || '{}');
-
         raceForm.setFieldsValue({
             name: record.name,
             raceTime: record.raceTime ? dayjs(record.raceTime) : null,
             status: record.status,
-            refereeId: config.refereeId || null,
-            prize1: config.prize1 || 0,
-            prize2: config.prize2 || 0,
-            prize3: config.prize3 || 0,
+            refereeId: record.refereeId || null,
+            prize1: record.prize1 || 0,
+            prize2: record.prize2 || 0,
+            prize3: record.prize3 || 0,
         });
         setIsRaceModalVisible(true);
     };
@@ -144,9 +134,7 @@ const AdminTournamentPage = () => {
                 title: 'Trọng Tài Phụ Trách',
                 key: 'referee',
                 render: (_, r) => {
-                    const config = JSON.parse(localStorage.getItem(`race_config_${r.id}`) || '{}');
-                    const ref = referees.find(ref => ref.id === config.refereeId);
-                    return ref ? <Tag color="blue" className="font-bold"><UserOutlined/> {ref.username}</Tag> : <Text type="secondary" italic>Chưa phân công</Text>;
+                    return r.refereeUsername ? <Tag color="blue" className="font-bold"><UserOutlined/> {r.refereeUsername}</Tag> : <Text type="secondary" italic>Chưa phân công</Text>;
                 }
             },
             {
@@ -231,7 +219,7 @@ const AdminTournamentPage = () => {
                     <Divider orientation="left" className="border-blue-500"><Text className="text-blue-600 font-bold">1. Thông Tin Cơ Bản</Text></Divider>
                     <Row gutter={16}>
                         <Col span={12}><Form.Item name="name" label={<Text strong>Tên Chặng Đua</Text>} rules={[{ required: true }]}><Input size="large" placeholder="VD: Chặng 1 - Khởi động"/></Form.Item></Col>
-                        <Col span={12}><Form.Item name="raceTime" label={<Text strong>Giờ Xuất Phát (Live)</Text>} rules={[{ required: true }]}><DatePicker showTime size="large" className="w-full" /></Form.Item></Col>
+                        <Col span={12}><Form.Item name="raceTime" label={<Text strong>Giờ Xuất Phát</Text>} rules={[{ required: true }]}><DatePicker showTime size="large" className="w-full" /></Form.Item></Col>
                     </Row>
 
                     <Divider orientation="left" className="border-blue-500"><Text className="text-blue-600 font-bold">2. Vận Hành & Nhân Sự</Text></Divider>

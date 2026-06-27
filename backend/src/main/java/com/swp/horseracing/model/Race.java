@@ -17,7 +17,6 @@ public class Race {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    // Thiết lập mối quan hệ N-1 với bảng Tournaments
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tournament_id", referencedColumnName = "id")
     private Tournament tournament;
@@ -26,15 +25,25 @@ public class Race {
 
     @Column(name = "race_time")
     private LocalDateTime raceTime;
+
     @Column(name = "total_pool")
     @Builder.Default
-    private BigDecimal totalPool = BigDecimal.ZERO; // Tổng tiền quỹ
+    private BigDecimal totalPool = BigDecimal.ZERO;
 
     @Column(name = "rake_percentage")
     @Builder.Default
-    private BigDecimal rakePercentage = new BigDecimal("20.00"); // 20% cắt phế nhà cái
+    private BigDecimal rakePercentage = new BigDecimal("20.00");
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RaceStatus status;
-}
 
+    // --- CÁC THUỘC TÍNH MỚI BỔ SUNG ---
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "referee_id", referencedColumnName = "id")
+    private User referee;
+
+    private BigDecimal prize1;
+    private BigDecimal prize2;
+    private BigDecimal prize3;
+}
