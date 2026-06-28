@@ -36,7 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/wallets/deposit").permitAll()
                         .requestMatchers("/api/wallets/my-wallet").permitAll()
                         .requestMatchers("/api/users/my-transactions").permitAll() // 🎯 Thêm luôn ông này cho chắc chắn
-
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
 

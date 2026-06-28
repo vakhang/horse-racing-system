@@ -1,4 +1,30 @@
 ﻿=========================================
+TÊN FILE: CloudinaryConfig.java
+=========================================
+package com.swp.horseracing.config;
+
+import com.cloudinary.Cloudinary;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Configuration
+public class CloudinaryConfig {
+
+    @Bean
+    public Cloudinary cloudinary() {
+        Map<String, String> config = new HashMap<>();
+        config.put("cloud_name", "ddfzdsshk");
+        config.put("api_key", "242973157458496");
+        config.put("api_secret", "GTeOSTSI7Jo-XdrlzMkfaGmnFaU");
+        return new Cloudinary(config);
+    }
+}
+
+
+=========================================
 TÊN FILE: CorsConfig.java
 =========================================
 package com.swp.horseracing.config;
@@ -56,6 +82,26 @@ public class AdminController {
     @GetMapping("/finance/dashboard")
     public ResponseEntity<?> getFinanceDashboard() {
         return ResponseEntity.ok(adminTransactionService.getFinanceDashboard());
+    }
+
+    // BỔ SUNG: Admin Duyệt Nạp Tiền
+    @PutMapping("/deposits/{id}/approve")
+    public ResponseEntity<?> approveDeposit(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(adminTransactionService.approveDeposit(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // BỔ SUNG: Admin Từ Chối Nạp Tiền (Hóa đơn giả mạo, tiền chưa vào,...)
+    @PutMapping("/deposits/{id}/reject")
+    public ResponseEntity<?> rejectDeposit(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(adminTransactionService.rejectDeposit(id));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 }
 
@@ -266,6 +312,7 @@ import com.swp.horseracing.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -276,7 +323,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
-    // API khởi tạo mã QR nhận tiền thanh toán
+    // API khởi tạo mã QR nhận tiền thanh toán và chốt mã GD
     @PostMapping("/create-qr")
     public ResponseEntity<?> createPaymentQR(@RequestBody DepositRequestDTO request) {
         try {
@@ -287,15 +334,15 @@ public class PaymentController {
         }
     }
 
-    // API dành cho Khách hàng bấm "Xác nhận đã chuyển" để đẩy minh chứng hóa đơn lên hệ thống
+    // API dành cho Khách hàng tải ảnh minh chứng lên (Sử dụng form-data)
     @PostMapping("/confirm")
-    public ResponseEntity<?> confirmPayment(@RequestBody Map<String, String> requestBody) {
+    public ResponseEntity<?> confirmPayment(
+            @RequestParam("transactionCode") String txCode,
+            @RequestParam("file") MultipartFile file) {
         try {
-            String txCode = requestBody.get("transactionCode");
-            String proofUrl = requestBody.get("proofUrl");
-            String result = paymentService.confirmPayment(txCode, proofUrl);
+            String result = paymentService.confirmPayment(txCode, file);
             return ResponseEntity.ok(Map.of("message", result));
-        } catch (RuntimeException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -2162,7 +2209,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/wallets/deposit").permitAll()
                         .requestMatchers("/api/wallets/my-wallet").permitAll()
                         .requestMatchers("/api/users/my-transactions").permitAll() // 🎯 Thêm luôn ông này cho chắc chắn
-
+                        .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -2183,6 +2230,7 @@ import com.swp.horseracing.dto.CompleteWithdrawalRequestDTO;
 import com.swp.horseracing.model.*;
 import com.swp.horseracing.repository.RaceRepository;
 import com.swp.horseracing.repository.TransactionHistoryRepository;
+import com.swp.horseracing.repository.WalletRepository;
 import com.swp.horseracing.service.AdminTransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -2198,6 +2246,7 @@ public class AdminTransactionServiceImpl implements AdminTransactionService {
 
     private final TransactionHistoryRepository transactionRepository;
     private final RaceRepository raceRepository;
+    private final WalletRepository walletRepository; // Cần WalletRepo để cộng tiền
 
     @Override
     @Transactional
@@ -2227,7 +2276,6 @@ public class AdminTransactionServiceImpl implements AdminTransactionService {
                         .multiply(r.getRakePercentage()).divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // Lấy danh sách giao dịch đổ ra Sổ cái (Xếp mới nhất lên đầu)
         List<TransactionHistory> allTxs = transactionRepository.findAll();
         allTxs.sort((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()));
 
@@ -2236,6 +2284,44 @@ public class AdminTransactionServiceImpl implements AdminTransactionService {
                 "ngr", ngr,
                 "transactions", allTxs
         );
+    }
+
+    @Override
+    @Transactional
+    public String approveDeposit(Integer transactionId) {
+        TransactionHistory history = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch này!"));
+
+        if (history.getType() != TransactionType.DEPOSIT) throw new RuntimeException("Đây không phải là giao dịch nạp tiền!");
+        if (history.getStatus() != TransactionStatus.PENDING) throw new RuntimeException("Giao dịch này đã được xử lý!");
+        if (history.getProofUrl() == null) throw new RuntimeException("Giao dịch này chưa có ảnh minh chứng!");
+
+        // 1. Chuyển trạng thái thành công
+        history.setStatus(TransactionStatus.COMPLETED);
+        transactionRepository.save(history);
+
+        // 2. Cộng tiền vào ví User
+        Wallet wallet = history.getWallet();
+        wallet.setBalance(wallet.getBalance().add(history.getAmount()));
+        walletRepository.save(wallet);
+
+        return "Duyệt nạp tiền thành công! Đã cộng tiền vào ví người dùng.";
+    }
+
+    @Override
+    @Transactional
+    public String rejectDeposit(Integer transactionId) {
+        TransactionHistory history = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy giao dịch này!"));
+
+        if (history.getType() != TransactionType.DEPOSIT) throw new RuntimeException("Đây không phải là giao dịch nạp tiền!");
+        if (history.getStatus() != TransactionStatus.PENDING) throw new RuntimeException("Giao dịch này đã được xử lý!");
+
+        // Đánh dấu từ chối, không cộng tiền
+        history.setStatus(TransactionStatus.REJECTED);
+        transactionRepository.save(history);
+
+        return "Đã từ chối lệnh nạp tiền này!";
     }
 }
 
@@ -2322,6 +2408,36 @@ public class BetServiceImpl implements BetService {
         raceRepository.save(race);
 
         return savedBet;
+    }
+}
+
+
+=========================================
+TÊN FILE: CloudinaryServiceImpl.java
+=========================================
+package com.swp.horseracing.service.impl;
+
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+import com.swp.horseracing.service.CloudinaryService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class CloudinaryServiceImpl implements CloudinaryService {
+
+    private final Cloudinary cloudinary;
+
+    @Override
+    public String uploadFile(MultipartFile file) throws IOException {
+        // Tự động đẩy file lên Cloudinary và lấy link ảnh public về
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.emptyMap());
+        return uploadResult.get("url").toString();
     }
 }
 
@@ -2582,11 +2698,14 @@ import com.swp.horseracing.dto.PaymentResponseDTO;
 import com.swp.horseracing.model.*;
 import com.swp.horseracing.repository.TransactionHistoryRepository;
 import com.swp.horseracing.repository.WalletRepository;
+import com.swp.horseracing.service.CloudinaryService;
 import com.swp.horseracing.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -2597,17 +2716,17 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionRepository;
+    private final CloudinaryService cloudinaryService;
 
-    // Cấu hình tài khoản ngân hàng của Công ty/Hệ thống nhận tiền
-    private final String BANK_ID = "MB"; // Ngân hàng Quân Đội MBBank
-    private final String ACCOUNT_NO = "999999999999";
-    private final String ACCOUNT_NAME = "CONG TY CONG NGHE HORSE RACING";
-    private final String TEMPLATE = "compact"; // Mẫu QR hiển thị cả Số tiền và Nội dung trên ảnh cho khách kiểm tra
+    // TÀI KHOẢN NGÂN HÀNG NHẬN TIỀN CỦA HỆ THỐNG
+    private final String BANK_ID = "ACB";
+    private final String ACCOUNT_NO = "31093847";
+    private final String ACCOUNT_NAME = "TRUONG LE TRI NGUYEN";
+    private final String TEMPLATE = "compact";
 
     @Override
     @Transactional
     public PaymentResponseDTO createDepositQR(DepositRequestDTO request) {
-        // Tìm ví của User dựa vào userId giống như thiết kế hiện tại
         Wallet wallet = walletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của người dùng này!"));
 
@@ -2615,10 +2734,10 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Số tiền nạp phải lớn hơn 0 VNĐ!");
         }
 
-        // 1. Tạo mã giao dịch duy nhất có tiền tố DEP (Deposit)
-        String txCode = "DEP" + System.currentTimeMillis() / 1000;
+        // 1. Tạo mã giao dịch duy nhất có tiền tố NAP
+        String txCode = "NAP" + System.currentTimeMillis() / 1000;
 
-        // 2. Lưu lịch sử giao dịch vào Sổ cái với trạng thái PENDING (Chờ thanh toán)
+        // 2. Lưu lịch sử giao dịch vào Sổ cái với trạng thái PENDING
         TransactionHistory tx = new TransactionHistory();
         tx.setTransactionCode(txCode);
         tx.setWallet(wallet);
@@ -2626,14 +2745,11 @@ public class PaymentServiceImpl implements PaymentService {
         tx.setType(TransactionType.DEPOSIT);
         tx.setDirection(TransactionDirection.IN);
         tx.setStatus(TransactionStatus.PENDING);
-//        tx.setNote("Nạp tiền qua mã QR: " + txCode);
         transactionRepository.save(tx);
 
-        // 3. Encode các tham số để tạo đường link VietQR chuẩn không bị lỗi font tiếng Việt
+        // 3. Link sinh mã QR động tự điền số tiền và mã giao dịch
         String encodedName = URLEncoder.encode(ACCOUNT_NAME, StandardCharsets.UTF_8);
         String encodedNote = URLEncoder.encode(txCode, StandardCharsets.UTF_8);
-
-        // Link sinh mã QR động tự điền số tiền và mã giao dịch vào app ngân hàng khi quét
         String qrUrl = String.format("https://img.vietqr.io/image/%s-%s-%s.png?amount=%s&addInfo=%s&accountName=%s",
                 BANK_ID, ACCOUNT_NO, TEMPLATE, request.getAmount().toPlainString(), encodedNote, encodedName);
 
@@ -2650,7 +2766,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public String confirmPayment(String transactionCode, String proofUrl) {
+    public String confirmPayment(String transactionCode, MultipartFile file) throws IOException {
         TransactionHistory tx = transactionRepository.findByTransactionCode(transactionCode)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy mã giao dịch chuyển khoản!"));
 
@@ -2658,17 +2774,14 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Giao dịch này đã được xử lý từ trước!");
         }
 
-        // 1. Lưu ảnh hóa đơn (minh chứng giao dịch) do người dùng tải lên
+        // Tải ảnh lên Cloudinary
+        String proofUrl = cloudinaryService.uploadFile(file);
+
+        // Cập nhật link ảnh vào DB nhưng VẪN GIỮ TRẠNG THÁI PENDING CHỜ ADMIN DUYỆT
         tx.setProofUrl(proofUrl);
-        tx.setStatus(TransactionStatus.COMPLETED); // Chuyển trạng thái thành công
         transactionRepository.save(tx);
 
-        // 2. Cộng tiền trực tiếp vào Ví của người chơi
-        Wallet wallet = tx.getWallet();
-        wallet.setBalance(wallet.getBalance().add(tx.getAmount()));
-        walletRepository.save(wallet);
-
-        return "Nạp tiền thành công! Số dư tài khoản đã được cập nhật.";
+        return "Tải minh chứng thành công! Vui lòng chờ Admin kiểm tra và duyệt lệnh nạp tiền.";
     }
 }
 
@@ -3598,6 +3711,10 @@ import java.util.Map;
 public interface AdminTransactionService {
     String completeWithdrawal(Integer transactionId, CompleteWithdrawalRequestDTO request);
     Map<String, Object> getFinanceDashboard();
+
+    // Thêm 2 hàm duyệt nạp tiền
+    String approveDeposit(Integer transactionId);
+    String rejectDeposit(Integer transactionId);
 }
 
 
@@ -3611,6 +3728,19 @@ import com.swp.horseracing.dto.BetRequestDTO;
 
 public interface BetService {
     Bet createBet(BetRequestDTO request);
+}
+
+
+=========================================
+TÊN FILE: CloudinaryService.java
+=========================================
+package com.swp.horseracing.service;
+
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+
+public interface CloudinaryService {
+    String uploadFile(MultipartFile file) throws IOException;
 }
 
 
@@ -3659,10 +3789,11 @@ package com.swp.horseracing.service;
 
 import com.swp.horseracing.dto.DepositRequestDTO;
 import com.swp.horseracing.dto.PaymentResponseDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface PaymentService {
     PaymentResponseDTO createDepositQR(DepositRequestDTO request);
-    String confirmPayment(String transactionCode, String proofUrl);
+    String confirmPayment(String transactionCode, MultipartFile file) throws java.io.IOException;
 }
 
 
@@ -4040,6 +4171,13 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers['Authorization'] = `Bearer ${token}`;
     }
+
+    // 🎯 ĐIỂM CHỐT HẠ: NẾU LÀ FORMDATA (CHỨA FILE), TỰ ĐỘNG XOÁ CONTENT-TYPE
+    // ĐỂ TRÌNH DUYỆT TỰ ĐỘNG GẮN CONTENT-TYPE KÈM BOUNDARY CHUẨN
+    if (config.data instanceof FormData) {
+        delete config.headers['Content-Type'];
+    }
+
     return config;
 });
 
@@ -4092,8 +4230,8 @@ export const useAuth = () => useContext(AuthContext);
 TÊN FILE: AdminFinancePage.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, message, Card, Typography, Tabs, Input, Row, Col, Modal, Form, Alert } from 'antd';
-import { SearchOutlined, CheckCircleOutlined, RiseOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, message, Card, Typography, Tabs, Input, Row, Col, Modal, Form, Alert, Space, Image } from 'antd';
+import { SearchOutlined, CheckCircleOutlined, RiseOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 
 const { Title, Text } = Typography;
@@ -4103,11 +4241,17 @@ const AdminFinancePage = () => {
     const [ggr, setGgr] = useState(0);
     const [ngr, setNgr] = useState(0);
     const [loading, setLoading] = useState(false);
-    const [searchCode, setSearchCode] = useState('');
 
+    // Rút tiền
+    const [searchCodeWithdraw, setSearchCodeWithdraw] = useState('');
     const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
     const [selectedTrans, setSelectedTrans] = useState(null);
     const [form] = Form.useForm();
+
+    // Nạp tiền
+    const [searchCodeDeposit, setSearchCodeDeposit] = useState('');
+    const [previewImage, setPreviewImage] = useState('');
+    const [previewVisible, setPreviewVisible] = useState(false);
 
     const fetchTransactions = async () => {
         setLoading(true);
@@ -4125,29 +4269,29 @@ const AdminFinancePage = () => {
     };
 
     useEffect(() => {
-        const loadData = async () => { await fetchTransactions(); };
-        loadData();
+        fetchTransactions();
     }, []);
 
+    // ----------------------------------------------------
+    // NGHIỆP VỤ RÚT TIỀN
+    // ----------------------------------------------------
     const handleConfirmWithdraw = async (values) => {
         try {
             await api.put(`/admin/withdrawals/${selectedTrans.id}/complete`, { proofUrl: values.proofUrl });
-            message.success('Đã xác nhận thanh toán thành công!');
+            message.success('Đã xác nhận chi trả tiền mặt cho khách thành công!');
             setIsConfirmModalVisible(false);
-            await fetchTransactions();
+            fetchTransactions();
         } catch (error) {
             message.error('Lỗi xử lý!');
         }
     };
 
-    const pendingWithdrawals = (transactions || []).filter(t =>
-        t?.type === 'WITHDRAW' &&
-        t?.status === 'PENDING' &&
-        (t?.transactionCode || '').includes(searchCode)
+    const pendingWithdrawals = transactions.filter(t =>
+        t?.type === 'WITHDRAW' && t?.status === 'PENDING' && (t?.transactionCode || '').includes(searchCodeWithdraw)
     );
 
     const withdrawColumns = [
-        { title: 'Mã Giao Dịch', dataIndex: 'transactionCode', render: t => <Text className="text-xl font-bold tracking-widest text-blue-600">{t}</Text> },
+        { title: 'Mã Rút Tiền', dataIndex: 'transactionCode', render: t => <Text className="text-xl font-bold tracking-widest text-blue-600">{t}</Text> },
         { title: 'Số Tiền Rút', dataIndex: 'amount', render: v => <Text className="text-red-600 font-bold text-lg">{v ? v.toLocaleString() : 0} VNĐ</Text> },
         { title: 'Thời Gian Bấm Rút', dataIndex: 'createdAt', render: d => d ? new Date(d).toLocaleString() : '' },
         { title: 'Thao Tác BTC', render: (_, r) => (
@@ -4157,12 +4301,57 @@ const AdminFinancePage = () => {
             )}
     ];
 
+    // ----------------------------------------------------
+    // NGHIỆP VỤ DUYỆT NẠP TIỀN
+    // ----------------------------------------------------
+    const handleApproveDeposit = async (id) => {
+        try {
+            await api.put(`/admin/deposits/${id}/approve`);
+            message.success("Đã duyệt nạp tiền! Ví của người dùng đã được cộng số dư.");
+            fetchTransactions();
+        } catch (error) {
+            message.error(error.response?.data || "Lỗi xử lý nạp tiền!");
+        }
+    };
+
+    const handleRejectDeposit = async (id) => {
+        try {
+            await api.put(`/admin/deposits/${id}/reject`);
+            message.warning("Đã TỪ CHỐI hóa đơn nạp tiền này!");
+            fetchTransactions();
+        } catch (error) {
+            message.error("Lỗi xử lý từ chối!");
+        }
+    };
+
+    const pendingDeposits = transactions.filter(t =>
+        t?.type === 'DEPOSIT' && t?.status === 'PENDING' && t?.proofUrl != null && (t?.transactionCode || '').includes(searchCodeDeposit)
+    );
+
+    const depositColumns = [
+        { title: 'Mã GD (Nội dung CK)', dataIndex: 'transactionCode', render: t => <Text className="font-mono font-bold">{t}</Text> },
+        { title: 'Số Tiền Khách Nạp', dataIndex: 'amount', render: v => <Text className="text-green-600 font-bold text-lg">+{v ? v.toLocaleString() : 0} VNĐ</Text> },
+        { title: 'Ảnh Ủy Nhiệm Chi', render: (_, r) => (
+                <Button type="dashed" onClick={() => { setPreviewImage(r.proofUrl); setPreviewVisible(true); }}> Xem Biên Lai </Button>
+            )},
+        { title: 'Thời Gian Gửi', dataIndex: 'createdAt', render: d => d ? new Date(d).toLocaleString() : '' },
+        { title: 'Xét Duyệt', render: (_, r) => (
+                <Space>
+                    <Button type="primary" className="bg-green-600 font-bold border-none" icon={<CheckCircleOutlined />} onClick={() => handleApproveDeposit(r.id)}> Cộng Tiền </Button>
+                    <Button danger icon={<CloseCircleOutlined />} onClick={() => handleRejectDeposit(r.id)}> Từ Chối </Button>
+                </Space>
+            )}
+    ];
+
+    // ----------------------------------------------------
+    // SỔ CÁI
+    // ----------------------------------------------------
     const historyColumns = [
         { title: 'Mã GD', dataIndex: 'transactionCode', render: t => <Text strong>{t}</Text> },
         { title: 'Loại', dataIndex: 'type', render: t => <Tag color="blue">{t}</Tag> },
         { title: 'In/Out', dataIndex: 'direction', render: d => <Tag color={d === 'IN' ? 'green' : 'red'}>{d}</Tag> },
         { title: 'Số tiền', dataIndex: 'amount', render: v => <Text strong>{v ? v.toLocaleString() : 0} đ</Text> },
-        { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'COMPLETED' ? 'green' : 'gold'}>{s}</Tag> },
+        { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'COMPLETED' ? 'green' : (s === 'REJECTED' ? 'red' : 'gold')}>{s}</Tag> },
         { title: 'Ngày giờ', dataIndex: 'createdAt', render: d => d ? new Date(d).toLocaleString() : '' },
     ];
 
@@ -4179,8 +4368,12 @@ const AdminFinancePage = () => {
                         <Title level={2} className="text-yellow-400 m-0">{ngr.toLocaleString()} VNĐ</Title>
                     </Col>
                     <Col span={8}>
-                        <Text className="text-gray-400">Tổng GD Chờ Rút Tiền</Text>
-                        <Title level={2} className="text-red-400 m-0">{pendingWithdrawals.length} Giao dịch</Title>
+                        <Text className="text-gray-400">Số Lượng Yêu Cầu Chờ Xử Lý</Text>
+                        <div className="flex gap-4 items-center">
+                            <Title level={3} className="text-green-400 m-0">{pendingDeposits.length} Nạp</Title>
+                            <span className="text-gray-400 text-2xl">|</span>
+                            <Title level={3} className="text-red-400 m-0">{pendingWithdrawals.length} Rút</Title>
+                        </div>
                     </Col>
                 </Row>
             </Card>
@@ -4188,11 +4381,22 @@ const AdminFinancePage = () => {
             <Card className="shadow-xl rounded-2xl border-none">
                 <Tabs size="large" items={[
                     {
-                        key: 'WITHDRAW',
-                        label: 'Tại Quầy (Xử lý rút tiền)',
+                        key: 'DEPOSIT',
+                        label: `Duyệt Nạp Tiền (${pendingDeposits.length})`,
                         children: (
                             <>
-                                <Input size="large" placeholder="Nhập mã giao dịch khách đọc tại quầy..." prefix={<SearchOutlined />} className="mb-6 w-1/2" onChange={e => setSearchCode(e.target.value)} allowClear/>
+                                <Alert message="Lưu ý Kế Toán" description="Hãy mở App Ngân Hàng của Công ty (ACB) để kiểm tra dòng tiền vào. CHỈ BẤM CỘNG TIỀN NẾU TÀI KHOẢN ĐÃ THỰC SỰ NHẬN ĐƯỢC TIỀN với đúng Mã Nội Dung CK." type="warning" showIcon className="mb-4" />
+                                <Input size="large" placeholder="Tìm kiếm theo mã giao dịch khách điền..." prefix={<SearchOutlined />} className="mb-6 w-1/2" onChange={e => setSearchCodeDeposit(e.target.value)} allowClear/>
+                                <Table columns={depositColumns} dataSource={pendingDeposits} rowKey="id" loading={loading}/>
+                            </>
+                        )
+                    },
+                    {
+                        key: 'WITHDRAW',
+                        label: `Duyệt Rút Tiền Quầy (${pendingWithdrawals.length})`,
+                        children: (
+                            <>
+                                <Input size="large" placeholder="Nhập mã giao dịch khách đọc tại quầy..." prefix={<SearchOutlined />} className="mb-6 w-1/2" onChange={e => setSearchCodeWithdraw(e.target.value)} allowClear/>
                                 <Table columns={withdrawColumns} dataSource={pendingWithdrawals} rowKey="id" loading={loading}/>
                             </>
                         )
@@ -4205,7 +4409,8 @@ const AdminFinancePage = () => {
                 ]} />
             </Card>
 
-            <Modal title="Xác nhận thanh toán tại quầy" open={isConfirmModalVisible} onCancel={() => setIsConfirmModalVisible(false)} footer={null} centered>
+            {/* Modal Xác nhận chi tiền (RÚT TIỀN) */}
+            <Modal title="Xác nhận chi trả tiền mặt" open={isConfirmModalVisible} onCancel={() => setIsConfirmModalVisible(false)} footer={null} centered>
                 <Alert message="Lưu ý" description={`Bạn đang chi trả tiền mặt số tiền ${selectedTrans?.amount?.toLocaleString() || 0} VNĐ cho mã ${selectedTrans?.transactionCode}.`} type="warning" showIcon className="mb-4" />
                 <Form form={form} layout="vertical" onFinish={handleConfirmWithdraw}>
                     <Form.Item name="proofUrl" label="Link ảnh UNC / Hóa đơn ký nhận" rules={[{ required: true }]}>
@@ -4213,6 +4418,11 @@ const AdminFinancePage = () => {
                     </Form.Item>
                     <Button type="primary" htmlType="submit" block size="large" className="bg-green-600">ĐÃ GIAO TIỀN MẶT CHO KHÁCH</Button>
                 </Form>
+            </Modal>
+
+            {/* Modal Xem Ảnh Biên Lai (NẠP TIỀN) */}
+            <Modal open={previewVisible} footer={null} onCancel={() => setPreviewVisible(false)} centered width={600} title="Biên Lai Chuyển Khoản">
+                <Image alt="Biên lai" style={{ width: '100%' }} src={previewImage} />
             </Modal>
         </div>
     );
@@ -5148,7 +5358,7 @@ export default AdminTournamentPage;
 =========================================
 TÊN FILE: AdminUserManagementPage.jsx
 =========================================
-import React, { useState, useEffect } from 'react';
+    import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, Space, message, Card, Typography, Tabs, Row, Col, Modal, Image, Dropdown } from 'antd';
 import { CheckCircleOutlined, CloseCircleOutlined, EyeOutlined, ReloadOutlined, TeamOutlined, LockOutlined, UnlockOutlined, KeyOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
@@ -6994,11 +7204,12 @@ TÊN FILE: WalletPage.jsx
 =========================================
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Table, Tag } from 'antd';
-import { WalletOutlined, BankOutlined, HistoryOutlined } from '@ant-design/icons';
-import api from '../../config/api'; // Giữ nguyên đường dẫn cấu hình axios của nhóm bạn
+import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Table, Tag, Upload, Space, Divider } from 'antd';
+import { WalletOutlined, BankOutlined, HistoryOutlined, CopyOutlined, UploadOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import dayjs from 'dayjs';
+import axios from 'axios';
 
 const { Title, Text } = Typography;
 
@@ -7006,19 +7217,19 @@ const WalletPage = () => {
     const { user } = useAuth();
     const userId = user?.id;
 
-    // --- CÁC TRẠNG THÁI HIỆN TẠI ---
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState([]);
     const [depositAmount, setDepositAmount] = useState(50000);
-    const [withdrawAmount, setWithdrawAmount] = useState(100000);
+
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(true);
 
-    // --- 🌟 THÊM STATE QUẢN LÝ QR CODE ĐỘNG ---
+    // Luồng quét mã nạp tiền
     const [isQrModalVisible, setIsQrModalVisible] = useState(false);
-    const [generatedTxCode, setGeneratedTxCode] = useState('');
+    const [paymentData, setPaymentData] = useState(null); // Lưu data Backend trả về
+    const [fileList, setFileList] = useState([]); // Lưu ảnh Upload
+    const [submittingProof, setSubmittingProof] = useState(false);
 
-    // Hàm lấy thông tin ví và lịch sử dòng tiền từ Backend
     const fetchWalletData = async () => {
         if (!userId) return;
         setDataLoading(true);
@@ -7040,206 +7251,164 @@ const WalletPage = () => {
         fetchWalletData();
     }, [userId]);
 
-    // --- 🌟 SỬA HÀM TẠO MÃ QR NẠP TIỀN (Không cộng tiền luôn) ---
-    const handleDeposit = () => {
+    // BƯỚC 1: Gọi API khởi tạo lệnh nạp & lấy QR Code
+    const handleGenerateQR = async () => {
         if (depositAmount <= 0) return message.warning("Số tiền nạp phải lớn hơn 0!");
         if (depositAmount < 10000) return message.warning("Số tiền nạp tối thiểu là 10,000 VNĐ!");
 
-        // Tạo nội dung chuyển khoản động duy nhất, ví dụ: NAP119842
-        const txCode = `NAP${userId}${Date.now().toString().slice(-5)}`;
-        setGeneratedTxCode(txCode);
-
-        // Bật Modal QR Code lên để người dùng quét
-        setIsQrModalVisible(true);
-    };
-
-    // --- 🌟 BIẾN THẦN THÁNH GIẢ LẬP WEBHOOK NGÂN HÀNG ---
-    const handleConfirmMockPayment = async () => {
-        console.log("Dữ liệu gửi đi:", user?.id, depositAmount);
         setLoading(true);
-
         try {
-            // Hãy đảm bảo các key userId, amount khớp từng chữ hoa/thường với DepositRequestDTO
-            const response = await api.post('/wallets/deposit', {
-                userId: user?.id || user?.userId, // Phòng trường hợp backend lưu là userId thay vì id
+            const response = await api.post('/payments/create-qr', {
+                userId: user?.id,
                 amount: depositAmount
             });
-
-            message.success(`Giả lập thành công: Hệ thống đã cộng tiền!`);
-            setIsQrModalVisible(false); // Đóng Modal QR
-
-            fetchWalletData();
-            window.dispatchEvent(new Event('update_balance'));
-            setDepositAmount(50000);
+            setPaymentData(response.data); // Chứa qrUrl, transactionCode,...
+            setIsQrModalVisible(true);
         } catch (error) {
-            // 🎯 ĐOẠN LOG THẦN THÁNH: In thẳng thông báo từ catch (RuntimeException e) của Backend ra màn hình
-            console.error("Lỗi API chi tiết:", error);
-
-            if (error.response && error.response.data) {
-                // Hiển thị trực tiếp e.getMessage() do Backend trả về dưới dạng string công khai
-                message.error(`Lỗi từ Server: ${error.response.data}`);
-            } else {
-                message.error("Lỗi kết nối hoặc lỗi nạp tiền giả lập!");
-            }
+            message.error(error.response?.data || "Lỗi tạo mã QR!");
         } finally {
             setLoading(false);
         }
     };
 
-    // Cột cấu hình hiển thị lịch sử giao dịch
+    // BƯỚC 3: Upload hình ảnh biên lai
+    const handleConfirmTransfer = async () => {
+        if (fileList.length === 0) {
+            message.warning("Vui lòng tải lên ảnh chụp màn hình chuyển khoản thành công!");
+            return;
+        }
+
+        setSubmittingProof(true);
+        try {
+            const formData = new FormData();
+            formData.append('transactionCode', paymentData.transactionCode);
+            formData.append('file', fileList[0].originFileObj);
+
+            // Lấy token trực tiếp từ LocalStorage (dựa theo cấu trúc của sếp)
+            const token = localStorage.getItem('accessToken') || user?.token;
+
+            // 🎯 ĐI ĐƯỜNG QUYỀN: Dùng trực tiếp axios gốc để bypass toàn bộ config cứng của api.js
+            await axios.post('http://localhost:8080/api/payments/confirm', formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                    // BỎ TRỐNG CONTENT-TYPE ĐỂ AXIOS TỰ SINH BOUNDARY CHO FILE
+                }
+            });
+
+            message.success("Đã gửi minh chứng thành công! Vui lòng đợi Admin xét duyệt để nhận tiền.");
+            setIsQrModalVisible(false);
+            setPaymentData(null);
+            setFileList([]);
+            fetchWalletData();
+        } catch (error) {
+            // 🎯 FIX LỖI SẬP REACT: Chỉ lấy String ra để hiển thị, không ném cả cục Object vào message.error
+            const errorData = error.response?.data;
+            const errorMsg = errorData?.error || errorData?.message || (typeof errorData === 'string' ? errorData : "Có lỗi xảy ra khi tải ảnh lên!");
+            message.error(errorMsg);
+        } finally {
+            setSubmittingProof(false);
+        }
+    };
+
+    const handleCopyText = (text) => {
+        navigator.clipboard.writeText(text);
+        message.success('Đã copy nội dung!');
+    };
+
+    const uploadProps = {
+        onRemove: (file) => {
+            setFileList([]);
+        },
+        beforeUpload: (file) => {
+            setFileList([file]);
+            return false; // Tắt tự động upload của AntD
+        },
+        fileList,
+    };
+
     const transColumns = [
-        {
-            title: 'Mã Giao Dịch',
-            dataIndex: 'transactionCode',
-            key: 'transactionCode',
-            render: (text) => <Text copyable className="font-mono font-bold text-blue-600">{text}</Text>
-        },
-        {
-            title: 'Loại hình',
-            dataIndex: 'type',
-            key: 'type',
-            render: (type) => {
-                let color = 'blue';
-                if (type === 'DEPOSIT') return <Tag color="green">NẠP TIỀN</Tag>;
-                if (type === 'WITHDRAW') return <Tag color="volcano">RÚT TIỀN</Tag>;
-                return <Tag color={color}>{type}</Tag>;
-            }
-        },
-        {
-            title: 'Số Tiền',
-            dataIndex: 'amount',
-            key: 'amount',
-            render: (val, record) => (
-                <span className={record.direction === 'IN' ? 'text-green-600 font-bold' : 'text-red-500 font-bold'}>
-                    {record.direction === 'IN' ? '+' : '-'} {val?.toLocaleString()} đ
-                </span>
-            )
-        },
-        {
-            title: 'Trạng Thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => {
-                if (status === 'COMPLETED') return <Tag color="success" className="font-bold px-2 py-0.5">THÀNH CÔNG</Tag>;
-                if (status === 'PENDING') return <Tag color="warning" className="font-bold px-2 py-0.5">ĐANG CHỜ</Tag>;
-                return <Tag color="error">{status}</Tag>;
-            }
-        },
-        {
-            title: 'Thời Gian',
-            dataIndex: 'createdAt',
-            key: 'createdAt',
-            render: (val) => dayjs(val).format('HH:mm - DD/MM/YYYY')
-        },
+        { title: 'Mã Giao Dịch', dataIndex: 'transactionCode', render: (t) => <Text copyable className="font-mono font-bold text-blue-600">{t}</Text> },
+        { title: 'Loại hình', dataIndex: 'type', render: (type) => type === 'DEPOSIT' ? <Tag color="green">NẠP TIỀN</Tag> : (type === 'WITHDRAW' ? <Tag color="volcano">RÚT TIỀN</Tag> : <Tag color="blue">{type}</Tag>) },
+        { title: 'Số Tiền', dataIndex: 'amount', render: (val, r) => <span className={r.direction === 'IN' ? 'text-green-600 font-bold' : 'text-red-500 font-bold'}>{r.direction === 'IN' ? '+' : '-'} {val?.toLocaleString()} đ</span> },
+        { title: 'Trạng Thái', dataIndex: 'status', render: (s) => s === 'COMPLETED' ? <Tag color="success">THÀNH CÔNG</Tag> : (s === 'PENDING' ? <Tag color="warning">ĐANG CHỜ DUYỆT</Tag> : <Tag color="error">{s}</Tag>) },
+        { title: 'Thời Gian', dataIndex: 'createdAt', render: (val) => dayjs(val).format('HH:mm - DD/MM/YYYY') },
     ];
 
     const tabItems = [];
 
-    // --- 🌟 SỬA ĐIỀU KIỆN: CHO PHÉP CẢ SPECTATOR VÀ OWNER ĐƯỢC PHÉP NẠP TIỀN ---
     if (user?.role === 'SPECTATOR' || user?.role === 'OWNER') {
         tabItems.push({
             key: 'deposit',
-            label: <span className="text-base font-bold"><BankOutlined /> Nạp Tiền </span>,
+            label: <span className="text-base font-bold"><BankOutlined /> Nạp Tiền Qua VietQR </span>,
             children: (
-                <div className="max-w-2xl bg-white p-6 border rounded-xl shadow-sm mx-auto my-4">
-                    <Alert message="Hướng dẫn nạp tiền động" description="Nhập số tiền bạn muốn thử nghiệm nạp hệ thống. Mã QR động và nội dung chuyển khoản tự động sẽ được tạo ra." type="info" showIcon className="mb-4" />
-                    <div className="mb-4">
-                        <Text className="font-medium block mb-2">Nhập số tiền muốn nạp (VNĐ):</Text>
-                        <InputNumber className="w-full text-lg" size="large" min={10000} value={depositAmount} onChange={(val) => setDepositAmount(val || 0)} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
+                <div className="max-w-2xl bg-white p-6 border rounded-xl shadow-sm mx-auto my-4 text-center">
+                    <WalletOutlined className="text-5xl text-blue-600 mb-4" />
+                    <Title level={4}>Nhập Số Tiền Muốn Nạp</Title>
+                    <div className="my-6">
+                        <InputNumber className="w-full text-lg rounded-lg font-bold" size="large" min={10000} step={10000} value={depositAmount} onChange={(val) => setDepositAmount(val || 0)} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
                     </div>
-                    <Button type="primary" size="large" block onClick={handleDeposit} loading={loading} className="bg-blue-600 font-semibold h-12 text-base rounded-lg"> Tạo Mã VietQR Nạp Tiền </Button>
+                    <Button type="primary" size="large" block onClick={handleGenerateQR} loading={loading} className="bg-gradient-to-r from-gray-900 to-blue-900 border-none font-bold h-12 text-lg rounded-xl shadow-md"> TIẾP TỤC & QUÉT MÃ </Button>
                 </div>
             )
         });
     }
 
-    // Cấu hình tên tab lịch sử
-    let historyTabLabel = <span className="text-base font-bold"><HistoryOutlined /> Lịch Sử Giao Dịch </span>;
-    if (user?.role === 'OWNER') {
-        historyTabLabel = <span className="text-base font-bold"><HistoryOutlined /> Lịch Sử Tài Chính & Giải Thưởng </span>;
-    }
-
     tabItems.push({
         key: 'history',
-        label: historyTabLabel,
+        label: <span className="text-base font-bold"><HistoryOutlined /> {user?.role === 'OWNER' ? 'Lịch Sử Tài Chính' : 'Lịch Sử Giao Dịch'} </span>,
         children: <Table dataSource={transactions} columns={transColumns} rowKey="transactionCode" loading={dataLoading} className="border rounded-xl" pagination={{ pageSize: 5 }} />
     });
 
     const defaultActiveKey = (user?.role === 'SPECTATOR' || user?.role === 'OWNER') ? 'deposit' : 'history';
 
-// 🎯 1. ĐIỀN THÔNG TIN TÀI KHOẢN ACB THẬT CỦA BẠN:
-    const BANK_ID = "ACB";                 // Mã định danh ngân hàng Á Châu
-    const ACCOUNT_NO = "31093847";         // Số tài khoản của bạn
-    const ACCOUNT_NAME = "TRUONG LE TRI NGUYEN"; // Tên chủ tài khoản viết hoa không dấu
-
-// 🎯 2. CẬP NHẬT ĐƯỜNG DẪN URL TẠO MÃ QR ĐỘNG:
-// Link này sẽ tự động map đúng số tiền, nội dung chuyển khoản theo định dạng chuẩn VietQR
-    const qrImageUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-qr_only.png?amount=${depositAmount}&addInfo=${generatedTxCode}&accountName=${encodeURIComponent(ACCOUNT_NAME)}`;
     return (
         <div className="max-w-5xl mx-auto p-6">
-            <Title level={3} className="mb-6 border-b pb-2">
-                <WalletOutlined className="text-blue-500 mr-2" /> Quản Lý Tài Chính
-            </Title>
-
+            <Title level={3} className="mb-6 border-b pb-2"><WalletOutlined className="text-blue-500 mr-2" /> Quản Lý Tài Chính</Title>
             <Card className="shadow-md rounded-xl bg-gradient-to-r from-[#001529] to-blue-800 text-white mb-8">
                 <Text className="text-gray-300 text-lg"> Số dư khả dụng hiện tại </Text>
-                <div className="text-5xl font-bold mt-2 text-yellow-400">
-                    {balance?.toLocaleString()} <span className="text-xl text-white">VNĐ</span>
-                </div>
-                <div className="mt-4 text-xs text-gray-300">
-                    Tài khoản: <strong className="text-white">{user?.username}</strong> | Vai trò: <Tag color="blue">{user?.role}</Tag>
-                </div>
+                <div className="text-5xl font-bold mt-2 text-yellow-400"> {balance?.toLocaleString()} <span className="text-xl text-white">VNĐ</span> </div>
+                <div className="mt-4 text-xs text-gray-300"> Tài khoản: <strong className="text-white">{user?.username}</strong> </div>
             </Card>
 
             <Card className="shadow-sm rounded-xl">
                 <Tabs defaultActiveKey={defaultActiveKey} items={tabItems} />
             </Card>
 
-            {/* 🌟 MODAL QUÉT MÃ QR THANH TOÁN ĐỘNG CHUẨN VIETQR 🌟 */}
-            <Modal
-                title={<span className="text-xl font-bold text-blue-600">QUÉT MÃ QR ĐỂ NẠP TIỀN VÀO VÍ</span>}
-                open={isQrModalVisible}
-                onCancel={() => setIsQrModalVisible(false)}
-                footer={null}
-                centered
-                width={420}
-            >
-                <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                    <Alert
-                        message="Lưu ý quan trọng khi nạp tiền"
-                        description={
-                            <span>
-                                Hệ thống sẽ tự động quét dòng tiền dựa vào mã ghi chú. Vui lòng giữ nguyên nội dung chuyển khoản được sinh ra:
-                                <strong className="text-red-600 text-xl block mt-1 tracking-wider font-mono bg-red-50 p-2 rounded border border-red-200">{generatedTxCode}</strong>
-                            </span>
-                        }
-                        type="warning"
-                        showIcon
-                        className="mb-4 text-left"
-                    />
+            {/* MODAL QUÉT QR & UPLOAD ẢNH MINH CHỨNG */}
+            <Modal title={<span className="text-xl font-bold text-blue-800">Thông Tin Thanh Toán</span>} open={isQrModalVisible} onCancel={() => { setIsQrModalVisible(false); setPaymentData(null); setFileList([]); }} footer={null} centered width={700}>
+                {paymentData && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        <div className="text-center bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <Text strong className="block mb-2">Quét Mã QR Bằng App Ngân Hàng</Text>
+                            <img src={paymentData.qrUrl} alt="QR Code" className="w-full max-w-[220px] mx-auto shadow-md rounded-lg border" />
+                            <Alert message="Lưu ý quan trọng" description={`Ghi đúng mã chuyển khoản: ${paymentData.note} để hệ thống nhận diện.`} type="warning" showIcon className="mt-4 text-left" />
+                        </div>
+                        <div className="flex flex-col gap-3">
+                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-2">
+                                <div><Text type="secondary" className="text-xs">NGÂN HÀNG</Text><div className="font-bold">{paymentData.bankId}</div></div>
+                                <div><Text type="secondary" className="text-xs">SỐ TÀI KHOẢN</Text><div className="font-bold text-blue-600">{paymentData.accountNo}</div></div>
+                                <div><Text type="secondary" className="text-xs">CHỦ TÀI KHOẢN</Text><div className="font-bold">{paymentData.accountName}</div></div>
+                                <div><Text type="secondary" className="text-xs">SỐ TIỀN</Text><div className="font-bold text-red-600 text-lg">{paymentData.amount.toLocaleString()} đ</div></div>
+                                <Divider className="my-2" />
+                                <div>
+                                    <Text type="secondary" className="text-xs mb-1 block">NỘI DUNG CHUYỂN KHOẢN</Text>
+                                    <Space>
+                                        <Tag color="volcano" className="font-mono font-bold text-base px-3 py-1">{paymentData.note}</Tag>
+                                        <Button size="small" icon={<CopyOutlined />} onClick={() => handleCopyText(paymentData.note)}>Copy</Button>
+                                    </Space>
+                                </div>
+                            </div>
 
-                    {/* Render ảnh mã QR tự động từ API mở VietQR */}
-                    <div className="inline-block p-3 bg-white border rounded-xl shadow-inner mb-4">
-                        <img src={qrImageUrl} alt="VietQR Payment Code" style={{ width: 260, height: 260, display: 'block' }} />
+                            <Card className="bg-gray-50 border-dashed border-gray-300">
+                                <Text strong className="block mb-2 text-sm text-gray-700">Tải Lên Ảnh Biên Lai Chuyển Khoản</Text>
+                                <Upload {...uploadProps} accept="image/*" maxCount={1}>
+                                    <Button icon={<UploadOutlined />} className="w-full">Chọn ảnh chụp màn hình</Button>
+                                </Upload>
+                                <Button type="primary" onClick={handleConfirmTransfer} block size="large" loading={submittingProof} icon={<CheckCircleOutlined />} className="mt-4 bg-green-600 font-bold border-none"> TÔI ĐÃ CHUYỂN TIỀN </Button>
+                            </Card>
+                        </div>
                     </div>
-
-                    <div className="text-gray-400 text-xs mb-5 italic">
-                        *Số tiền cần chuyển: <strong className="text-gray-700">{depositAmount?.toLocaleString()} đ</strong>
-                    </div>
-
-                    {/* NÚT THẦN THÁNH GIẢ LẬP KẾT QUẢ WEBHOOK TỪ NGÂN HÀNG ĐỂ TIẾN HÀNH TEST SỐ DƯ */}
-                    <Button
-                        type="primary"
-                        block
-                        size="large"
-                        style={{ backgroundColor: '#28a745', borderColor: '#28a745', height: '48px' }}
-                        className="font-bold rounded-lg hover:opacity-90"
-                        onClick={handleConfirmMockPayment}
-                        loading={loading}
-                    >
-                        GIẢ LẬP: ĐÃ QUÉT & CHUYỂN TIỀN THÀNH CÔNG
-                    </Button>
-                </div>
+                )}
             </Modal>
         </div>
     );

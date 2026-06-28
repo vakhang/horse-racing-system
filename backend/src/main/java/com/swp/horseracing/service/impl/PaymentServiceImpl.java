@@ -5,11 +5,14 @@ import com.swp.horseracing.dto.PaymentResponseDTO;
 import com.swp.horseracing.model.*;
 import com.swp.horseracing.repository.TransactionHistoryRepository;
 import com.swp.horseracing.repository.WalletRepository;
+import com.swp.horseracing.service.CloudinaryService;
 import com.swp.horseracing.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -20,17 +23,17 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionRepository;
+    private final CloudinaryService cloudinaryService;
 
-    // Cấu hình tài khoản ngân hàng của Công ty/Hệ thống nhận tiền
-    private final String BANK_ID = "MB"; // Ngân hàng Quân Đội MBBank
-    private final String ACCOUNT_NO = "999999999999";
-    private final String ACCOUNT_NAME = "CONG TY CONG NGHE HORSE RACING";
-    private final String TEMPLATE = "compact"; // Mẫu QR hiển thị cả Số tiền và Nội dung trên ảnh cho khách kiểm tra
+    // TÀI KHOẢN NGÂN HÀNG NHẬN TIỀN CỦA HỆ THỐNG
+    private final String BANK_ID = "ACB";
+    private final String ACCOUNT_NO = "31093847";
+    private final String ACCOUNT_NAME = "TRUONG LE TRI NGUYEN";
+    private final String TEMPLATE = "compact";
 
     @Override
     @Transactional
     public PaymentResponseDTO createDepositQR(DepositRequestDTO request) {
-        // Tìm ví của User dựa vào userId giống như thiết kế hiện tại
         Wallet wallet = walletRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ví của người dùng này!"));
 
@@ -38,10 +41,10 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Số tiền nạp phải lớn hơn 0 VNĐ!");
         }
 
-        // 1. Tạo mã giao dịch duy nhất có tiền tố DEP (Deposit)
-        String txCode = "DEP" + System.currentTimeMillis() / 1000;
+        // 1. Tạo mã giao dịch duy nhất có tiền tố NAP
+        String txCode = "NAP" + System.currentTimeMillis() / 1000;
 
-        // 2. Lưu lịch sử giao dịch vào Sổ cái với trạng thái PENDING (Chờ thanh toán)
+        // 2. Lưu lịch sử giao dịch vào Sổ cái với trạng thái PENDING
         TransactionHistory tx = new TransactionHistory();
         tx.setTransactionCode(txCode);
         tx.setWallet(wallet);
@@ -49,14 +52,11 @@ public class PaymentServiceImpl implements PaymentService {
         tx.setType(TransactionType.DEPOSIT);
         tx.setDirection(TransactionDirection.IN);
         tx.setStatus(TransactionStatus.PENDING);
-//        tx.setNote("Nạp tiền qua mã QR: " + txCode);
         transactionRepository.save(tx);
 
-        // 3. Encode các tham số để tạo đường link VietQR chuẩn không bị lỗi font tiếng Việt
+        // 3. Link sinh mã QR động tự điền số tiền và mã giao dịch
         String encodedName = URLEncoder.encode(ACCOUNT_NAME, StandardCharsets.UTF_8);
         String encodedNote = URLEncoder.encode(txCode, StandardCharsets.UTF_8);
-
-        // Link sinh mã QR động tự điền số tiền và mã giao dịch vào app ngân hàng khi quét
         String qrUrl = String.format("https://img.vietqr.io/image/%s-%s-%s.png?amount=%s&addInfo=%s&accountName=%s",
                 BANK_ID, ACCOUNT_NO, TEMPLATE, request.getAmount().toPlainString(), encodedNote, encodedName);
 
@@ -73,7 +73,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public String confirmPayment(String transactionCode, String proofUrl) {
+    public String confirmPayment(String transactionCode, MultipartFile file) throws IOException {
         TransactionHistory tx = transactionRepository.findByTransactionCode(transactionCode)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy mã giao dịch chuyển khoản!"));
 
@@ -81,16 +81,13 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Giao dịch này đã được xử lý từ trước!");
         }
 
-        // 1. Lưu ảnh hóa đơn (minh chứng giao dịch) do người dùng tải lên
+        // Tải ảnh lên Cloudinary
+        String proofUrl = cloudinaryService.uploadFile(file);
+
+        // Cập nhật link ảnh vào DB nhưng VẪN GIỮ TRẠNG THÁI PENDING CHỜ ADMIN DUYỆT
         tx.setProofUrl(proofUrl);
-        tx.setStatus(TransactionStatus.COMPLETED); // Chuyển trạng thái thành công
         transactionRepository.save(tx);
 
-        // 2. Cộng tiền trực tiếp vào Ví của người chơi
-        Wallet wallet = tx.getWallet();
-        wallet.setBalance(wallet.getBalance().add(tx.getAmount()));
-        walletRepository.save(wallet);
-
-        return "Nạp tiền thành công! Số dư tài khoản đã được cập nhật.";
+        return "Tải minh chứng thành công! Vui lòng chờ Admin kiểm tra và duyệt lệnh nạp tiền.";
     }
 }
