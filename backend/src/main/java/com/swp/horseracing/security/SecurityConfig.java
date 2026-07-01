@@ -20,27 +20,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // Lệnh này xài chung với CorsConfig của sếp, sếp cấu hình Cors ra sao nó chạy y vậy!
                 .cors(Customizer.withDefaults())
-
-                // Tắt CSRF đi vì mình xài Token rồi
                 .csrf(csrf -> csrf.disable())
-
-                // Ép hệ thống không lưu session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // --- Cụm API phục vụ trang WalletPage ---
                         .requestMatchers("/api/wallets/deposit").permitAll()
                         .requestMatchers("/api/wallets/my-wallet").permitAll()
-                        .requestMatchers("/api/users/my-transactions").permitAll() // 🎯 Thêm luôn ông này cho chắc chắn
+                        .requestMatchers("/api/users/my-transactions").permitAll()
+
+                        // MỞ KHÓA API NÀY CHO MÁY CHỦ SEPAY GỌI VÀO KHÔNG CẦN TOKEN ĐĂNG NHẬP
+                        .requestMatchers("/api/payments/webhook").permitAll()
+
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated()
                 )
-
-                // Gắn ông bảo vệ vào soát vé
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

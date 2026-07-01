@@ -2,20 +2,20 @@ package com.swp.horseracing.service.impl;
 
 import com.swp.horseracing.dto.DepositRequestDTO;
 import com.swp.horseracing.dto.PaymentResponseDTO;
+import com.swp.horseracing.dto.SePayWebhookRequestDTO;
 import com.swp.horseracing.model.*;
 import com.swp.horseracing.repository.TransactionHistoryRepository;
 import com.swp.horseracing.repository.WalletRepository;
-import com.swp.horseracing.service.CloudinaryService;
 import com.swp.horseracing.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +23,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionRepository;
-    private final CloudinaryService cloudinaryService;
 
     // TÀI KHOẢN NGÂN HÀNG NHẬN TIỀN CỦA HỆ THỐNG
     private final String BANK_ID = "ACB";
@@ -73,21 +72,51 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public String confirmPayment(String transactionCode, MultipartFile file) throws IOException {
-        TransactionHistory tx = transactionRepository.findByTransactionCode(transactionCode)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy mã giao dịch chuyển khoản!"));
-
-        if (tx.getStatus() != TransactionStatus.PENDING) {
-            throw new RuntimeException("Giao dịch này đã được xử lý từ trước!");
+    public String processWebhook(SePayWebhookRequestDTO request) {
+        // BƯỚC 1: Lọc rác - Chỉ bắt giao dịch TIỀN VÀO (IN)
+        if (!"in".equalsIgnoreCase(request.getTransferType())) {
+            return "Ignored: Not an incoming transfer.";
         }
 
-        // Tải ảnh lên Cloudinary
-        String proofUrl = cloudinaryService.uploadFile(file);
+        // BƯỚC 2: Trích xuất nội dung chuyển khoản
+        String rawNote = request.getCode() != null ? request.getCode().toUpperCase() : "";
+        if (rawNote.isEmpty() && request.getContent() != null) {
+            rawNote = request.getContent().toUpperCase();
+        }
 
-        // Cập nhật link ảnh vào DB nhưng VẪN GIỮ TRẠNG THÁI PENDING CHỜ ADMIN DUYỆT
-        tx.setProofUrl(proofUrl);
+        // BƯỚC 3: Dùng Regex săn tìm mã "NAP..." trong chuỗi ghi chú lộn xộn của ngân hàng
+        Matcher matcher = Pattern.compile("NAP\\d+").matcher(rawNote);
+        if (!matcher.find()) {
+            return "Ignored: No valid NAP transaction code found in note.";
+        }
+        String transactionCode = matcher.group();
+
+        TransactionHistory tx = transactionRepository.findByTransactionCode(transactionCode)
+                .orElseThrow(() -> new RuntimeException("Transaction Code Not Found in Database!"));
+
+        // BƯỚC 4: Rào cản trạng thái
+        if (tx.getStatus() == TransactionStatus.COMPLETED) {
+            return "Ignored: Transaction already completed.";
+        }
+
+        // BƯỚC 5: Xác thực số tiền thực chuyển vs Số tiền khai báo lúc tạo mã QR
+        if (request.getTransferAmount().compareTo(tx.getAmount()) < 0) {
+            // Nạp thiếu tiền -> Đánh dấu Thất Bại & Lưu vết nguyên nhân vào cọt Proof
+            tx.setStatus(TransactionStatus.REJECTED);
+            tx.setProofUrl("HỦY: Số tiền nạp thực tế (" + request.getTransferAmount() + ") nhỏ hơn yêu cầu ban đầu (" + tx.getAmount() + ")");
+            transactionRepository.save(tx);
+            return "Rejected: Insufficient fund transferred.";
+        }
+
+        // BƯỚC 6: XỬ LÝ THÀNH CÔNG - CỘNG TIỀN CHO USER
+        tx.setStatus(TransactionStatus.COMPLETED);
+        tx.setProofUrl("AUTO-APPROVED BY SEPAY WEBHOOK (Ref: " + request.getReferenceCode() + ")");
         transactionRepository.save(tx);
 
-        return "Tải minh chứng thành công! Vui lòng chờ Admin kiểm tra và duyệt lệnh nạp tiền.";
+        Wallet wallet = tx.getWallet();
+        wallet.setBalance(wallet.getBalance().add(tx.getAmount()));
+        walletRepository.save(wallet);
+
+        return "Processed: Wallet Top-up successful.";
     }
 }

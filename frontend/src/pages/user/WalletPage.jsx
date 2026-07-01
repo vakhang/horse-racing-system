@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Table, Tag, Upload, Space, Divider } from 'antd';
-import { WalletOutlined, BankOutlined, HistoryOutlined, CopyOutlined, UploadOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Table, Tag, Space, Divider } from 'antd';
+import { WalletOutlined, BankOutlined, HistoryOutlined, CopyOutlined } from '@ant-design/icons';
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import dayjs from 'dayjs';
@@ -22,9 +22,7 @@ const WalletPage = () => {
 
     // Luồng quét mã nạp tiền
     const [isQrModalVisible, setIsQrModalVisible] = useState(false);
-    const [paymentData, setPaymentData] = useState(null); // Lưu data Backend trả về
-    const [fileList, setFileList] = useState([]); // Lưu ảnh Upload
-    const [submittingProof, setSubmittingProof] = useState(false);
+    const [paymentData, setPaymentData] = useState(null);
 
     const fetchWalletData = async () => {
         if (!userId) return;
@@ -36,7 +34,6 @@ const WalletPage = () => {
             const transRes = await api.get(`/users/my-transactions?userId=${userId}`);
             setTransactions(transRes.data || []);
         } catch (error) {
-            console.error(error);
             message.error('Không thể tải dữ liệu ví tiền!');
         } finally {
             setDataLoading(false);
@@ -47,7 +44,6 @@ const WalletPage = () => {
         fetchWalletData();
     }, [userId]);
 
-    // BƯỚC 1: Gọi API khởi tạo lệnh nạp & lấy QR Code
     const handleGenerateQR = async () => {
         if (depositAmount <= 0) return message.warning("Số tiền nạp phải lớn hơn 0!");
         if (depositAmount < 10000) return message.warning("Số tiền nạp tối thiểu là 10,000 VNĐ!");
@@ -58,7 +54,7 @@ const WalletPage = () => {
                 userId: user?.id,
                 amount: depositAmount
             });
-            setPaymentData(response.data); // Chứa qrUrl, transactionCode,...
+            setPaymentData(response.data);
             setIsQrModalVisible(true);
         } catch (error) {
             message.error(error.response?.data || "Lỗi tạo mã QR!");
@@ -67,59 +63,29 @@ const WalletPage = () => {
         }
     };
 
-    // BƯỚC 3: Upload hình ảnh biên lai
-    const handleConfirmTransfer = async () => {
-        if (fileList.length === 0) {
-            message.warning("Vui lòng tải lên ảnh chụp màn hình chuyển khoản thành công!");
-            return;
-        }
-
-        setSubmittingProof(true);
-        try {
-            const formData = new FormData();
-            formData.append('transactionCode', paymentData.transactionCode);
-            formData.append('file', fileList[0].originFileObj);
-
-            // Lấy token trực tiếp từ LocalStorage (dựa theo cấu trúc của sếp)
-            const token = localStorage.getItem('accessToken') || user?.token;
-
-            // 🎯 ĐI ĐƯỜNG QUYỀN: Dùng trực tiếp axios gốc để bypass toàn bộ config cứng của api.js
-            await axios.post('http://localhost:8080/api/payments/confirm', formData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // BỎ TRỐNG CONTENT-TYPE ĐỂ AXIOS TỰ SINH BOUNDARY CHO FILE
-                }
-            });
-
-            message.success("Đã gửi minh chứng thành công! Vui lòng đợi Admin xét duyệt để nhận tiền.");
-            setIsQrModalVisible(false);
-            setPaymentData(null);
-            setFileList([]);
-            fetchWalletData();
-        } catch (error) {
-            // 🎯 FIX LỖI SẬP REACT: Chỉ lấy String ra để hiển thị, không ném cả cục Object vào message.error
-            const errorData = error.response?.data;
-            const errorMsg = errorData?.error || errorData?.message || (typeof errorData === 'string' ? errorData : "Có lỗi xảy ra khi tải ảnh lên!");
-            message.error(errorMsg);
-        } finally {
-            setSubmittingProof(false);
-        }
-    };
-
     const handleCopyText = (text) => {
         navigator.clipboard.writeText(text);
         message.success('Đã copy nội dung!');
     };
 
-    const uploadProps = {
-        onRemove: (file) => {
-            setFileList([]);
-        },
-        beforeUpload: (file) => {
-            setFileList([file]);
-            return false; // Tắt tự động upload của AntD
-        },
-        fileList,
+    // GIỮ LẠI NÚT NÀY ĐỂ TEAM BẠN TEST CHAY NẾU CHƯA ĐẤU NỐI SEPAY XONG TRONG HÔM NAY
+    const handleConfirmMockPayment = async () => {
+        setLoading(true);
+        try {
+            await api.post('/wallets/deposit', {
+                userId: user?.id || user?.userId,
+                amount: depositAmount
+            });
+            message.success(`Giả lập thành công: Hệ thống đã cộng tiền!`);
+            setIsQrModalVisible(false);
+            fetchWalletData();
+            window.dispatchEvent(new Event('update_balance'));
+            setDepositAmount(50000);
+        } catch (error) {
+            message.error("Lỗi kết nối hoặc lỗi nạp tiền giả lập!");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const transColumns = [
@@ -138,20 +104,25 @@ const WalletPage = () => {
             label: <span className="text-base font-bold"><BankOutlined /> Nạp Tiền Qua VietQR </span>,
             children: (
                 <div className="max-w-2xl bg-white p-6 border rounded-xl shadow-sm mx-auto my-4 text-center">
-                    <WalletOutlined className="text-5xl text-blue-600 mb-4" />
-                    <Title level={4}>Nhập Số Tiền Muốn Nạp</Title>
-                    <div className="my-6">
-                        <InputNumber className="w-full text-lg rounded-lg font-bold" size="large" min={10000} step={10000} value={depositAmount} onChange={(val) => setDepositAmount(val || 0)} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
+                    <Alert message="Nạp tiền Auto 100%" description="Quét mã QR và giữ nguyên nội dung. Hệ thống sẽ tự động cộng tiền trong 10 giây sau khi chuyển khoản." type="info" showIcon className="mb-4" />
+                    <div className="mb-4">
+                        <Text className="font-medium block mb-2">Nhập số tiền muốn nạp (VNĐ):</Text>
+                        <InputNumber className="w-full text-lg rounded-lg font-bold" size="large" min={10000} value={depositAmount} onChange={(val) => setDepositAmount(val || 0)} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
                     </div>
-                    <Button type="primary" size="large" block onClick={handleGenerateQR} loading={loading} className="bg-gradient-to-r from-gray-900 to-blue-900 border-none font-bold h-12 text-lg rounded-xl shadow-md"> TIẾP TỤC & QUÉT MÃ </Button>
+                    <Button type="primary" size="large" block onClick={handleGenerateQR} loading={loading} className="bg-blue-600 font-semibold h-12 text-base rounded-lg"> Tạo Mã VietQR Nạp Tiền </Button>
                 </div>
             )
         });
     }
 
+    let historyTabLabel = <span className="text-base font-bold"><HistoryOutlined /> Lịch Sử Giao Dịch </span>;
+    if (user?.role === 'OWNER') {
+        historyTabLabel = <span className="text-base font-bold"><HistoryOutlined /> Lịch Sử Tài Chính & Giải Thưởng </span>;
+    }
+
     tabItems.push({
         key: 'history',
-        label: <span className="text-base font-bold"><HistoryOutlined /> {user?.role === 'OWNER' ? 'Lịch Sử Tài Chính' : 'Lịch Sử Giao Dịch'} </span>,
+        label: historyTabLabel,
         children: <Table dataSource={transactions} columns={transColumns} rowKey="transactionCode" loading={dataLoading} className="border rounded-xl" pagination={{ pageSize: 5 }} />
     });
 
@@ -170,14 +141,13 @@ const WalletPage = () => {
                 <Tabs defaultActiveKey={defaultActiveKey} items={tabItems} />
             </Card>
 
-            {/* MODAL QUÉT QR & UPLOAD ẢNH MINH CHỨNG */}
-            <Modal title={<span className="text-xl font-bold text-blue-800">Thông Tin Thanh Toán</span>} open={isQrModalVisible} onCancel={() => { setIsQrModalVisible(false); setPaymentData(null); setFileList([]); }} footer={null} centered width={700}>
+            <Modal title={<span className="text-xl font-bold text-blue-800">Thanh Toán Quét Mã</span>} open={isQrModalVisible} onCancel={() => { setIsQrModalVisible(false); setPaymentData(null); fetchWalletData(); }} footer={null} centered width={700}>
                 {paymentData && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div className="text-center bg-gray-50 p-4 rounded-xl border border-gray-200">
-                            <Text strong className="block mb-2">Quét Mã QR Bằng App Ngân Hàng</Text>
+                            <Text strong className="block mb-2">Quét Mã Bằng App Ngân Hàng</Text>
                             <img src={paymentData.qrUrl} alt="QR Code" className="w-full max-w-[220px] mx-auto shadow-md rounded-lg border" />
-                            <Alert message="Lưu ý quan trọng" description={`Ghi đúng mã chuyển khoản: ${paymentData.note} để hệ thống nhận diện.`} type="warning" showIcon className="mt-4 text-left" />
+                            <Alert message="Auto Check" description={`Hệ thống tự động duyệt. BẮT BUỘC ghi nội dung chuyển khoản là: ${paymentData.note}`} type="warning" showIcon className="mt-4 text-left" />
                         </div>
                         <div className="flex flex-col gap-3">
                             <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-2">
@@ -195,12 +165,12 @@ const WalletPage = () => {
                                 </div>
                             </div>
 
-                            <Card className="bg-gray-50 border-dashed border-gray-300">
-                                <Text strong className="block mb-2 text-sm text-gray-700">Tải Lên Ảnh Biên Lai Chuyển Khoản</Text>
-                                <Upload {...uploadProps} accept="image/*" maxCount={1}>
-                                    <Button icon={<UploadOutlined />} className="w-full">Chọn ảnh chụp màn hình</Button>
-                                </Upload>
-                                <Button type="primary" onClick={handleConfirmTransfer} block size="large" loading={submittingProof} icon={<CheckCircleOutlined />} className="mt-4 bg-green-600 font-bold border-none"> TÔI ĐÃ CHUYỂN TIỀN </Button>
+                            <Card className="bg-gray-50 border-none">
+                                <Text strong className="block mb-2 text-sm text-gray-700 text-center">Giao dịch sẽ được cập nhật số dư trong ít phút.</Text>
+                                <Button type="default" onClick={() => { setIsQrModalVisible(false); fetchWalletData(); }} block size="large" className="mt-4 font-bold border border-blue-600 text-blue-600"> TÔI ĐÃ HIỂU VÀ ĐANG CHỜ TIỀN VÀO </Button>
+
+                                {/* NÚT GIẢ LẬP ĐỂ TEST */}
+                                <Button type="primary" onClick={handleConfirmMockPayment} block size="large" loading={loading} className="mt-3 bg-green-600 font-bold border-none"> [DEV] GIẢ LẬP CHUYỂN THÀNH CÔNG </Button>
                             </Card>
                         </div>
                     </div>

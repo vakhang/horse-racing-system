@@ -56,6 +56,7 @@ public class BetServiceImpl implements BetService {
                 .registration(reg)
                 .amount(request.getAmount())
                 .status(BetStatus.PENDING)
+                .odds(BigDecimal.ZERO)
                 .build();
         Bet savedBet = betRepository.save(bet);
 
