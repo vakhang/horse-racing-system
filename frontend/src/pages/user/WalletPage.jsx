@@ -5,7 +5,6 @@ import { WalletOutlined, BankOutlined, HistoryOutlined, CopyOutlined } from '@an
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 import dayjs from 'dayjs';
-import axios from 'axios';
 
 const { Title, Text } = Typography;
 
@@ -20,7 +19,6 @@ const WalletPage = () => {
     const [loading, setLoading] = useState(false);
     const [dataLoading, setDataLoading] = useState(true);
 
-    // Luồng quét mã nạp tiền
     const [isQrModalVisible, setIsQrModalVisible] = useState(false);
     const [paymentData, setPaymentData] = useState(null);
 
@@ -68,26 +66,6 @@ const WalletPage = () => {
         message.success('Đã copy nội dung!');
     };
 
-    // GIỮ LẠI NÚT NÀY ĐỂ TEAM BẠN TEST CHAY NẾU CHƯA ĐẤU NỐI SEPAY XONG TRONG HÔM NAY
-    const handleConfirmMockPayment = async () => {
-        setLoading(true);
-        try {
-            await api.post('/wallets/deposit', {
-                userId: user?.id || user?.userId,
-                amount: depositAmount
-            });
-            message.success(`Giả lập thành công: Hệ thống đã cộng tiền!`);
-            setIsQrModalVisible(false);
-            fetchWalletData();
-            window.dispatchEvent(new Event('update_balance'));
-            setDepositAmount(50000);
-        } catch (error) {
-            message.error("Lỗi kết nối hoặc lỗi nạp tiền giả lập!");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const transColumns = [
         { title: 'Mã Giao Dịch', dataIndex: 'transactionCode', render: (t) => <Text copyable className="font-mono font-bold text-blue-600">{t}</Text> },
         { title: 'Loại hình', dataIndex: 'type', render: (type) => type === 'DEPOSIT' ? <Tag color="green">NẠP TIỀN</Tag> : (type === 'WITHDRAW' ? <Tag color="volcano">RÚT TIỀN</Tag> : <Tag color="blue">{type}</Tag>) },
@@ -104,7 +82,7 @@ const WalletPage = () => {
             label: <span className="text-base font-bold"><BankOutlined /> Nạp Tiền Qua VietQR </span>,
             children: (
                 <div className="max-w-2xl bg-white p-6 border rounded-xl shadow-sm mx-auto my-4 text-center">
-                    <Alert message="Nạp tiền Auto 100%" description="Quét mã QR và giữ nguyên nội dung. Hệ thống sẽ tự động cộng tiền trong 10 giây sau khi chuyển khoản." type="info" showIcon className="mb-4" />
+                    <Alert message="Nạp tiền Auto 100%" description="Quét mã QR và giữ nguyên nội dung. Hệ thống sẽ tự động cộng tiền trong 10 giây sau khi chuyển khoản thành công." type="info" showIcon className="mb-4" />
                     <div className="mb-4">
                         <Text className="font-medium block mb-2">Nhập số tiền muốn nạp (VNĐ):</Text>
                         <InputNumber className="w-full text-lg rounded-lg font-bold" size="large" min={10000} value={depositAmount} onChange={(val) => setDepositAmount(val || 0)} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
@@ -166,11 +144,8 @@ const WalletPage = () => {
                             </div>
 
                             <Card className="bg-gray-50 border-none">
-                                <Text strong className="block mb-2 text-sm text-gray-700 text-center">Giao dịch sẽ được cập nhật số dư trong ít phút.</Text>
+                                <Text strong className="block mb-2 text-sm text-gray-700 text-center">Giao dịch sẽ được cập nhật số dư tự động trong ít phút.</Text>
                                 <Button type="default" onClick={() => { setIsQrModalVisible(false); fetchWalletData(); }} block size="large" className="mt-4 font-bold border border-blue-600 text-blue-600"> TÔI ĐÃ HIỂU VÀ ĐANG CHỜ TIỀN VÀO </Button>
-
-                                {/* NÚT GIẢ LẬP ĐỂ TEST */}
-                                <Button type="primary" onClick={handleConfirmMockPayment} block size="large" loading={loading} className="mt-3 bg-green-600 font-bold border-none"> [DEV] GIẢ LẬP CHUYỂN THÀNH CÔNG </Button>
                             </Card>
                         </div>
                     </div>
