@@ -29,7 +29,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/wallets/my-wallet").permitAll()
                         .requestMatchers("/api/users/my-transactions").permitAll()
 
-                        // MỞ KHÓA API NÀY CHO MÁY CHỦ SEPAY GỌI VÀO KHÔNG CẦN TOKEN ĐĂNG NHẬP
+                        // MỞ KHÓA API MỚI CHO SEPAY WEBHOOK (thay đổi endpoint cũ)
+                        .requestMatchers("/api/webhook/sepay").permitAll()
                         .requestMatchers("/api/payments/webhook").permitAll()
 
                         .requestMatchers("/error").permitAll()
