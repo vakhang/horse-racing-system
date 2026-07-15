@@ -18,7 +18,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO request) {
+    public ResponseEntity<?> register(@ModelAttribute RegisterRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.registerUser(request));
         } catch (RuntimeException e) {

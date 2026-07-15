@@ -11,4 +11,6 @@ public class RegistrationRequestDTO {
     private Integer jockeyId; // Có thể null lúc mới tạ
     private RegistrationStatus status;
     private String note;
+    private java.math.BigDecimal odds;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> kycFiles;
 }

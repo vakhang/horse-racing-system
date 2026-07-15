@@ -13,8 +13,8 @@ public class HorseController {
 
     private final HorseService horseService;
 
-    @PostMapping
-    public ResponseEntity<?> createHorse(@RequestBody HorseRequestDTO request) {
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<?> createHorse(@ModelAttribute HorseRequestDTO request) {
         try {
             return ResponseEntity.ok(horseService.createHorse(request));
         } catch (RuntimeException e) {
@@ -40,8 +40,8 @@ public class HorseController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateHorse(@PathVariable Integer id, @RequestBody HorseRequestDTO request) {
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateHorse(@PathVariable Integer id, @ModelAttribute HorseRequestDTO request) {
         try {
             return ResponseEntity.ok(horseService.updateHorse(id, request));
         } catch (RuntimeException e) {

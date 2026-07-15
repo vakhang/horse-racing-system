@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber, Upload } from 'antd';
+import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UploadOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -17,38 +17,47 @@ const ProfilePage = () => {
 
     useEffect(() => {
         if (user) {
-            const savedCV = JSON.parse(localStorage.getItem(`jockey_cv_${user.id}`) || '{}');
             form.setFieldsValue({
                 username: user.username,
                 email: user.email,
                 phoneNumber: user.phoneNumber,
                 dob: user.dob ? dayjs(user.dob) : null,
-                weight: savedCV.weight || null,
-                height: savedCV.height || null
+                weight: user.weight || null,
+                height: user.height || null
             });
         }
     }, [user, form]);
 
+    const normFile = (e) => {
+        if (Array.isArray(e)) return e;
+        return e?.fileList;
+    };
+
     const handleUpdateProfile = async (values) => {
         setLoading(true);
-        try {
-            const updateData = {
-                username: values.username,
-                phoneNumber: values.phoneNumber,
-                dob: values.dob ? values.dob.format('YYYY-MM-DD') : null,
-            };
+        const formData = new FormData();
+        formData.append('username', values.username);
+        formData.append('phoneNumber', values.phoneNumber);
+        if (values.dob) formData.append('dob', values.dob.format('YYYY-MM-DD'));
 
-            const response = await axios.put(`http://localhost:8080/api/users/${user.id}`, updateData, {
+        // Append dữ liệu riêng của Nài Ngựa
+        if (user.role === 'JOCKEY') {
+            formData.append('weight', values.weight);
+            formData.append('height', values.height);
+
+            if (values.certFiles && values.certFiles.length > 0) {
+                values.certFiles.forEach(f => formData.append('certFiles', f.originFileObj));
+            }
+            if (values.healthFiles && values.healthFiles.length > 0) {
+                values.healthFiles.forEach(f => formData.append('healthFiles', f.originFileObj));
+            }
+        }
+
+        try {
+            // Không set Header Content-Type vì FormData sẽ tự sinh Boundary
+            const response = await axios.put(`http://localhost:8080/api/users/${user.id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
-            // Nếu là Jockey, lưu thêm CV vào máy để hiện lên Sàn môi giới
-            if (user.role === 'JOCKEY') {
-                localStorage.setItem(`jockey_cv_${user.id}`, JSON.stringify({
-                    weight: values.weight,
-                    height: values.height
-                }));
-            }
 
             const updatedUser = { ...user, ...response.data, token: token };
             login(updatedUser);
@@ -87,14 +96,14 @@ const ProfilePage = () => {
                     <Form.Item label="Số điện thoại liên hệ" name="phoneNumber" rules={[{ required: true }]}>
                         <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại của bạn" />
                     </Form.Item>
-                    <Form.Item label="Ngày tháng năm sinh (Phải >= 21 tuổi)" name="dob" rules={[{ required: true }]}>
+                    <Form.Item label="Ngày tháng năm sinh" name="dob" rules={[{ required: true }]}>
                         <DatePicker className="w-full" format="YYYY-MM-DD" />
                     </Form.Item>
 
-                    {/* BẢN CV DÀNH RIÊNG CHO NÀI NGỰA */}
+                    {/* KHU VỰC DÀNH RIÊNG CHO NÀI NGỰA (MULTIPART & THÔNG SỐ) */}
                     {user?.role === 'JOCKEY' && (
                         <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 mt-4 mb-4">
-                            <Title level={5} className="text-purple-700 mb-4">Thông số Thể chất (Dành cho Nài ngựa)</Title>
+                            <Title level={5} className="text-purple-700 mb-4">Thông số Thể chất & Bằng Cấp (Dành cho Nài ngựa)</Title>
                             <div className="flex gap-4">
                                 <Form.Item label="Cân nặng (kg)" name="weight" className="w-full" rules={[{ required: true, message: 'Nhập cân nặng!' }]}>
                                     <InputNumber min={40} max={100} className="w-full" placeholder="VD: 55" />
@@ -103,7 +112,15 @@ const ProfilePage = () => {
                                     <InputNumber min={140} max={200} className="w-full" placeholder="VD: 165" />
                                 </Form.Item>
                             </div>
-                            <Text className="text-gray-500 text-sm italic">* Thông số này sẽ được hiển thị trên Sàn giao dịch để Chủ ngựa cân nhắc ký hợp đồng.</Text>
+                            <div className="flex gap-4">
+                                <Form.Item label="Chứng chỉ hành nghề" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Bằng Cấp</Button></Upload>
+                                </Form.Item>
+                                <Form.Item label="Giấy Khám Sức Khỏe" name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Sổ Khám Bệnh</Button></Upload>
+                                </Form.Item>
+                            </div>
+                            <Text className="text-gray-500 text-sm italic">* Hồ sơ chứng chỉ sẽ được hiển thị công khai trên Sàn Giao Dịch.</Text>
                         </div>
                     )}
 

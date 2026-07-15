@@ -45,6 +45,9 @@ public class BetServiceImpl implements BetService {
             throw new RuntimeException("Số dư không đủ để đặt cược!");
         }
 
+        // CHỐT KÈO (FIXED-ODDS): Lấy odds cố định từ Registration
+        java.math.BigDecimal fixedOdds = reg.getOdds() != null ? reg.getOdds() : java.math.BigDecimal.ONE;
+
         // Trừ tiền ví
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
         walletRepository.save(wallet);
@@ -56,7 +59,7 @@ public class BetServiceImpl implements BetService {
                 .registration(reg)
                 .amount(request.getAmount())
                 .status(BetStatus.PENDING)
-                .odds(BigDecimal.ZERO)
+                .odds(fixedOdds) // KHÓA ODDS Ở ĐÂY, VĨNH VIỄN KHÔNG ĐỔI
                 .build();
         Bet savedBet = betRepository.save(bet);
 

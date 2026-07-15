@@ -14,4 +14,8 @@ public class UserUpdateRequestDTO {
     private String kycDocumentUrl;
     private UserStatus status;
     private String phoneNumber;
+    private Double weight;
+    private Double height;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> certFiles;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> healthFiles;
 }

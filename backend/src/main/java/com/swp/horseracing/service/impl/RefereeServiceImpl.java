@@ -91,8 +91,12 @@ public class RefereeServiceImpl implements RefereeService {
         for (Bet bet : bets) {
             if (bet.getRegistration().getId().equals(request.getTop1RegistrationId())) {
                 bet.setStatus(BetStatus.WON);
+
+                // TUYỆT ĐỐI DÙNG ODDS CỐ ĐỊNH ĐÃ LƯU TRONG VÉ (Fixed-Odds)
                 BigDecimal odds = bet.getOdds() != null ? bet.getOdds() : BigDecimal.ONE;
+                // CÔNG THỨC MỚI: Tiền Thưởng = Vốn * Tỷ Lệ Cược (Fixed Odds)
                 BigDecimal rewardAmount = bet.getAmount().multiply(odds).setScale(0, java.math.RoundingMode.HALF_UP);
+
                 bet.setReward(rewardAmount);
 
                 Wallet w = walletRepository.findByUserId(bet.getSpectator().getId()).orElseThrow();
@@ -127,16 +131,14 @@ public class RefereeServiceImpl implements RefereeService {
         User referee = userRepository.findById(request.getRefereeId())
                 .orElseThrow(() -> new RuntimeException("Referee not found"));
 
-        // 1. Phạt theo Registration thay vì Violator
         Registration registration = registrationRepository.findById(request.getRegistrationId())
                 .orElseThrow(() -> new RuntimeException("Registration not found"));
 
-        // 2. Build report với các trường đã cập nhật theo DB
         RefereeReport report = RefereeReport.builder()
                 .race(race)
                 .referee(referee)
-                .registration(registration) // Đổi .violator thành .registration
-                .violationDetails(request.getViolationDetails()) // Đổi .description thành .violationDetails
+                .registration(registration)
+                .violationDetails(request.getViolationDetails())
                 .build();
 
         refereeReportRepository.save(report);

@@ -24,6 +24,29 @@ public class CorsConfig implements WebMvcConfigurer {
 
 
 =========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\config\ResourceConfig.java
+=========================================
+package com.swp.horseracing.config;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+@Configuration
+public class ResourceConfig implements WebMvcConfigurer {
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        Path uploadDir = Paths.get("uploads");
+        String uploadPath = uploadDir.toFile().getAbsolutePath();
+        registry.addResourceHandler("/uploads/**").addResourceLocations("file:" + uploadPath + "/");
+    }
+}
+
+
+
+=========================================
 TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\controller\AdminController.java
 =========================================
 package com.swp.horseracing.controller;
@@ -105,7 +128,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequestDTO request) {
+    public ResponseEntity<?> register(@ModelAttribute RegisterRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.registerUser(request));
         } catch (RuntimeException e) {
@@ -175,8 +198,8 @@ public class HorseController {
 
     private final HorseService horseService;
 
-    @PostMapping
-    public ResponseEntity<?> createHorse(@RequestBody HorseRequestDTO request) {
+    @PostMapping(consumes = "multipart/form-data")
+    public ResponseEntity<?> createHorse(@ModelAttribute HorseRequestDTO request) {
         try {
             return ResponseEntity.ok(horseService.createHorse(request));
         } catch (RuntimeException e) {
@@ -202,8 +225,8 @@ public class HorseController {
         }
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateHorse(@PathVariable Integer id, @RequestBody HorseRequestDTO request) {
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateHorse(@PathVariable Integer id, @ModelAttribute HorseRequestDTO request) {
         try {
             return ResponseEntity.ok(horseService.updateHorse(id, request));
         } catch (RuntimeException e) {
@@ -614,8 +637,8 @@ public class UserController {
     }
 
     // Cập nhật thông tin User (Dành cho Admin duyệt tài khoản)
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Integer id, @RequestBody UserUpdateRequestDTO request) {
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateUser(@PathVariable Integer id, @ModelAttribute UserUpdateRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.updateUser(id, request));
         } catch (RuntimeException e) {
@@ -893,8 +916,10 @@ public class HorseRequestDTO {
     private Integer age;
     private String breed;
     private String color;
-    private String documentUrl;
     private HorseStatus status;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> certFiles;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> realImageFiles;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> vetRecordFiles;
 }
 
 
@@ -1150,6 +1175,8 @@ public class RegistrationRequestDTO {
     private Integer jockeyId; // Có thể null lúc mới tạ
     private RegistrationStatus status;
     private String note;
+    private java.math.BigDecimal odds;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> kycFiles;
 }
 
 
@@ -1346,6 +1373,10 @@ public class UserUpdateRequestDTO {
     private String kycDocumentUrl;
     private UserStatus status;
     private String phoneNumber;
+    private Double weight;
+    private Double height;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> certFiles;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> healthFiles;
 }
 
 
@@ -1484,8 +1515,8 @@ public class Horse {
     private String breed;
     private String color;
 
-    @Column(name = "document_url", columnDefinition = "TEXT")
-    private String documentUrl;
+    @OneToMany(mappedBy = "horse", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<HorseAttachment> attachments = new java.util.ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -1507,6 +1538,55 @@ public class Horse {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+}
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\model\HorseAttachment.java
+=========================================
+package com.swp.horseracing.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "horse_attachments")
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+public class HorseAttachment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "horse_id")
+    private Horse horse;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private HorseDocType docType;
+
+    @Column(name = "file_url", columnDefinition = "TEXT")
+    private String fileUrl;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\model\HorseDocType.java
+=========================================
+package com.swp.horseracing.model;
+
+public enum HorseDocType {
+    CERTIFICATE, REAL_IMAGE, VET_RECORD
 }
 
 
@@ -1727,6 +1807,7 @@ public class Registration {
     private RegistrationStatus status;
 
     private String note;
+    private java.math.BigDecimal odds;
 }
 
 
@@ -1944,6 +2025,61 @@ public class User {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    private Double weight;
+    private Double height;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<UserAttachment> attachments = new java.util.ArrayList<>();
+}
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\model\UserAttachment.java
+=========================================
+package com.swp.horseracing.model;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "user_attachments")
+@Data @NoArgsConstructor @AllArgsConstructor @Builder
+public class UserAttachment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Enumerated(EnumType.STRING)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    private UserDocType docType;
+
+    @Column(name = "file_url", columnDefinition = "TEXT")
+    private String fileUrl;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+}
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\model\UserDocType.java
+=========================================
+package com.swp.horseracing.model;
+
+public enum UserDocType {
+    ID_CARD, PASSPORT, JOCKEY_CERT, HEALTH_CHECK
 }
 
 
@@ -2537,7 +2673,7 @@ public class BetServiceImpl implements BetService {
         if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
             throw new RuntimeException("Số dư không đủ để đặt cược!");
         }
-
+        java.math.BigDecimal fixedOdds = reg.getOdds() != null ? reg.getOdds() : java.math.BigDecimal.ONE;
         // Trừ tiền ví
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
         walletRepository.save(wallet);
@@ -2549,7 +2685,7 @@ public class BetServiceImpl implements BetService {
                 .registration(reg)
                 .amount(request.getAmount())
                 .status(BetStatus.PENDING)
-                .odds(BigDecimal.ZERO)
+                .odds(fixedOdds) // LƯU THẲNG VÀO VÉ, KHÔNG BAO GIỜ THAY ĐỔI NỮA
                 .build();
         Bet savedBet = betRepository.save(bet);
 
@@ -2571,6 +2707,65 @@ public class BetServiceImpl implements BetService {
         raceRepository.save(race);
 
         return savedBet;
+    }
+}
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\service\impl\FileStorageServiceImpl.java
+=========================================
+package com.swp.horseracing.service.impl;
+
+import com.swp.horseracing.service.FileStorageService;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.*;
+
+@Service
+public class FileStorageServiceImpl implements FileStorageService {
+    private final Path fileStorageLocation;
+    private final List<String> ALLOWED_EXTENSIONS = Arrays.asList("pdf", "png", "jpg", "jpeg", "zip", "heic");
+
+    public FileStorageServiceImpl() {
+        this.fileStorageLocation = Paths.get("uploads").toAbsolutePath().normalize();
+        try {
+            Files.createDirectories(this.fileStorageLocation);
+        } catch (Exception ex) {
+            throw new RuntimeException("Không thể tạo thư mục lưu file.", ex);
+        }
+    }
+
+    @Override
+    public String storeFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) return null;
+        String originalName = org.springframework.util.StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
+        String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase();
+
+        if (!ALLOWED_EXTENSIONS.contains(ext)) throw new RuntimeException("Định dạng file không hỗ trợ: " + ext);
+
+        String fileName = UUID.randomUUID().toString() + "." + ext;
+        try {
+            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            return "http://localhost:8080/uploads/" + fileName;
+        } catch (IOException ex) {
+            throw new RuntimeException("Lưu file thất bại " + fileName, ex);
+        }
+    }
+
+    @Override
+    public List<String> storeFiles(List<MultipartFile> files) {
+        List<String> urls = new ArrayList<>();
+        if (files != null) {
+            for (MultipartFile file : files) {
+                String url = storeFile(file);
+                if (url != null) urls.add(url);
+            }
+        }
+        return urls;
     }
 }
 
@@ -2991,21 +3186,6 @@ public class RaceServiceImpl implements RaceService {
         if (request.getPrize3() != null) race.setPrize3(request.getPrize3());
 
         if (request.getStatus() != null) {
-            // Chốt tỷ lệ cược khi Trọng tài ấn Bắt đầu đua (PENDING -> RUNNING)
-            if (race.getStatus() == RaceStatus.PENDING && request.getStatus() == RaceStatus.RUNNING) {
-                List<LiveOddsResponseDTO> finalOdds = this.getLiveOdds(id);
-                List<Bet> bets = betRepository.findByRaceId(id);
-
-                for (Bet bet : bets) {
-                    java.math.BigDecimal odds = finalOdds.stream()
-                            .filter(o -> o.getRegistrationId().equals(bet.getRegistration().getId()))
-                            .findFirst()
-                            .map(LiveOddsResponseDTO::getCalculatedOdds)
-                            .orElse(java.math.BigDecimal.ZERO);
-                    bet.setOdds(odds);
-                    betRepository.save(bet);
-                }
-            }
             race.setStatus(request.getStatus());
         }
 
@@ -3170,7 +3350,9 @@ public class RefereeServiceImpl implements RefereeService {
         for (Bet bet : bets) {
             if (bet.getRegistration().getId().equals(request.getTop1RegistrationId())) {
                 bet.setStatus(BetStatus.WON);
+                // TUYỆT ĐỐI DÙNG ODDS ĐÃ LƯU TRONG VÉ (Fixed-Odds)
                 BigDecimal odds = bet.getOdds() != null ? bet.getOdds() : BigDecimal.ONE;
+                // CÔNG THỨC: Tiền Thưởng = Vốn * Tỷ Lệ Cược
                 BigDecimal rewardAmount = bet.getAmount().multiply(odds).setScale(0, java.math.RoundingMode.HALF_UP);
                 bet.setReward(rewardAmount);
 
@@ -3836,6 +4018,20 @@ import com.swp.horseracing.dto.BetRequestDTO;
 
 public interface BetService {
     Bet createBet(BetRequestDTO request);
+}
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\service\FileStorageService.java
+=========================================
+package com.swp.horseracing.service;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
+
+public interface FileStorageService {
+    String storeFile(MultipartFile file);
+    List<String> storeFiles(List<MultipartFile> files);
 }
 
 

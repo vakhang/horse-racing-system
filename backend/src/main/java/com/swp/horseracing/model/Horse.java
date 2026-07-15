@@ -25,8 +25,8 @@ public class Horse {
     private String breed;
     private String color;
 
-    @Column(name = "document_url", columnDefinition = "TEXT")
-    private String documentUrl;
+    @OneToMany(mappedBy = "horse", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<HorseAttachment> attachments = new java.util.ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)

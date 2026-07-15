@@ -41,4 +41,5 @@ public class Registration {
     private RegistrationStatus status;
 
     private String note;
+    private java.math.BigDecimal odds;
 }

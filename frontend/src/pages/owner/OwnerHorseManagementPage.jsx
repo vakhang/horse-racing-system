@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Input, InputNumber, Popconfirm, Row, Col, Progress } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, AppstoreAddOutlined, HistoryOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Input, InputNumber, Popconfirm, Row, Col, Progress, Upload } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, AppstoreAddOutlined, HistoryOutlined, UploadOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import { useAuth } from '../../context/AuthContext';
 import dayjs from 'dayjs';
@@ -33,14 +33,36 @@ const OwnerHorseManagementPage = () => {
         finally { setLoading(false); }
     };
 
+    const normFile = (e) => {
+        if (Array.isArray(e)) return e;
+        return e?.fileList;
+    };
+
     const handleSaveHorse = async (values) => {
         try {
-            const payload = { ownerId: currentOwnerId, name: values.name, age: values.age, breed: values.breed, color: values.color, documentUrl: values.documentUrl };
+            const formData = new FormData();
+            formData.append('ownerId', currentOwnerId);
+            formData.append('name', values.name);
+            formData.append('age', values.age);
+            formData.append('breed', values.breed);
+            formData.append('color', values.color);
+
+            // Append danh sách Files chuẩn nghiệp vụ 3 loại giấy tờ
+            if (values.realImageFiles && values.realImageFiles.length > 0) {
+                values.realImageFiles.forEach(f => formData.append('realImageFiles', f.originFileObj));
+            }
+            if (values.certFiles && values.certFiles.length > 0) {
+                values.certFiles.forEach(f => formData.append('certFiles', f.originFileObj));
+            }
+            if (values.vetRecordFiles && values.vetRecordFiles.length > 0) {
+                values.vetRecordFiles.forEach(f => formData.append('vetRecordFiles', f.originFileObj));
+            }
+
             if (editingHorseId) {
-                await api.put(`/horses/${editingHorseId}`, payload);
+                await api.put(`/horses/${editingHorseId}`, formData);
                 message.success('Cập nhật thông tin ngựa thành công!');
             } else {
-                await api.post('/horses', payload);
+                await api.post('/horses', formData);
                 message.success('Gửi hồ sơ chiến mã thành công! Đang chờ Admin duyệt.');
             }
             setIsModalVisible(false);
@@ -64,7 +86,6 @@ const OwnerHorseManagementPage = () => {
     };
 
     const openHistory = (horse) => {
-        // Giả lập lịch sử từ các thông số DB đã có (totalRaces, winRaces)
         let mockHistory = [];
         const total = horse.totalRaces || 0;
         const wins = horse.winRaces || 0;
@@ -72,9 +93,9 @@ const OwnerHorseManagementPage = () => {
         for(let i = 0; i < total; i++) {
             mockHistory.push({
                 id: i,
-                date: dayjs().subtract(i * 7 + 2, 'day').format('DD/MM/YYYY'), // Giả lập ngày
+                date: dayjs().subtract(i * 7 + 2, 'day').format('DD/MM/YYYY'),
                 tournament: i < wins ? 'Siêu Cúp Hoàng Gia' : 'Cúp Giao Hữu Mùa Hè',
-                rank: i < wins ? 1 : Math.floor(Math.random() * 5) + 2, // Nếu win thì hạng 1, ko thì hạng 2-6
+                rank: i < wins ? 1 : Math.floor(Math.random() * 5) + 2,
                 prize: i < wins ? '50,000,000 VNĐ' : '0 VNĐ'
             });
         }
@@ -91,12 +112,11 @@ const OwnerHorseManagementPage = () => {
                 </Space>
             )},
         { title: 'Thể Lực', render: (_, r) => {
-                // Giả lập thể lực dựa trên lastRaced lưu ở LocalStorage
                 const lastRaced = localStorage.getItem(`horse_last_raced_${r.id}`);
                 let stamina = 100;
                 if (lastRaced) {
                     const hoursPassed = dayjs().diff(dayjs(lastRaced), 'hour');
-                    stamina = Math.min(100, Math.max(20, hoursPassed * 2)); // Hồi phục 2%/giờ
+                    stamina = Math.min(100, Math.max(20, hoursPassed * 2));
                 }
                 return <Progress percent={stamina} size="small" status={stamina < 50 ? 'exception' : 'active'} format={p => `${p}%`} />;
             }},
@@ -142,7 +162,21 @@ const OwnerHorseManagementPage = () => {
                         <Col span={12}><Form.Item name="color" label={<Text strong>Màu Lông</Text>} rules={[{ required: true }]}><Input size="large" /></Form.Item></Col>
                     </Row>
                     <Form.Item name="breed" label={<Text strong>Giống Ngựa</Text>} rules={[{ required: true }]}><Input size="large" /></Form.Item>
-                    <Form.Item name="documentUrl" label={<Text strong>Giấy chứng nhận (Link ảnh)</Text>}><Input size="large" /></Form.Item>
+
+                    {/* Khu vực Upload Files Form Data */}
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 mb-4">
+                        <Title level={5} className="text-blue-700">Tài Liệu Đính Kèm (Upload)</Title>
+                        <Form.Item name="realImageFiles" label="Ảnh Thực Tế Chiến Mã" valuePropName="fileList" getValueFromEvent={normFile}>
+                            <Upload multiple beforeUpload={() => false} listType="picture"><Button icon={<UploadOutlined />}>Tải Lên Ảnh</Button></Upload>
+                        </Form.Item>
+                        <Form.Item name="certFiles" label="Giấy Chứng Nhận Nguồn Gốc" valuePropName="fileList" getValueFromEvent={normFile}>
+                            <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải Lên Giấy Tờ</Button></Upload>
+                        </Form.Item>
+                        <Form.Item name="vetRecordFiles" label="Sổ Tiêm Phòng/Khám Bệnh" valuePropName="fileList" getValueFromEvent={normFile}>
+                            <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải Lên Hồ Sơ Thú Y</Button></Upload>
+                        </Form.Item>
+                    </div>
+
                     <Button type="primary" htmlType="submit" size="large" block className="mt-4 bg-blue-600 hover:bg-blue-700">
                         {editingHorseId ? 'LƯU CẬP NHẬT' : 'GỬI HỒ SƠ DUYỆT CHIẾN MÃ'}
                     </Button>

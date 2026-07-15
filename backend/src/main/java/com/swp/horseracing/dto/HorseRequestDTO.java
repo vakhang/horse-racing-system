@@ -10,6 +10,8 @@ public class HorseRequestDTO {
     private Integer age;
     private String breed;
     private String color;
-    private String documentUrl;
     private HorseStatus status;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> certFiles;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> realImageFiles;
+    private java.util.List<org.springframework.web.multipart.MultipartFile> vetRecordFiles;
 }

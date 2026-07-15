@@ -25,7 +25,7 @@ public class RaceServiceImpl implements RaceService {
     private final TournamentRepository tournamentRepository;
     private final RegistrationRepository registrationRepository;
     private final BetRepository betRepository;
-    private final UserRepository userRepository; // Tiêm vào để tìm Trọng tài
+    private final UserRepository userRepository;
 
     @Override
     @Transactional
@@ -98,22 +98,8 @@ public class RaceServiceImpl implements RaceService {
         if (request.getPrize2() != null) race.setPrize2(request.getPrize2());
         if (request.getPrize3() != null) race.setPrize3(request.getPrize3());
 
+        // Đã xóa logic chốt kèo tại đây vì sử dụng Fixed-Odds từ bảng Registration.
         if (request.getStatus() != null) {
-            // Chốt tỷ lệ cược khi Trọng tài ấn Bắt đầu đua (PENDING -> RUNNING)
-            if (race.getStatus() == RaceStatus.PENDING && request.getStatus() == RaceStatus.RUNNING) {
-                List<LiveOddsResponseDTO> finalOdds = this.getLiveOdds(id);
-                List<Bet> bets = betRepository.findByRaceId(id);
-
-                for (Bet bet : bets) {
-                    java.math.BigDecimal odds = finalOdds.stream()
-                            .filter(o -> o.getRegistrationId().equals(bet.getRegistration().getId()))
-                            .findFirst()
-                            .map(LiveOddsResponseDTO::getCalculatedOdds)
-                            .orElse(java.math.BigDecimal.ZERO);
-                    bet.setOdds(odds);
-                    betRepository.save(bet);
-                }
-            }
             race.setStatus(request.getStatus());
         }
 

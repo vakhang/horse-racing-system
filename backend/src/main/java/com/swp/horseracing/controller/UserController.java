@@ -33,8 +33,8 @@ public class UserController {
     }
 
     // Cập nhật thông tin User (Dành cho Admin duyệt tài khoản)
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Integer id, @RequestBody UserUpdateRequestDTO request) {
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
+    public ResponseEntity<?> updateUser(@PathVariable Integer id, @ModelAttribute UserUpdateRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.updateUser(id, request));
         } catch (RuntimeException e) {
