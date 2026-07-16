@@ -32,10 +32,11 @@ const RegisterPage = () => {
         formData.append('role', values.role);
         formData.append('dob', values.dob.format('YYYY-MM-DD'));
 
-        // Append multiple KYC files
+        // SỬA LẠI ĐOẠN NÀY
         if (values.kycFiles && values.kycFiles.length > 0) {
             values.kycFiles.forEach(file => {
-                formData.append('kycFiles', file.originFileObj);
+                // Thêm || file để đề phòng originFileObj bị undefined
+                formData.append('kycFiles', file.originFileObj || file);
             });
         }
 

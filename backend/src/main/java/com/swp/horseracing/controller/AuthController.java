@@ -17,7 +17,8 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("/register")
+    // Thêm consumes = "multipart/form-data" vào đây
+    @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<?> register(@ModelAttribute RegisterRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.registerUser(request));
