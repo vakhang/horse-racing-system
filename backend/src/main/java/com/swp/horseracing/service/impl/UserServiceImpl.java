@@ -6,11 +6,13 @@ import com.swp.horseracing.repository.BetRepository;
 import com.swp.horseracing.repository.TransactionHistoryRepository;
 import com.swp.horseracing.repository.UserRepository;
 import com.swp.horseracing.repository.WalletRepository;
-import com.swp.horseracing.security.JwtUtils; // <-- THÊM IMPORT NÀY
+import com.swp.horseracing.security.JwtUtils;
+import com.swp.horseracing.service.FileStorageService; // <-- THÊM
 import com.swp.horseracing.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,7 +28,8 @@ public class UserServiceImpl implements UserService {
     private final WalletRepository walletRepository;
     private final BetRepository betRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
-    private final JwtUtils jwtUtils; // <-- TIÊM MÁY IN VÉ VÀO ĐÂY
+    private final JwtUtils jwtUtils;
+    private final FileStorageService fileStorageService; // Tiêm dịch vụ lưu trữ file
 
     @Override
     @Transactional
@@ -51,14 +54,24 @@ public class UserServiceImpl implements UserService {
                 .role(request.getRole())
                 .dob(request.getDob())
                 .status(UserStatus.PENDING)
+                .attachments(new java.util.ArrayList<>()) // Khởi tạo mảng
                 .build();
+
+        // 1. Lưu file KYC xuống hệ thống nếu có
+        if (request.getKycFiles() != null) {
+            for (MultipartFile file : request.getKycFiles()) {
+                String url = fileStorageService.storeFile(file);
+                if (url != null) {
+                    newUser.getAttachments().add(UserAttachment.builder()
+                            .user(newUser).docType(UserDocType.ID_CARD).fileUrl(url).build());
+                }
+            }
+        }
 
         User savedUser = userRepository.save(newUser);
 
         // NẾU LÀ KHÁN GIẢ HOẶC CHỦ NGỰA THÌ MỚI TẠO VÍ
         if (request.getRole() == RoleEnum.SPECTATOR || request.getRole() == RoleEnum.OWNER) {
-
-            // Khán giả thì tặng 100k, Chủ ngựa thì ví 0 đồng
             BigDecimal initialBalance = (request.getRole() == RoleEnum.SPECTATOR)
                     ? new BigDecimal("100000.00")
                     : BigDecimal.ZERO;
@@ -90,25 +103,16 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Tài liệu KYC của bạn đã bị từ chối. Không thể đăng nhập!");
         }
 
-
-        // --- TẠO TOKEN KÈM ROLE ---
         String token = jwtUtils.generateToken(
                 user.getId(),
                 user.getRole().name()
         );
 
-
-        return UserResponseDTO.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .dob(user.getDob())
-                .status(user.getStatus())
-                .createdAt(user.getCreatedAt())
-                .token(token)
-                .build();
+        UserResponseDTO response = mapToResponseDTO(user);
+        response.setToken(token);
+        return response;
     }
+
     @Override
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream()
@@ -135,6 +139,24 @@ public class UserServiceImpl implements UserService {
         if (request.getStatus() != null) user.setStatus(request.getStatus());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
 
+        // Cập nhật thông tin JOCKEY
+        if (request.getWeight() != null) user.setWeight(request.getWeight());
+        if (request.getHeight() != null) user.setHeight(request.getHeight());
+
+        // Lưu file cho JOCKEY
+        if (request.getCertFiles() != null) {
+            for (MultipartFile file : request.getCertFiles()) {
+                String url = fileStorageService.storeFile(file);
+                if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.JOCKEY_CERT).fileUrl(url).build());
+            }
+        }
+        if (request.getHealthFiles() != null) {
+            for (MultipartFile file : request.getHealthFiles()) {
+                String url = fileStorageService.storeFile(file);
+                if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.HEALTH_CHECK).fileUrl(url).build());
+            }
+        }
+
         User updatedUser = userRepository.save(user);
         return mapToResponseDTO(updatedUser);
     }
@@ -149,10 +171,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponseDTO mapToResponseDTO(User user) {
-        // Lấy số dư ví để hiển thị cho Admin
         BigDecimal balance = walletRepository.findByUserId(user.getId())
                 .map(Wallet::getBalance)
                 .orElse(BigDecimal.ZERO);
+
+        // Lấy link KYC đầu tiên để trả về cho Admin
+        String kycUrl = null;
+        if (user.getAttachments() != null && !user.getAttachments().isEmpty()) {
+            kycUrl = user.getAttachments().get(0).getFileUrl();
+        }
 
         return UserResponseDTO.builder()
                 .id(user.getId())
@@ -163,6 +190,9 @@ public class UserServiceImpl implements UserService {
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
                 .phoneNumber(user.getPhoneNumber())
+                .kycDocumentUrl(kycUrl) // Map link KYC
+                .weight(user.getWeight())
+                .height(user.getHeight())
                 .balance(balance)
                 .build();
     }

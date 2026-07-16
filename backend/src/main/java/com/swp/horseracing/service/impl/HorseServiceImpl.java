@@ -3,14 +3,18 @@ package com.swp.horseracing.service.impl;
 import com.swp.horseracing.dto.HorseRequestDTO;
 import com.swp.horseracing.dto.HorseResponseDTO;
 import com.swp.horseracing.model.Horse;
+import com.swp.horseracing.model.HorseAttachment;
+import com.swp.horseracing.model.HorseDocType;
 import com.swp.horseracing.model.HorseStatus;
 import com.swp.horseracing.model.User;
 import com.swp.horseracing.repository.HorseRepository;
 import com.swp.horseracing.repository.UserRepository;
+import com.swp.horseracing.service.FileStorageService;
 import com.swp.horseracing.service.HorseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,7 +24,8 @@ import java.util.stream.Collectors;
 public class HorseServiceImpl implements HorseService {
 
     private final HorseRepository horseRepository;
-    private final UserRepository userRepository; // Tiêm vào để check Chủ ngựa
+    private final UserRepository userRepository;
+    private final FileStorageService fileStorageService; // Bơm dịch vụ lưu file
 
     @Override
     @Transactional
@@ -32,12 +37,14 @@ public class HorseServiceImpl implements HorseService {
                 .name(request.getName())
                 .owner(owner)
                 .age(request.getAge())
-                // Đã thay healthStatus và winRate bằng breed và color
                 .breed(request.getBreed())
                 .color(request.getColor())
-                .documentUrl(request.getDocumentUrl())
                 .status(request.getStatus() != null ? request.getStatus() : HorseStatus.PENDING)
+                .attachments(new java.util.ArrayList<>()) // Khởi tạo mảng file
                 .build();
+
+        // Xử lý lưu các file đính kèm
+        saveAttachments(horse, request);
 
         return mapToResponseDTO(horseRepository.save(horse));
     }
@@ -77,13 +84,12 @@ public class HorseServiceImpl implements HorseService {
 
         if (request.getName() != null) horse.setName(request.getName());
         if (request.getAge() != null) horse.setAge(request.getAge());
-
-        // Cập nhật theo thuộc tính mới
         if (request.getBreed() != null) horse.setBreed(request.getBreed());
         if (request.getColor() != null) horse.setColor(request.getColor());
-
-        if (request.getDocumentUrl() != null) horse.setDocumentUrl(request.getDocumentUrl());
         if (request.getStatus() != null) horse.setStatus(request.getStatus());
+
+        // Bổ sung thêm file đính kèm nếu có upload mới
+        saveAttachments(horse, request);
 
         return mapToResponseDTO(horseRepository.save(horse));
     }
@@ -97,10 +103,38 @@ public class HorseServiceImpl implements HorseService {
         horseRepository.deleteById(id);
     }
 
+    // Hàm phụ trợ giúp lưu File ảnh/giấy tờ ngựa xuống đĩa
+    private void saveAttachments(Horse horse, HorseRequestDTO request) {
+        if (request.getCertFiles() != null) {
+            for (MultipartFile file : request.getCertFiles()) {
+                String url = fileStorageService.storeFile(file);
+                if (url != null) horse.getAttachments().add(HorseAttachment.builder().horse(horse).docType(HorseDocType.CERTIFICATE).fileUrl(url).build());
+            }
+        }
+        if (request.getRealImageFiles() != null) {
+            for (MultipartFile file : request.getRealImageFiles()) {
+                String url = fileStorageService.storeFile(file);
+                if (url != null) horse.getAttachments().add(HorseAttachment.builder().horse(horse).docType(HorseDocType.REAL_IMAGE).fileUrl(url).build());
+            }
+        }
+        if (request.getVetRecordFiles() != null) {
+            for (MultipartFile file : request.getVetRecordFiles()) {
+                String url = fileStorageService.storeFile(file);
+                if (url != null) horse.getAttachments().add(HorseAttachment.builder().horse(horse).docType(HorseDocType.VET_RECORD).fileUrl(url).build());
+            }
+        }
+    }
+
     private HorseResponseDTO mapToResponseDTO(Horse horse) {
         Float winRate = 0f;
         if (horse.getTotalRaces() != null && horse.getTotalRaces() > 0) {
             winRate = (float) horse.getWinRaces() / horse.getTotalRaces() * 100;
+        }
+
+        // Lấy File URL đầu tiên để hiển thị trong nút "Xem hồ sơ" của Admin
+        String docUrl = null;
+        if (horse.getAttachments() != null && !horse.getAttachments().isEmpty()) {
+            docUrl = horse.getAttachments().get(0).getFileUrl();
         }
 
         return HorseResponseDTO.builder()
@@ -111,7 +145,7 @@ public class HorseServiceImpl implements HorseService {
                 .age(horse.getAge())
                 .breed(horse.getBreed())
                 .color(horse.getColor())
-                .documentUrl(horse.getDocumentUrl())
+                .documentUrl(docUrl) // Trả về link ảnh đầu tiên cho DTO
                 .status(horse.getStatus())
                 .totalRaces(horse.getTotalRaces())
                 .winRaces(horse.getWinRaces())

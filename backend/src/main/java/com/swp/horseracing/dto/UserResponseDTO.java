@@ -21,5 +21,12 @@ public class UserResponseDTO {
     private LocalDateTime createdAt;
     private String token;
 
+    // Bổ sung thông tin cho Admin kiểm duyệt KYC
+    private String kycDocumentUrl;
+
+    // Các thông số thêm của JOCKEY
+    private Double weight;
+    private Double height;
+
     private BigDecimal balance; // ADMIN CẦN XEM SỐ DƯ
 }
