@@ -7,6 +7,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -21,12 +22,12 @@ public class UserResponseDTO {
     private LocalDateTime createdAt;
     private String token;
 
-    // Bổ sung thông tin cho Admin kiểm duyệt KYC
-    private String kycDocumentUrl;
+    // Bổ sung danh sách mảng link (để hứng nhiều file)
+    private List<String> kycDocumentUrls;
+    private List<String> certDocumentUrls;
+    private List<String> healthDocumentUrls;
 
-    // Các thông số thêm của JOCKEY
     private Double weight;
     private Double height;
-
-    private BigDecimal balance; // ADMIN CẦN XEM SỐ DƯ
+    private BigDecimal balance;
 }

@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -17,24 +19,23 @@ public class AuthController {
         this.userService = userService;
     }
 
-    // Thêm consumes = "multipart/form-data" vào đây
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<?> register(@ModelAttribute RegisterRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.registerUser(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            // FIX: Trả về chuẩn JSON để Frontend đọc được biến error
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    // API ĐĂNG NHẬP MỚI THÊM VÀO ĐÂY SẾP ƠI
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.loginUser(request));
         } catch (RuntimeException e) {
-
-            return ResponseEntity.badRequest().body(e.getMessage());
+            // FIX: Trả về chuẩn JSON
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 }

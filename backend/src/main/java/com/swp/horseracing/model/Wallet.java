@@ -1,5 +1,6 @@
 package com.swp.horseracing.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -14,6 +15,8 @@ public class Wallet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    // FIX LỖI ĐỆ QUY JACKSON VÀ CHỐNG SPAM TERMINAL MỖI 3 GIÂY
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;

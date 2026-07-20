@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber, Upload } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UploadOutlined } from '@ant-design/icons';
@@ -40,21 +39,25 @@ const ProfilePage = () => {
         formData.append('phoneNumber', values.phoneNumber);
         if (values.dob) formData.append('dob', values.dob.format('YYYY-MM-DD'));
 
-        // Append dữ liệu riêng của Nài Ngựa
         if (user.role === 'JOCKEY') {
             formData.append('weight', values.weight);
             formData.append('height', values.height);
+        }
 
+        // Tích hợp logic xử lý File cho cả 3 Role: JOCKEY, OWNER, REFEREE
+        if (user.role === 'JOCKEY' || user.role === 'OWNER' || user.role === 'REFEREE') {
             if (values.certFiles && values.certFiles.length > 0) {
                 values.certFiles.forEach(f => formData.append('certFiles', f.originFileObj));
             }
             if (values.healthFiles && values.healthFiles.length > 0) {
                 values.healthFiles.forEach(f => formData.append('healthFiles', f.originFileObj));
             }
+            if (values.kycFiles && values.kycFiles.length > 0) {
+                values.kycFiles.forEach(f => formData.append('kycFiles', f.originFileObj));
+            }
         }
 
         try {
-            // Không set Header Content-Type vì FormData sẽ tự sinh Boundary
             const response = await axios.put(`http://localhost:8080/api/users/${user.id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -100,7 +103,7 @@ const ProfilePage = () => {
                         <DatePicker className="w-full" format="YYYY-MM-DD" />
                     </Form.Item>
 
-                    {/* KHU VỰC DÀNH RIÊNG CHO NÀI NGỰA (MULTIPART & THÔNG SỐ) */}
+                    {/* KHU VỰC DÀNH RIÊNG CHO NÀI NGỰA */}
                     {user?.role === 'JOCKEY' && (
                         <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 mt-4 mb-4">
                             <Title level={5} className="text-purple-700 mb-4">Thông số Thể chất & Bằng Cấp (Dành cho Nài ngựa)</Title>
@@ -121,6 +124,36 @@ const ProfilePage = () => {
                                 </Form.Item>
                             </div>
                             <Text className="text-gray-500 text-sm italic">* Hồ sơ chứng chỉ sẽ được hiển thị công khai trên Sàn Giao Dịch.</Text>
+                        </div>
+                    )}
+
+                    {/* KHU VỰC DÀNH RIÊNG CHO TRỌNG TÀI */}
+                    {user?.role === 'REFEREE' && (
+                        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mt-4 mb-4">
+                            <Title level={5} className="text-indigo-700 mb-4">Tài Liệu Bắt Buộc (Dành cho Trọng Tài)</Title>
+                            <div className="flex gap-4">
+                                <Form.Item label="CCCD / Hộ Chiếu" name="kycFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên CCCD</Button></Upload>
+                                </Form.Item>
+                                <Form.Item label="Chứng chỉ chuyên môn" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Chứng Chỉ</Button></Upload>
+                                </Form.Item>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* KHU VỰC DÀNH RIÊNG CHO CHỦ NGỰA */}
+                    {user?.role === 'OWNER' && (
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4 mb-4">
+                            <Title level={5} className="text-blue-700 mb-4">Hồ Sơ Yêu Cầu Bổ Sung (Dành cho Chủ Ngựa)</Title>
+                            <div className="flex gap-4">
+                                <Form.Item label="Ảnh Thực Tế & CN Nguồn Gốc Chiến Mã" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Ảnh & CN</Button></Upload>
+                                </Form.Item>
+                                <Form.Item label="Sổ Tiêm Phòng/Khám Bệnh" name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Sổ Khám</Button></Upload>
+                                </Form.Item>
+                            </div>
                         </div>
                     )}
 

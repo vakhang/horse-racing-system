@@ -12,7 +12,6 @@ const UserDashboard = () => {
     const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('token');
 
-    // Cấu hình axios để luôn gắn Token vào Header
     const axiosInstance = axios.create({
         baseURL: 'http://localhost:8080/api',
         headers: {
@@ -31,16 +30,16 @@ const UserDashboard = () => {
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
-            // Gọi 3 API cùng lúc bằng Promise.all cho nhanh
             const [walletRes, betsRes, transRes] = await Promise.all([
                 axiosInstance.get(`/wallets/my-wallet?userId=${userId}`),
                 axiosInstance.get(`/users/my-bets?userId=${userId}`),
                 axiosInstance.get(`/users/my-transactions?userId=${userId}`)
             ]);
 
-            setBalance(walletRes.data.balance);
-            setBets(betsRes.data);
-            setTransactions(transRes.data);
+            // BỌC KHIÊN THÉP
+            setBalance(walletRes.data?.balance || 0);
+            setBets(betsRes.data || []);
+            setTransactions(transRes.data || []);
         } catch (error) {
             console.error(error);
             message.error('Không thể tải dữ liệu. Bạn đã gắn đúng Token chưa?');
@@ -49,7 +48,6 @@ const UserDashboard = () => {
         }
     };
 
-    // Cấu hình cột cho Bảng Lịch sử Cược
     const betColumns = [
         { title: 'Chặng Đua', dataIndex: 'raceName', key: 'raceName' },
         { title: 'Ngựa Đặt', dataIndex: 'horseName', key: 'horseName' },
@@ -57,7 +55,7 @@ const UserDashboard = () => {
             title: 'Tiền Cược',
             dataIndex: 'amount',
             key: 'amount',
-            render: (val) => <span className="font-semibold">{val.toLocaleString()} đ</span>
+            render: (val) => <span className="font-semibold">{Number(val || 0).toLocaleString()} đ</span>
         },
         { title: 'Tỷ lệ', dataIndex: 'odds', key: 'odds' },
         {
@@ -73,11 +71,10 @@ const UserDashboard = () => {
             title: 'Tiền Thưởng',
             dataIndex: 'rewardAmount',
             key: 'rewardAmount',
-            render: (val) => <span className="text-green-600 font-bold">+{val.toLocaleString()} đ</span>
+            render: (val) => <span className="text-green-600 font-bold">+{Number(val || 0).toLocaleString()} đ</span>
         },
     ];
 
-    // Cấu hình cột cho Bảng Lịch sử Giao dịch
     const transColumns = [
         { title: 'Mã GD', dataIndex: 'transactionCode', key: 'transactionCode' },
         { title: 'Loại', dataIndex: 'type', key: 'type', render: (val) => <Tag color="blue">{val}</Tag> },
@@ -88,7 +85,7 @@ const UserDashboard = () => {
                 const isIncome = record.direction === 'IN';
                 return (
                     <span className={isIncome ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        {isIncome ? '+' : '-'}{record.amount.toLocaleString()} đ
+                        {isIncome ? '+' : '-'}{Number(record.amount || 0).toLocaleString()} đ
                     </span>
                 );
             }
@@ -121,13 +118,11 @@ const UserDashboard = () => {
     return (
         <div className="flex flex-col gap-6">
             <h1 className="text-2xl font-bold text-gray-800">Tổng Quan Tài Khoản</h1>
-
-            {/* Card Số dư Ví */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Card className="shadow-sm border-l-4 border-blue-500 rounded-lg">
                     <Statistic
                         title={<span className="text-gray-500 font-medium text-base">Số dư ví hiện tại</span>}
-                        value={balance}
+                        value={Number(balance || 0)}
                         precision={0}
                         suffix="VNĐ"
                         prefix={<WalletOutlined className="text-blue-500 mr-2" />}
@@ -135,8 +130,6 @@ const UserDashboard = () => {
                     />
                 </Card>
             </div>
-
-            {/* Bảng Tabs chứa Lịch sử */}
             <Card className="shadow-sm rounded-lg">
                 <Tabs defaultActiveKey="1" items={tabItems} />
             </Card>

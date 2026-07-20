@@ -1,6 +1,6 @@
 import horseRacingBg from '../assets/horseracing.png';
 import React, { useState } from 'react';
-import { Form, Input, Button, Typography, message, ConfigProvider, theme } from 'antd';
+import { Form, Input, Button, Typography, message, ConfigProvider, theme, Modal } from 'antd';
 import { MailOutlined, LockOutlined, TrophyOutlined, FireOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -10,10 +10,10 @@ const { Title, Text } = Typography;
 
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
+    const [isBanModalVisible, setIsBanModalVisible] = useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth(); // Lôi hàm login ra từ Context
+    const { login } = useAuth();
 
-    // HÀM CALL API THẬT XUỐNG SPRING BOOT
     const handleLogin = async (values) => {
         setLoading(true);
         try {
@@ -22,15 +22,21 @@ const LoginPage = () => {
                 password: values.password
             });
 
-            login(response.data); // Gọi hàm login trong AuthContext
+            login(response.data);
 
             if (response.data.role === 'ADMIN') {
-                navigate('/admin/users'); // Khớp với route trong App.jsx
+                navigate('/admin/users');
             } else {
                 navigate('/');
             }
         } catch (error) {
-            message.error('Đăng nhập thất bại!');
+            const errorMsg = error.response?.data?.error || error.response?.data || '';
+
+            if (errorMsg.includes('bị khóa')) {
+                setIsBanModalVisible(true);
+            } else {
+                message.error(errorMsg || 'Đăng nhập thất bại!');
+            }
         } finally {
             setLoading(false);
         }
@@ -41,13 +47,12 @@ const LoginPage = () => {
             <div
                 className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
                 style={{
-                    backgroundImage: `url(${horseRacingBg})`, // Dùng biến import ảnh local ở đây
+                    backgroundImage: `url(${horseRacingBg})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
                 }}
             >
-                {/* Lớp phủ đen mờ */}
                 <div className="absolute inset-0 z-0 bg-black/60"></div>
 
                 <div className="z-10 w-full max-w-md p-10 rounded-3xl shadow-[0_0_50px_rgba(250,204,21,0.15)] bg-black/40 backdrop-blur-md border border-white/10 transition-all hover:shadow-[0_0_60px_rgba(250,204,21,0.3)]">
@@ -99,6 +104,59 @@ const LoginPage = () => {
                         </Link>
                     </div>
                 </div>
+
+                {/* MODAL THÔNG BÁO BANNED TÀI KHOẢN CAO CẤP */}
+                <Modal
+                    title={<span className="text-xl font-black text-red-500 uppercase">❌ Tài Khoản Bị Khóa</span>}
+                    open={isBanModalVisible}
+                    onCancel={() => setIsBanModalVisible(false)}
+                    footer={[
+                        <Button key="close" type="primary" danger size="large" onClick={() => setIsBanModalVisible(false)} className="font-bold rounded-lg px-8">
+                            Đóng thông báo
+                        </Button>
+                    ]}
+                    centered
+                    className="custom-ban-modal"
+                >
+                    {/* Sử dụng màu text sáng trên nền tối của Modal */}
+                    <div className="text-base text-gray-300 space-y-4 my-6">
+                        {/* Hộp cảnh báo: Nền đỏ trong suốt, chữ đỏ nhạt */}
+                        <div className="bg-red-900/40 p-4 rounded-xl border border-red-500/50 text-red-200">
+                            Tài khoản của bạn đã bị <b className="text-red-400">Quản trị viên (Admin) khóa</b> do nghi ngờ vi phạm quy định của hệ thống hoặc có hành vi gian lận trong quá trình tham gia.
+                        </div>
+                        <p>Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ ngay với Ban Quản Trị qua các kênh dưới đây để được hỗ trợ mở lại tài khoản:</p>
+
+                        {/* Hộp liên hệ: Nền trắng trong suốt (kính), chữ xám sáng */}
+                        <div className="bg-white/10 p-5 rounded-xl border border-white/20 shadow-inner space-y-4">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">📞</span>
+                                <div>
+                                    <span className="text-xs font-bold uppercase block text-gray-400">Hotline / Zalo</span>
+                                    <span className="text-lg font-bold text-blue-400">0971 966 715</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">📧</span>
+                                <div>
+                                    <span className="text-xs font-bold uppercase block text-gray-400">Email Hỗ Trợ</span>
+                                    <span className="text-base font-bold text-gray-200">xuankhang2412@gmail.com</span>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">🌐</span>
+                                <div>
+                                    <span className="text-xs font-bold uppercase block text-gray-400">Facebook Admin</span>
+                                    <a href="https://www.facebook.com/grizzcute/" target="_blank" rel="noreferrer" className="text-base font-bold text-blue-400 hover:text-blue-300">
+                                        Ngô Xuân Khang (Grizz)
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="italic text-sm text-gray-500 text-center mt-4">
+                            * Vui lòng cung cấp Email đăng ký khi liên hệ để được hỗ trợ nhanh nhất.
+                        </p>
+                    </div>
+                </Modal>
             </div>
         </ConfigProvider>
     );

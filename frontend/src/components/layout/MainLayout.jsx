@@ -1,11 +1,10 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     FileProtectOutlined, HomeOutlined, HistoryOutlined,
     DollarOutlined, BankOutlined, FlagOutlined,
-    AppstoreAddOutlined, TeamOutlined
+    AppstoreAddOutlined, TeamOutlined, ExportOutlined
 } from '@ant-design/icons';
 import Header from './Header';
 import { useAuth } from '../../context/AuthContext';
@@ -16,8 +15,6 @@ const MainLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
-
-    // Lấy thông tin user để biết Role
     const { user } = useAuth();
 
     const baseMenuItems = [
@@ -26,44 +23,70 @@ const MainLayout = ({ children }) => {
 
     const spectatorMenuItems = [
         ...baseMenuItems,
-        { key: '/dashboard', icon: <HistoryOutlined />, label: 'Ví của tôi' },
         { key: '/betting', icon: <DollarOutlined />, label: 'Cá Cược Ngay' },
-        { key: '/wallet', icon: <BankOutlined />, label: 'Nạp / Rút Tiền' },
+        {
+            key: 'finance',
+            icon: <BankOutlined />,
+            label: 'Quản Lý Tài Chính',
+            children: [
+                { key: '/dashboard', icon: <HistoryOutlined />, label: 'Lịch Sử Giao Dịch' },
+                { key: '/wallet', icon: <ExportOutlined />, label: 'Giao Dịch Nạp / Rút' }
+            ]
+        }
     ];
 
-    // MENU CẬP NHẬT MỚI: Đã gộp Thống kê doanh thu và Quản lý ví thành 1
     const ownerMenuItems = [
         ...baseMenuItems,
         { key: '/my-horses', icon: <AppstoreAddOutlined />, label: 'Quản Lý Chiến Mã' },
         { key: '/owner/races', icon: <FlagOutlined />, label: 'Đăng Ký Thi Đấu' },
         { key: '/owner/jockeys', icon: <TeamOutlined />, label: 'Thị Trường Nài Ngựa' },
-        { key: '/wallet', icon: <BankOutlined />, label: 'Quản Lý Tài Chính' },
+        {
+            key: 'finance',
+            icon: <BankOutlined />,
+            label: 'Quản Lý Tài Chính',
+            children: [
+                { key: '/dashboard', icon: <HistoryOutlined />, label: 'Lịch Sử Thu Nhập' },
+                { key: '/wallet', icon: <ExportOutlined />, label: 'Yêu Cầu Rút Tiền' }
+            ]
+        }
     ];
 
     const jockeyMenuItems = [
         ...baseMenuItems,
         { key: '/jockey/invitations', icon: <FlagOutlined />, label: 'Lời Mời Thi Đấu' },
-        { key: '/dashboard', icon: <HistoryOutlined />, label: 'Thu Nhập Của Tôi' },
+        {
+            key: 'finance',
+            icon: <BankOutlined />,
+            label: 'Quản Lý Tài Chính',
+            children: [
+                { key: '/dashboard', icon: <HistoryOutlined />, label: 'Lịch Sử Thu Nhập' },
+                { key: '/wallet', icon: <ExportOutlined />, label: 'Yêu Cầu Rút Tiền' }
+            ]
+        }
     ];
 
     const refereeMenuItems = [
         ...baseMenuItems,
         { key: '/referee/dashboard', icon: <FileProtectOutlined />, label: 'Bàn Trọng Tài' },
+        {
+            key: 'finance',
+            icon: <BankOutlined />,
+            label: 'Quản Lý Tài Chính',
+            children: [
+                { key: '/dashboard', icon: <HistoryOutlined />, label: 'Lịch Sử Thu Nhập' },
+                { key: '/wallet', icon: <ExportOutlined />, label: 'Yêu Cầu Rút Tiền' }
+            ]
+        }
     ];
 
     let currentMenuItems = spectatorMenuItems;
-
-    if (user?.role === 'OWNER') {
-        currentMenuItems = ownerMenuItems;
-    } else if (user?.role === 'JOCKEY') {
-        currentMenuItems = jockeyMenuItems;
-    } else if (user?.role === 'REFEREE') {
-        currentMenuItems = refereeMenuItems;
-    }
+    if (user?.role === 'OWNER') currentMenuItems = ownerMenuItems;
+    else if (user?.role === 'JOCKEY') currentMenuItems = jockeyMenuItems;
+    else if (user?.role === 'REFEREE') currentMenuItems = refereeMenuItems;
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} theme="dark" style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100 }}>
+            <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} theme="dark" width={260} style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0, zIndex: 100 }}>
                 <div className="h-16 flex items-center justify-center text-white font-bold text-xl tracking-wider m-4 bg-white/10 rounded-lg cursor-pointer" onClick={() => navigate('/home')}>
                     {collapsed ? 'HR' : 'HORSE RACE'}
                 </div>
@@ -77,7 +100,7 @@ const MainLayout = ({ children }) => {
                 />
             </Sider>
 
-            <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: 'all 0.2s' }}>
+            <Layout style={{ marginLeft: collapsed ? 80 : 260, transition: 'all 0.2s' }}>
                 <Header />
                 <Content className="m-6 p-6 bg-white rounded-lg shadow-sm overflow-initial">
                     {children}

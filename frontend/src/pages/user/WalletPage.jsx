@@ -1,10 +1,8 @@
-// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
-import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Table, Tag, Space, Divider } from 'antd';
-import { WalletOutlined, BankOutlined, HistoryOutlined, CopyOutlined, ExportOutlined } from '@ant-design/icons';
+import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Form, Input, Row, Col, Space, Divider, Result, Tag } from 'antd';
+import { WalletOutlined, BankOutlined, ExportOutlined, ArrowLeftOutlined, CopyOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
-import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
@@ -13,34 +11,24 @@ const WalletPage = () => {
     const userId = user?.id;
 
     const [balance, setBalance] = useState(0);
-    const [transactions, setTransactions] = useState([]);
-
-    // State cho Nạp và Rút
     const [depositAmount, setDepositAmount] = useState(50000);
-    const [withdrawAmount, setWithdrawAmount] = useState(50000);
-
     const [loading, setLoading] = useState(false);
-    const [dataLoading, setDataLoading] = useState(true);
-
     const [isQrModalVisible, setIsQrModalVisible] = useState(false);
     const [paymentData, setPaymentData] = useState(null);
-
-    // Lưu lại số dư lúc bắt đầu quét QR để so sánh
     const initialBalanceRef = useRef(null);
+
+    const [withdrawForm] = Form.useForm();
+    const [submittingProof, setSubmittingProof] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const [form] = Form.useForm();
 
     const fetchWalletData = async () => {
         if (!userId) return;
-        setDataLoading(true);
         try {
             const walletRes = await api.get(`/wallets/my-wallet?userId=${userId}`);
-            setBalance(walletRes.data.balance);
-
-            const transRes = await api.get(`/users/my-transactions?userId=${userId}`);
-            setTransactions(transRes.data || []);
+            setBalance(walletRes.data?.balance || 0);
         } catch (error) {
-            message.error('Không thể tải dữ liệu ví tiền!');
-        } finally {
-            setDataLoading(false);
+            // Bỏ qua popup để tránh làm phiền, Backend tự lo nếu chưa có ví
         }
     };
 
@@ -48,34 +36,27 @@ const WalletPage = () => {
         fetchWalletData();
     }, [userId]);
 
-    // 🚀 LOGIC POLLING: Quét số dư liên tục 3s/lần khi đang mở Modal QR
     useEffect(() => {
         let interval;
-        if (isQrModalVisible && userId) {
+        if (isQrModalVisible && userId && user?.role === 'SPECTATOR') {
             interval = setInterval(async () => {
                 try {
                     const res = await api.get(`/wallets/my-wallet?userId=${userId}`);
-                    const newBalance = res.data.balance;
-
-                    // Nếu tiền tăng so với lúc bắt đầu nạp -> TỰ ĐỘNG ĐÓNG MODAL
+                    const newBalance = res.data?.balance || 0;
                     if (initialBalanceRef.current !== null && newBalance > initialBalanceRef.current) {
                         message.success("Nhận tiền tự động thành công! Số dư ví đã được cộng.");
                         setBalance(newBalance);
                         setIsQrModalVisible(false);
                         setPaymentData(null);
-                        fetchWalletData(); // Load lại bảng lịch sử giao dịch
-                        window.dispatchEvent(new Event('update_balance')); // Báo cho Header update số tiền
+                        window.dispatchEvent(new Event('update_balance'));
                         clearInterval(interval);
                     }
-                } catch (error) {
-                    console.error("Lỗi Polling Ví:", error);
-                }
-            }, 3000); // 3000ms = 3s
+                } catch (error) {}
+            }, 3000);
         }
         return () => clearInterval(interval);
-    }, [isQrModalVisible, userId]);
+    }, [isQrModalVisible, userId, user?.role]);
 
-    // --- XỬ LÝ TẠO MÃ NẠP TIỀN ---
     const handleGenerateQR = async () => {
         if (depositAmount <= 0) return message.warning("Số tiền nạp phải lớn hơn 0!");
         if (depositAmount < 10000) return message.warning("Số tiền nạp tối thiểu là 10,000 VNĐ!");
@@ -87,7 +68,7 @@ const WalletPage = () => {
                 amount: depositAmount
             });
             setPaymentData(response.data);
-            initialBalanceRef.current = balance; // Chốt số dư hiện tại
+            initialBalanceRef.current = balance;
             setIsQrModalVisible(true);
         } catch (error) {
             message.error(error.response?.data || "Lỗi tạo mã QR!");
@@ -96,37 +77,51 @@ const WalletPage = () => {
         }
     };
 
-    // --- XỬ LÝ TẠO LỆNH RÚT TIỀN ---
-    const handleWithdraw = async () => {
-        if (withdrawAmount <= 0) return message.warning("Số tiền rút phải lớn hơn 0!");
-        if (withdrawAmount < 50000) return message.warning("Số tiền rút tối thiểu là 50,000 VNĐ!");
-        if (withdrawAmount > balance) return message.warning("Số dư khả dụng không đủ để rút!");
+    const handleConfirmTransfer = async (values) => {
+        setSubmittingProof(true);
+        try {
+            await api.post('/payments/confirm', {
+                transactionCode: paymentData?.transactionCode,
+                proofUrl: values.proofUrl
+            });
+            setIsSuccess(true);
+            message.success('Hệ thống đã ghi nhận hóa đơn nạp tiền thành công!');
+        } catch (error) {
+            message.error(error.response?.data || 'Có lỗi xảy ra khi xác nhận hóa đơn!');
+        } finally {
+            setSubmittingProof(false);
+        }
+    };
 
+    const handleWithdraw = async (values) => {
+        const amount = values.amount;
         setLoading(true);
         try {
             const response = await api.post('/wallets/withdraw', {
                 userId: user?.id,
-                amount: withdrawAmount
+                amount: amount,
+                bankName: values.bankName,
+                accountNumber: values.accountNumber,
+                accountName: values.accountName
             });
 
             message.success('Tạo lệnh rút tiền thành công!');
-
-            // Hiện Modal thông báo mã giao dịch để khách đem ra quầy
             Modal.success({
-                title: 'Yêu Cầu Rút Tiền Thành Công',
+                title: 'Yêu Cầu Rút Tiền Đã Được Ghi Nhận',
                 content: (
                     <div className="mt-4 text-base">
-                        <p>Mã giao dịch của bạn là:</p>
+                        <p>Mã giao dịch đối soát của bạn là:</p>
                         <div className="text-2xl font-mono font-bold text-red-600 my-2 tracking-widest">{response.data.transactionCode}</div>
-                        <p className="text-gray-500">Vui lòng đọc mã này tại Quầy Lễ Tân (Ban Tổ Chức) để nhận tiền mặt.</p>
+                        <p className="text-gray-600 mt-3">Hệ thống đã ghi nhận yêu cầu và tạm trừ số dư. Kế toán sẽ kiểm tra hợp lệ và chuyển khoản qua ngân hàng cho bạn <b>chậm nhất sau 3 ngày làm việc.</b></p>
+                        <p className="text-gray-600 mt-2">Nếu bạn cần tiền gấp, có thể đến quầy Lễ Tân (BTC) để được hỗ trợ giải ngân.</p>
                     </div>
                 ),
                 okText: 'Đã Hiểu',
                 centered: true
             });
 
-            setWithdrawAmount(50000);
-            fetchWalletData(); // Load lại số dư mới đã bị trừ
+            withdrawForm.resetFields();
+            fetchWalletData();
             window.dispatchEvent(new Event('update_balance'));
         } catch (error) {
             message.error(error.response?.data?.error || "Lỗi tạo lệnh rút tiền!");
@@ -140,113 +135,152 @@ const WalletPage = () => {
         message.success('Đã copy nội dung!');
     };
 
-    const transColumns = [
-        { title: 'Mã Giao Dịch', dataIndex: 'transactionCode', render: (t) => <Text copyable className="font-mono font-bold text-blue-600">{t}</Text> },
-        { title: 'Loại hình', dataIndex: 'type', render: (type) => type === 'DEPOSIT' ? <Tag color="green">NẠP TIỀN</Tag> : (type === 'WITHDRAW' ? <Tag color="volcano">RÚT TIỀN</Tag> : <Tag color="blue">{type}</Tag>) },
-        { title: 'Số Tiền', dataIndex: 'amount', render: (val, r) => <span className={r.direction === 'IN' ? 'text-green-600 font-bold' : 'text-red-500 font-bold'}>{r.direction === 'IN' ? '+' : '-'} {val?.toLocaleString()} đ</span> },
-        { title: 'Trạng Thái', dataIndex: 'status', render: (s) => s === 'COMPLETED' ? <Tag color="success">THÀNH CÔNG</Tag> : (s === 'PENDING' ? <Tag color="warning">ĐANG CHỜ DUYỆT</Tag> : <Tag color="error">{s}</Tag>) },
-        { title: 'Thời Gian', dataIndex: 'createdAt', render: (val) => dayjs(val).format('HH:mm - DD/MM/YYYY') },
-    ];
+    const WithdrawFormView = () => (
+        <div className="max-w-3xl bg-white p-8 border rounded-2xl shadow-sm mx-auto my-4">
+            <Alert
+                message="Quy trình thanh toán & Rút tiền"
+                description="Bạn hãy điền thông tin tài khoản ngân hàng thụ hưởng. Kế toán công ty sẽ kiểm duyệt và chuyển khoản trong vòng chậm nhất 3 ngày làm việc. Nếu bạn cần tiền gấp, có thể đến quầy Lễ Tân (BTC) để được hỗ trợ giải ngân."
+                type="warning"
+                showIcon
+                className="mb-6 text-left"
+            />
+            <div className="mb-6 text-center bg-gray-50 py-4 rounded-xl border border-gray-200">
+                <Text type="secondary" className="text-lg">Số dư khả dụng hiện tại: </Text>
+                <div className="text-4xl font-black text-blue-700 mt-2">{Number(balance || 0).toLocaleString()} VNĐ</div>
+            </div>
 
-    const tabItems = [];
+            <Form form={withdrawForm} layout="vertical" onFinish={handleWithdraw} size="large">
+                <Row gutter={16}>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="bankName" label={<Text strong>Tên Ngân Hàng (VD: Vietcombank, MB...)</Text>} rules={[{ required: true, message: 'Nhập tên ngân hàng!' }]}>
+                            <Input placeholder="Nhập tên ngân hàng" />
+                        </Form.Item>
+                    </Col>
+                    <Col xs={24} md={12}>
+                        <Form.Item name="accountNumber" label={<Text strong>Số Tài Khoản</Text>} rules={[{ required: true, message: 'Nhập số tài khoản!' }]}>
+                            <Input placeholder="Nhập số tài khoản" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+                <Form.Item name="accountName" label={<Text strong>Tên Người Thụ Hưởng (In hoa, không dấu)</Text>} rules={[{ required: true, message: 'Nhập tên chủ tài khoản!' }]}>
+                    <Input placeholder="NGUYEN VAN A" className="uppercase" />
+                </Form.Item>
 
-    if (user?.role === 'SPECTATOR' || user?.role === 'OWNER') {
-        // Tab Nạp Tiền
-        tabItems.push({
-            key: 'deposit',
-            label: <span className="text-base font-bold"><BankOutlined /> Nạp Tiền Qua VietQR </span>,
-            children: (
-                <div className="max-w-2xl bg-white p-6 border rounded-xl shadow-sm mx-auto my-4 text-center">
-                    <Alert message="Nạp tiền Auto 100%" description="Quét mã QR và giữ nguyên nội dung. Hệ thống sẽ tự động cộng tiền trong khoảng 3-10 giây sau khi chuyển khoản thành công." type="info" showIcon className="mb-4" />
-                    <div className="mb-4">
-                        <Text className="font-medium block mb-2">Nhập số tiền muốn nạp (VNĐ):</Text>
-                        <InputNumber className="w-full text-lg rounded-lg font-bold" size="large" min={10000} value={depositAmount} onChange={(val) => setDepositAmount(val || 0)} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
-                    </div>
-                    <Button type="primary" size="large" block onClick={handleGenerateQR} loading={loading} className="bg-blue-600 font-semibold h-12 text-base rounded-lg"> TIẾP TỤC & QUÉT MÃ QR </Button>
-                </div>
-            )
-        });
+                <Form.Item
+                    name="amount"
+                    label={<Text strong>Số Tiền Muốn Rút</Text>}
+                    rules={[
+                        { required: true, message: 'Vui lòng nhập số tiền!' },
+                        () => ({
+                            validator(_, value) {
+                                if (value && value < 100000) {
+                                    return Promise.reject(new Error('Số tiền rút tối thiểu là 100,000 VNĐ!'));
+                                }
+                                if (value && value > balance) {
+                                    return Promise.reject(new Error('Số dư khả dụng không đủ để rút!'));
+                                }
+                                return Promise.resolve();
+                            },
+                        }),
+                    ]}
+                >
+                    <InputNumber
+                        style={{ width: '100%' }}
+                        className="text-xl rounded-lg font-bold text-red-600 h-12 flex items-center"
+                        step={50000}
+                        formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                        parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                        placeholder="Nhập số tiền cần rút..."
+                    />
+                </Form.Item>
+                <Button type="primary" htmlType="submit" danger block loading={loading} className="font-bold h-14 text-lg rounded-xl mt-2 shadow-lg"> GỬI YÊU CẦU RÚT TIỀN VỀ NGÂN HÀNG </Button>
+            </Form>
+        </div>
+    );
 
-        // Tab Rút Tiền
-        tabItems.push({
-            key: 'withdraw',
-            label: <span className="text-base font-bold"><ExportOutlined /> Rút Tiền </span>,
-            children: (
-                <div className="max-w-2xl bg-white p-6 border rounded-xl shadow-sm mx-auto my-4 text-center">
-                    <Alert message="Quy trình rút tiền" description="Hệ thống áp dụng hình thức rút tiền mặt tại quầy. Bạn tạo lệnh rút ở đây, hệ thống sẽ tạm giữ số dư. Sau đó bạn mang Mã Giao Dịch đến quầy BTC để nhận tiền mặt." type="warning" showIcon className="mb-4 text-left" />
-                    <div className="mb-4">
-                        <Text className="font-medium block mb-2 text-left">Nhập số tiền muốn rút (VNĐ):</Text>
-                        <InputNumber
-                            className="w-full text-lg rounded-lg font-bold text-red-600"
-                            size="large"
-                            min={50000}
-                            max={balance}
-                            value={withdrawAmount}
-                            onChange={(val) => setWithdrawAmount(val || 0)}
-                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                        />
-                        <div className="text-right mt-1">
-                            <Text type="secondary">Khả dụng: <span className="font-bold">{balance.toLocaleString()} đ</span></Text>
-                        </div>
-                    </div>
-                    <Button type="primary" danger size="large" block onClick={handleWithdraw} loading={loading} className="font-semibold h-12 text-base rounded-lg"> XÁC NHẬN RÚT TIỀN </Button>
-                </div>
-            )
-        });
+    if (isSuccess) {
+        return (
+            <div className="p-8 bg-gray-100 min-h-screen flex justify-center items-center">
+                <Card className="shadow-2xl rounded-2xl border-none max-w-lg text-center p-4">
+                    <Result
+                        status="success"
+                        title={<Title level={3} className="text-green-600">NẠP TIỀN HOÀN TẤT!</Title>}
+                        subTitle={`Giao dịch nạp tiền đã được xử lý. Số dư ví của bạn sẽ sớm được cập nhật.`}
+                        extra={[
+                            <Button type="primary" size="large" key="continue" icon={<WalletOutlined />} onClick={() => {
+                                setPaymentData(null);
+                                setIsSuccess(false);
+                                setIsQrModalVisible(false);
+                                form.resetFields();
+                            }} className="bg-gradient-to-r from-gray-900 to-blue-900 border-none rounded-xl">
+                                Tiếp Tục Giao Dịch Khác
+                            </Button>
+                        ]}
+                    />
+                </Card>
+            </div>
+        );
     }
 
-    let historyTabLabel = <span className="text-base font-bold"><HistoryOutlined /> Lịch Sử Giao Dịch </span>;
-    if (user?.role === 'OWNER') {
-        historyTabLabel = <span className="text-base font-bold"><HistoryOutlined /> Lịch Sử Tài Chính & Giải Thưởng </span>;
+    if (user?.role !== 'SPECTATOR') {
+        return (
+            <div className="max-w-5xl mx-auto p-6">
+                <Title level={3} className="mb-6 border-b pb-2"><ExportOutlined className="text-red-500 mr-2" /> Yêu Cầu Rút Tiền</Title>
+                <WithdrawFormView />
+            </div>
+        );
     }
-
-    tabItems.push({
-        key: 'history',
-        label: historyTabLabel,
-        children: <Table dataSource={transactions} columns={transColumns} rowKey="transactionCode" loading={dataLoading} className="border rounded-xl" pagination={{ pageSize: 5 }} />
-    });
-
-    const defaultActiveKey = (user?.role === 'SPECTATOR' || user?.role === 'OWNER') ? 'deposit' : 'history';
 
     return (
         <div className="max-w-5xl mx-auto p-6">
-            <Title level={3} className="mb-6 border-b pb-2"><WalletOutlined className="text-blue-500 mr-2" /> Quản Lý Tài Chính</Title>
-            <Card className="shadow-md rounded-xl bg-gradient-to-r from-[#001529] to-blue-800 text-white mb-8">
-                <Text className="text-gray-300 text-lg"> Số dư khả dụng hiện tại </Text>
-                <div className="text-5xl font-bold mt-2 text-yellow-400"> {balance?.toLocaleString()} <span className="text-xl text-white">VNĐ</span> </div>
-                <div className="mt-4 text-xs text-gray-300"> Tài khoản: <strong className="text-white">{user?.username}</strong> </div>
-            </Card>
+            <Title level={3} className="mb-6 border-b pb-2"><WalletOutlined className="text-blue-500 mr-2" /> Giao Dịch Nạp / Rút Tài Khoản</Title>
 
-            <Card className="shadow-sm rounded-xl">
-                <Tabs defaultActiveKey={defaultActiveKey} items={tabItems} />
-            </Card>
+            <Tabs size="large" type="card" items={[
+                {
+                    key: 'deposit',
+                    label: <span className="font-bold"><BankOutlined /> Nạp Tiền (VietQR Auto)</span>,
+                    children: (
+                        <div className="max-w-2xl bg-white p-8 border rounded-2xl shadow-sm mx-auto my-4 text-center">
+                            <Alert message="Cộng tiền tự động 100%" description="Quét mã QR và giữ nguyên nội dung chuyển khoản. Hệ thống sẽ tự động cộng tiền trong khoảng 3-10 giây sau khi chuyển khoản thành công." type="info" showIcon className="mb-6 text-left" />
+                            <div className="mb-8">
+                                <Text className="font-medium block mb-3 text-left text-lg text-gray-700">Nhập số tiền muốn nạp (VNĐ):</Text>
+                                <InputNumber style={{ width: '100%' }} className="text-2xl rounded-xl font-bold text-blue-700 h-14 flex items-center" min={10000} step={50000} value={depositAmount} onChange={(val) => setDepositAmount(val || 0)} formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={value => value.replace(/\$\s?|(,*)/g, '')} />
+                            </div>
+                            <Button type="primary" size="large" block onClick={handleGenerateQR} loading={loading} className="bg-gradient-to-r from-blue-700 to-blue-500 font-bold h-14 text-lg rounded-xl shadow-lg hover:scale-105 transition-all"> TIẾP TỤC ĐỂ QUÉT MÃ QR </Button>
+                        </div>
+                    )
+                },
+                {
+                    key: 'withdraw',
+                    label: <span className="font-bold"><ExportOutlined /> Yêu Cầu Rút Tiền</span>,
+                    children: <WithdrawFormView />
+                }
+            ]} />
 
-            <Modal title={<span className="text-xl font-bold text-blue-800">Thanh Toán Quét Mã Tự Động</span>} open={isQrModalVisible} onCancel={() => { setIsQrModalVisible(false); setPaymentData(null); fetchWalletData(); }} footer={null} centered width={700}>
+            <Modal title={<span className="text-xl font-bold text-blue-800">Quét Mã Thanh Toán</span>} open={isQrModalVisible} onCancel={() => { setIsQrModalVisible(false); setPaymentData(null); fetchWalletData(); }} footer={null} centered width={700}>
                 {paymentData && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div className="text-center bg-gray-50 p-4 rounded-xl border border-gray-200">
-                            <Text strong className="block mb-2">Quét Mã Bằng App Ngân Hàng</Text>
-                            <img src={paymentData.qrUrl} alt="QR Code" className="w-full max-w-[220px] mx-auto shadow-md rounded-lg border" />
-                            <Alert message="Lưu ý" description={`BẮT BUỘC ghi đúng nội dung chuyển khoản là: ${paymentData.note} để hệ thống cộng tiền tự động.`} type="warning" showIcon className="mt-4 text-left" />
+                            <Text strong className="block mb-2 text-base">Quét Mã Bằng App Ngân Hàng</Text>
+                            <img src={paymentData.qrUrl} alt="QR Code" className="w-full max-w-[240px] mx-auto shadow-md rounded-lg border border-gray-300" />
+                            <Alert message="Lưu ý quan trọng" description={`BẮT BUỘC ghi đúng nội dung chuyển khoản là: ${paymentData.note} để hệ thống cộng tiền tự động.`} type="error" showIcon className="mt-4 text-left" />
                         </div>
                         <div className="flex flex-col justify-center gap-3">
-                            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-2">
-                                <div><Text type="secondary" className="text-xs">NGÂN HÀNG</Text><div className="font-bold">{paymentData.bankId}</div></div>
-                                <div><Text type="secondary" className="text-xs">SỐ TÀI KHOẢN</Text><div className="font-bold text-blue-600">{paymentData.accountNo}</div></div>
-                                <div><Text type="secondary" className="text-xs">CHỦ TÀI KHOẢN</Text><div className="font-bold">{paymentData.accountName}</div></div>
-                                <div><Text type="secondary" className="text-xs">SỐ TIỀN</Text><div className="font-bold text-red-600 text-lg">{paymentData.amount.toLocaleString()} đ</div></div>
-                                <Divider className="my-2" />
+                            <div className="bg-blue-50 p-5 rounded-xl border border-blue-200 space-y-3">
+                                <div><Text type="secondary" className="text-xs font-bold">NGÂN HÀNG THỤ HƯỞNG</Text><div className="font-bold text-base">{paymentData.bankId}</div></div>
+                                <div><Text type="secondary" className="text-xs font-bold">SỐ TÀI KHOẢN</Text><div className="font-black text-lg text-blue-700">{paymentData.accountNo}</div></div>
+                                <div><Text type="secondary" className="text-xs font-bold">CHỦ TÀI KHOẢN</Text><div className="font-bold text-base">{paymentData.accountName}</div></div>
+                                <div><Text type="secondary" className="text-xs font-bold">SỐ TIỀN THANH TOÁN</Text><div className="font-black text-red-600 text-xl">{Number(paymentData.amount || 0).toLocaleString()} VNĐ</div></div>
+                                <Divider className="my-3 border-blue-300" />
                                 <div>
-                                    <Text type="secondary" className="text-xs mb-1 block">NỘI DUNG CHUYỂN KHOẢN</Text>
+                                    <Text type="secondary" className="text-xs font-bold mb-1 block">NỘI DUNG CHUYỂN KHOẢN</Text>
                                     <Space>
-                                        <Tag color="volcano" className="font-mono font-bold text-base px-3 py-1">{paymentData.note}</Tag>
-                                        <Button size="small" icon={<CopyOutlined />} onClick={() => handleCopyText(paymentData.note)}>Copy</Button>
+                                        <Tag color="volcano" className="font-mono font-bold text-lg px-3 py-1">{paymentData.note}</Tag>
+                                        <Button size="small" type="primary" icon={<CopyOutlined />} onClick={() => handleCopyText(paymentData.note)}>Copy</Button>
                                     </Space>
                                 </div>
                             </div>
-
-                            <Card className="bg-gray-50 border-none mt-2">
+                            <Card className="bg-gray-100 border-none mt-2 rounded-xl">
                                 <Text strong className="block text-sm text-blue-700 text-center animate-pulse">⏳ Vui lòng chờ tiền vào, cửa sổ sẽ tự động đóng...</Text>
                             </Card>
                         </div>

@@ -26,7 +26,6 @@ public class TransactionHistory {
     @JoinColumn(name = "wallet_id", referencedColumnName = "id")
     private Wallet wallet;
 
-    // 🔥 ĐOẠN MỚI THÊM VÀO ĐÂY NHÉ:
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bet_id")
     private Bet bet;
@@ -47,6 +46,15 @@ public class TransactionHistory {
 
     @Column(name = "proof_url", columnDefinition = "TEXT")
     private String proofUrl;
+
+    @Column(name = "bank_name")
+    private String bankName;
+
+    @Column(name = "account_number")
+    private String accountNumber;
+
+    @Column(name = "account_name")
+    private String accountName;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

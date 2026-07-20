@@ -2,12 +2,14 @@ package com.swp.horseracing.controller;
 
 import com.swp.horseracing.dto.UserResponseDTO;
 import com.swp.horseracing.dto.UserUpdateRequestDTO;
+import com.swp.horseracing.model.UserStatus;
 import com.swp.horseracing.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -32,11 +34,22 @@ public class UserController {
         }
     }
 
-    // Cập nhật thông tin User (Dành cho Admin duyệt tài khoản)
+    // API CẬP NHẬT FULL THÔNG TIN (Hỗ trợ upload file)
     @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<?> updateUser(@PathVariable Integer id, @ModelAttribute UserUpdateRequestDTO request) {
         try {
             return ResponseEntity.ok(userService.updateUser(id, request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // API CHUYÊN BIỆT CHO ADMIN DUYỆT/KHÓA TÀI KHOẢN (Chỉ nhận JSON)
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateUserStatus(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        try {
+            UserStatus status = UserStatus.valueOf(body.get("status"));
+            return ResponseEntity.ok(userService.updateUserStatus(id, status));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

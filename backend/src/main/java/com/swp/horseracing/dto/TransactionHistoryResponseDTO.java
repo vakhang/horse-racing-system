@@ -11,11 +11,15 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class TransactionHistoryResponseDTO {
+    private Integer id;
     private String transactionCode;
     private BigDecimal amount;
     private TransactionType type;
     private TransactionDirection direction;
     private TransactionStatus status;
     private String proofUrl;
+    private String bankName;
+    private String accountNumber;
+    private String accountName;
     private LocalDateTime createdAt;
 }

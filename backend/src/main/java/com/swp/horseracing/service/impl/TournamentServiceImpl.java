@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,12 +19,11 @@ import java.util.stream.Collectors;
 public class TournamentServiceImpl implements TournamentService {
 
     private final TournamentRepository tournamentRepository;
-
-    // Phải tiêm thêm mấy kho này để xử lý hoàn tiền
     private final RaceRepository raceRepository;
     private final BetRepository betRepository;
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
+    private final AuditLogRepository auditLogRepository; // Inject AuditLog
 
     @Override
     @Transactional
@@ -68,9 +68,25 @@ public class TournamentServiceImpl implements TournamentService {
         }
 
         if (request.getName() != null) tournament.setName(request.getName());
-        if (request.getStartDate() != null) tournament.setStartDate(request.getStartDate());
-        if (request.getEndDate() != null) tournament.setEndDate(request.getEndDate());
-        if (request.getStatus() != null) tournament.setStatus(request.getStatus());
+
+        // BỨC TƯỜNG LỬA CHẶN ADMIN SET STATUS BẰNG TAY (Chỉ cho phép chọn CANCELED hoặc POSTPONED)
+        if (request.getStatus() != null && request.getStatus() != tournament.getStatus()) {
+            TournamentStatus newStatus = request.getStatus();
+
+            if (newStatus == TournamentStatus.UPCOMING || newStatus == TournamentStatus.ONGOING || newStatus == TournamentStatus.COMPLETED) {
+                throw new RuntimeException("Nghiêm cấm can thiệp! Admin không được phép tự chuyển trạng thái sang: " + newStatus.name() + ". Hệ thống máy đếm ngược sẽ tự động đồng bộ thời gian chuẩn.");
+            }
+
+            if (newStatus == TournamentStatus.CANCELED) {
+                cancelTournamentLogic(tournament, request.getReason());
+            } else if (newStatus == TournamentStatus.POSTPONED) {
+                postponeTournamentLogic(tournament, request.getStartDate(), request.getEndDate(), request.getReason());
+            }
+        } else {
+            // Nếu không có can thiệp ngoại lệ, cập nhật thời gian bình thường
+            if (request.getStartDate() != null) tournament.setStartDate(request.getStartDate());
+            if (request.getEndDate() != null) tournament.setEndDate(request.getEndDate());
+        }
 
         return mapToResponseDTO(tournamentRepository.save(tournament));
     }
@@ -84,50 +100,124 @@ public class TournamentServiceImpl implements TournamentService {
         tournamentRepository.deleteById(id);
     }
 
-    // THUẬT TOÁN HỦY GIẢI ĐẤU & TỰ ĐỘNG HOÀN TIỀN
     @Override
     @Transactional
     public void cancelTournament(Integer id) {
-        Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Giải đấu!"));
+        Tournament tournament = tournamentRepository.findById(id).orElseThrow();
+        cancelTournamentLogic(tournament, "Hủy giải đấu thông qua API trực tiếp");
+    }
 
-        // Đánh dấu giải đấu kết thúc
-        tournament.setStatus(TournamentStatus.COMPLETED);
+    // NGHIỆP VỤ HỦY BỎ VÀ HOÀN TIỀN
+    private void cancelTournamentLogic(Tournament tournament, String reason) {
+        tournament.setStatus(TournamentStatus.CANCELED);
+        List<Race> races = raceRepository.findByTournamentId(tournament.getId());
 
-        // 1. Tìm tất cả các chặng đua của giải
-        List<Race> races = raceRepository.findByTournamentId(id);
+        int totalAffected = 0;
+        BigDecimal totalRefund = BigDecimal.ZERO;
+
         for (Race race : races) {
-            // Hủy chặng đua
             race.setStatus(RaceStatus.CANCELED);
             raceRepository.save(race);
 
-            // 2. Hoàn tiền cược cho tất cả vé cược đang PENDING
             List<Bet> bets = betRepository.findByRaceId(race.getId());
             for (Bet bet : bets) {
                 if (bet.getStatus() == BetStatus.PENDING) {
                     bet.setStatus(BetStatus.CANCELED);
                     betRepository.save(bet);
 
-                    // Cộng lại tiền vào ví người chơi
-                    Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
-                            .orElseThrow(() -> new RuntimeException("Lỗi: Không tìm thấy ví người chơi"));
-                    wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
-                    walletRepository.save(wallet);
+                    Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId()).orElse(null);
+                    if (wallet != null) {
+                        wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
+                        walletRepository.save(wallet);
 
-                    // Ghi lại lịch sử hoàn tiền (REFUND)
-                    TransactionHistory tx = TransactionHistory.builder()
-                            .transactionCode("REFUND-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
-                            .wallet(wallet)
-                            .amount(bet.getAmount())
-                            .type(TransactionType.REFUND)
-                            .direction(TransactionDirection.IN)
-                            .status(TransactionStatus.COMPLETED)
-                            .build();
-                    transactionHistoryRepository.save(tx);
+                        TransactionHistory tx = TransactionHistory.builder()
+                                .transactionCode("REFUND-CANCEL-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                                .wallet(wallet)
+                                .amount(bet.getAmount())
+                                .type(TransactionType.REFUND)
+                                .direction(TransactionDirection.IN)
+                                .status(TransactionStatus.COMPLETED)
+                                .build();
+                        transactionHistoryRepository.save(tx);
+                        totalRefund = totalRefund.add(bet.getAmount());
+                        totalAffected++;
+                    }
                 }
             }
         }
         tournamentRepository.save(tournament);
+
+        // Ghi Sổ Nhật Ký (Audit Log)
+        AuditLog log = AuditLog.builder()
+                .action("CANCEL_TOURNAMENT")
+                .performedBy("ADMIN_SYSTEM")
+                .reason(reason != null ? reason : "Hủy sự kiện do nguyên nhân bất khả kháng")
+                .affectedBetsCount(totalAffected)
+                .totalRefundAmount(totalRefund)
+                .build();
+        auditLogRepository.save(log);
+    }
+
+    // NGHIỆP VỤ HOÃN (TỊNH TIẾN GIỜ & CHECK LUẬT 36 TIẾNG)
+    private void postponeTournamentLogic(Tournament tournament, LocalDateTime newStart, LocalDateTime newEnd, String reason) {
+        LocalDateTime oldStartDate = tournament.getStartDate();
+        tournament.setStatus(TournamentStatus.POSTPONED);
+        tournament.setStartDate(newStart);
+        tournament.setEndDate(newEnd);
+        tournamentRepository.save(tournament);
+
+        long hoursDelay = java.time.Duration.between(oldStartDate, newStart).toHours();
+
+        int totalAffected = 0;
+        BigDecimal totalRefund = BigDecimal.ZERO;
+
+        List<Race> races = raceRepository.findByTournamentId(tournament.getId());
+        for (Race race : races) {
+            if (race.getStatus() == RaceStatus.PENDING) {
+                // Tịnh tiến đồng bộ giờ xuất phát của tất cả các chặng đua bên trong
+                race.setRaceTime(race.getRaceTime().plusHours(hoursDelay));
+                raceRepository.save(race);
+
+                // Luật pháp quy định: Trễ quá 36 tiếng bắt buộc kích hoạt Refund
+                if (hoursDelay > 36) {
+                    List<Bet> bets = betRepository.findByRaceId(race.getId());
+                    for (Bet bet : bets) {
+                        if (bet.getStatus() == BetStatus.PENDING) {
+                            bet.setStatus(BetStatus.CANCELED);
+                            betRepository.save(bet);
+
+                            Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId()).orElse(null);
+                            if (wallet != null) {
+                                wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
+                                walletRepository.save(wallet);
+
+                                TransactionHistory tx = TransactionHistory.builder()
+                                        .transactionCode("REFUND-DELAY-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                                        .wallet(wallet)
+                                        .amount(bet.getAmount())
+                                        .type(TransactionType.REFUND)
+                                        .direction(TransactionDirection.IN)
+                                        .status(TransactionStatus.COMPLETED)
+                                        .build();
+                                transactionHistoryRepository.save(tx);
+                                totalRefund = totalRefund.add(bet.getAmount());
+                                totalAffected++;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Ghi Sổ Nhật Ký (Audit Log)
+        AuditLog log = AuditLog.builder()
+                .action("POSTPONE_TOURNAMENT")
+                .performedBy("ADMIN_SYSTEM")
+                .reason((reason != null ? reason : "Hoãn sự kiện") + " | Hoãn " + hoursDelay + " tiếng")
+                .affectedBetsCount(totalAffected)
+                .totalRefundAmount(totalRefund)
+                .build();
+        auditLogRepository.save(log);
     }
 
     private TournamentResponseDTO mapToResponseDTO(Tournament tournament) {

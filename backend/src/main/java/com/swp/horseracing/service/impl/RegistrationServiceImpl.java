@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,12 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RaceRepository raceRepository;
     private final HorseRepository horseRepository;
     private final UserRepository userRepository;
+
+    // Bổ sung các repo này để hoàn tiền cược khi Ngựa Rút lui
+    private final BetRepository betRepository;
+    private final WalletRepository walletRepository;
+    private final TransactionHistoryRepository transactionHistoryRepository;
+    private final AuditLogRepository auditLogRepository;
 
     @Override
     @Transactional
@@ -42,7 +49,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .horse(horse)
                 .owner(owner)
                 .jockey(jockey)
-                // ĐÃ XÓA odds Ở ĐÂY VÌ ĐƠN ĐĂNG KÝ KHÔNG CÒN DÍNH DÁNG TỚI TỶ LỆ CƯỢC NỮA
                 .status(request.getStatus() != null ? request.getStatus() : RegistrationStatus.WAITING_JOCKEY)
                 .note(request.getNote())
                 .build();
@@ -89,11 +95,60 @@ public class RegistrationServiceImpl implements RegistrationService {
             reg.setJockey(jockey);
         }
 
-        // ĐÃ XÓA LỆNH CẬP NHẬT odds Ở ĐÂY
-        if (request.getStatus() != null) reg.setStatus(request.getStatus());
+        if (request.getStatus() != null && request.getStatus() != reg.getStatus()) {
+            if (request.getStatus() == RegistrationStatus.WITHDRAWN) {
+                withdrawHorseLogic(reg, request.getReason());
+            }
+            reg.setStatus(request.getStatus());
+        }
+
         if (request.getNote() != null) reg.setNote(request.getNote());
 
         return mapToResponseDTO(registrationRepository.save(reg));
+    }
+
+    // NGHIỆP VỤ RÚT LUI NGỰA & REFUND CỤC BỘ
+    private void withdrawHorseLogic(Registration reg, String reason) {
+        List<Bet> bets = betRepository.findByRaceId(reg.getRace().getId());
+        int affectedCount = 0;
+        BigDecimal totalRefund = BigDecimal.ZERO;
+
+        for (Bet bet : bets) {
+            // Chỉ dò tìm những vé cược đặt vào DUY NHẤT con ngựa bị rút lui này
+            if (bet.getRegistration().getId().equals(reg.getId()) && bet.getStatus() == BetStatus.PENDING) {
+                bet.setStatus(BetStatus.CANCELED);
+                betRepository.save(bet);
+
+                Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId()).orElse(null);
+                if (wallet != null) {
+                    wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
+                    walletRepository.save(wallet);
+
+                    TransactionHistory tx = TransactionHistory.builder()
+                            .transactionCode("REFUND-WD-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                            .wallet(wallet)
+                            .amount(bet.getAmount())
+                            .type(TransactionType.REFUND)
+                            .direction(TransactionDirection.IN)
+                            .status(TransactionStatus.COMPLETED)
+                            .build();
+                    transactionHistoryRepository.save(tx);
+
+                    totalRefund = totalRefund.add(bet.getAmount());
+                    affectedCount++;
+                }
+            }
+        }
+
+        // Ghi Sổ Nhật Ký (Audit Log)
+        AuditLog log = AuditLog.builder()
+                .action("WITHDRAW_HORSE")
+                .performedBy("ADMIN_SYSTEM")
+                .reason(reason != null ? reason : "Ngựa rút lui khỏi chặng đua do sự cố")
+                .affectedBetsCount(affectedCount)
+                .totalRefundAmount(totalRefund)
+                .build();
+        auditLogRepository.save(log);
     }
 
     @Override
@@ -116,7 +171,6 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .ownerUsername(reg.getOwner() != null ? reg.getOwner().getUsername() : null)
                 .jockeyId(reg.getJockey() != null ? reg.getJockey().getId() : null)
                 .jockeyUsername(reg.getJockey() != null ? reg.getJockey().getUsername() : null)
-                // ĐÃ XÓA TRẢ VỀ odds Ở ĐÂY
                 .status(reg.getStatus())
                 .note(reg.getNote())
                 .build();

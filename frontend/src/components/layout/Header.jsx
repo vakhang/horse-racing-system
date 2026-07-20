@@ -15,7 +15,8 @@ const Header = () => {
     const [balance, setBalance] = useState(0);
     const [notifications, setNotifications] = useState([]);
 
-    const token = user?.token || localStorage.getItem('token');
+    // FIX LỖI 1: Tên key trong AuthContext lưu là 'accessToken' chứ không phải 'token'
+    const token = user?.token || localStorage.getItem('accessToken');
 
     useEffect(() => {
         const fetchWalletBalance = () => {
@@ -23,33 +24,60 @@ const Header = () => {
                 axios.get(`http://localhost:8080/api/wallets/my-wallet?userId=${user.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
-                    .then(res => setBalance(res.data.balance))
+                    .then(res => {
+                        // Bọc cực kỳ an toàn để tránh bị Null
+                        setBalance(res.data?.balance || 0);
+                    })
                     .catch(err => console.error("Lỗi lấy ví trên Header:", err));
             }
         };
 
         const generateNotifications = () => {
             let notifs = [];
-            // 1. Thông báo trạng thái KYC
+
             if (user?.status === 'APPROVED') {
                 notifs.push({ title: 'Tài khoản đã xác minh', desc: 'Bạn có thể sử dụng toàn bộ tính năng hệ thống.', color: 'green' });
             } else if (user?.status === 'PENDING') {
                 notifs.push({ title: 'Chờ duyệt KYC', desc: 'Vui lòng đợi Admin kiểm tra hồ sơ của bạn.', color: 'orange' });
             }
 
-            // 2. Lấy thông báo từ Admin (Lưu ở LocalStorage)
-            const adminNews = JSON.parse(localStorage.getItem('admin_announcements') || '[]');
-            adminNews.forEach(news => {
-                notifs.push({ title: '📢 TIN TỪ BAN TỔ CHỨC', desc: news.content, color: 'blue', date: news.date });
-            });
+            // FIX LỖI 2: Ngăn crash nếu LocalStorage lưu data bị hỏng (Không phải mảng)
+            try {
+                const adminNewsStr = localStorage.getItem('admin_announcements');
+                const adminNews = adminNewsStr ? JSON.parse(adminNewsStr) : [];
+                if (Array.isArray(adminNews)) {
+                    adminNews.forEach(news => {
+                        notifs.push({ title: '📢 TIN TỪ BAN TỔ CHỨC', desc: news.content, color: 'blue', date: news.date });
+                    });
+                }
+            } catch (e) { console.error("Lỗi parse thông báo Admin", e); }
 
+            if (user?.id) {
+                try {
+                    const personalNewsStr = localStorage.getItem(`user_notifications_${user.id}`);
+                    const personalNews = personalNewsStr ? JSON.parse(personalNewsStr) : [];
+                    if (Array.isArray(personalNews)) {
+                        personalNews.forEach(news => {
+                            notifs.push({ title: news.title, desc: news.desc, color: news.color, date: news.date });
+                        });
+                    }
+                } catch (e) { console.error("Lỗi parse thông báo cá nhân", e); }
+            }
+
+            notifs.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
             setNotifications(notifs);
         };
 
         fetchWalletBalance();
         generateNotifications();
+
         window.addEventListener('update_balance', fetchWalletBalance);
-        return () => window.removeEventListener('update_balance', fetchWalletBalance);
+        window.addEventListener('update_notifications', generateNotifications);
+
+        return () => {
+            window.removeEventListener('update_balance', fetchWalletBalance);
+            window.removeEventListener('update_notifications', generateNotifications);
+        };
     }, [user, token]);
 
     const handleLogout = () => {
@@ -64,20 +92,25 @@ const Header = () => {
     ];
 
     const notificationContent = (
-        <div className="w-80 max-h-96 overflow-y-auto">
+        <div className="w-80 max-h-96 overflow-y-auto bg-white rounded-lg">
             <List
                 itemLayout="horizontal"
                 dataSource={notifications}
                 renderItem={item => (
-                    <List.Item className="border-b last:border-b-0 hover:bg-gray-50 cursor-pointer px-4 py-3 transition-colors">
+                    <List.Item className="border-b last:border-b-0 hover:bg-gray-100 cursor-pointer px-4 py-3 transition-colors bg-white">
                         <List.Item.Meta
                             avatar={<Badge color={item.color} />}
-                            title={<Text strong>{item.title}</Text>}
-                            description={<Text type="secondary" className="text-xs">{item.desc} {item.date && <div className="mt-1 italic opacity-70">{dayjs(item.date).format('HH:mm DD/MM')}</div>}</Text>}
+                            title={<span className="font-bold text-gray-800">{item.title}</span>}
+                            description={
+                                <span className="text-xs text-gray-600 block mt-1">
+                                    {item.desc}
+                                    {item.date && <div className="mt-1 italic text-gray-400">{dayjs(item.date).format('HH:mm DD/MM')}</div>}
+                                </span>
+                            }
                         />
                     </List.Item>
                 )}
-                locale={{ emptyText: 'Không có thông báo mới' }}
+                locale={{ emptyText: <span className="text-gray-500">Không có thông báo mới</span> }}
             />
         </div>
     );
@@ -90,11 +123,11 @@ const Header = () => {
 
                 <div className="flex items-center gap-2 font-bold px-3 h-[32px] bg-black/30 rounded-lg border border-yellow-500/30" style={{ color: 'white' }}>
                     <WalletOutlined style={{ color: '#facc15', fontSize: '18px' }} />
-                    <span className="text-yellow-400">{balance.toLocaleString()} VNĐ</span>
+                    {/* FIX LỖI 3: Tránh lỗi Crash toLocaleString nếu balance undefined */}
+                    <span className="text-yellow-400">{(balance || 0).toLocaleString()} VNĐ</span>
                 </div>
 
-                {/* QUẢ CHUÔNG THÔNG BÁO ĐÃ ĐƯỢC ÉP CỨNG MÀU TRẮNG */}
-                <Popover content={notificationContent} title={<span className="font-bold text-base"><NotificationOutlined /> Thông báo hệ thống</span>} trigger="click" placement="bottomRight">
+                <Popover content={notificationContent} title={<span className="font-bold text-base text-gray-800"><NotificationOutlined /> Thông báo hệ thống</span>} trigger="click" placement="bottomRight">
                     <Badge count={notifications.length} overflowCount={9} className="cursor-pointer mt-1 mr-2 hover:opacity-80 transition-opacity">
                         <BellOutlined style={{ color: 'white', fontSize: '22px' }} />
                     </Badge>

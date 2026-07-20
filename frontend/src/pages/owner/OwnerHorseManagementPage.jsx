@@ -7,6 +7,11 @@ import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
+const RenderFilesStatus = ({ urls }) => {
+    if (!urls || urls.length === 0) return <Tag color="red" className="m-0">Chưa nộp</Tag>;
+    return <Tag color="green">Đã nộp ({urls.length} tệp)</Tag>;
+};
+
 const OwnerHorseManagementPage = () => {
     const { user } = useAuth();
     const currentOwnerId = user?.id;
@@ -47,7 +52,6 @@ const OwnerHorseManagementPage = () => {
             formData.append('breed', values.breed);
             formData.append('color', values.color);
 
-            // Append danh sách Files chuẩn nghiệp vụ 3 loại giấy tờ
             if (values.realImageFiles && values.realImageFiles.length > 0) {
                 values.realImageFiles.forEach(f => formData.append('realImageFiles', f.originFileObj));
             }
@@ -120,6 +124,7 @@ const OwnerHorseManagementPage = () => {
                 }
                 return <Progress percent={stamina} size="small" status={stamina < 50 ? 'exception' : 'active'} format={p => `${p}%`} />;
             }},
+        { title: 'Sổ Khám Bệnh', render: (_, r) => <RenderFilesStatus urls={r.vetRecordUrls} /> },
         { title: 'Trạng Thái', dataIndex: 'status', render: s => s === 'APPROVED' ? <Tag color="green">Đã Duyệt</Tag> : (s === 'REJECTED' ? <Tag color="red">Từ Chối</Tag> : <Tag color="orange">Chờ Duyệt</Tag>) },
         {
             title: 'Thao Tác', align: 'right', render: (_, record) => (
@@ -156,23 +161,25 @@ const OwnerHorseManagementPage = () => {
 
             <Modal title={<span className="text-xl">{editingHorseId ? 'Cập Nhật Hồ Sơ' : 'Khai Báo Chiến Mã Mới'}</span>} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null} centered>
                 <Form form={form} layout="vertical" onFinish={handleSaveHorse} className="mt-4">
-                    <Form.Item name="name" label={<Text strong>Tên Ngựa</Text>} rules={[{ required: true }]}><Input size="large" /></Form.Item>
+                    <Form.Item name="name" label={<Text strong>Tên Ngựa</Text>} rules={[{ required: true, message: 'Vui lòng nhập tên chiến mã!' }]}><Input size="large" /></Form.Item>
                     <Row gutter={16}>
-                        <Col span={12}><Form.Item name="age" label={<Text strong>Tuổi</Text>} rules={[{ required: true }]}><InputNumber className="w-full" size="large" /></Form.Item></Col>
-                        <Col span={12}><Form.Item name="color" label={<Text strong>Màu Lông</Text>} rules={[{ required: true }]}><Input size="large" /></Form.Item></Col>
+                        <Col span={12}><Form.Item name="age" label={<Text strong>Tuổi</Text>} rules={[{ required: true, message: 'Vui lòng nhập tuổi ngựa!' }]}><InputNumber className="w-full" size="large" /></Form.Item></Col>
+                        <Col span={12}><Form.Item name="color" label={<Text strong>Màu Lông</Text>} rules={[{ required: true, message: 'Vui lòng nhập màu lông!' }]}><Input size="large" /></Form.Item></Col>
                     </Row>
-                    <Form.Item name="breed" label={<Text strong>Giống Ngựa</Text>} rules={[{ required: true }]}><Input size="large" /></Form.Item>
+                    <Form.Item name="breed" label={<Text strong>Giống Ngựa</Text>} rules={[{ required: true, message: 'Vui lòng nhập giống ngựa!' }]}><Input size="large" /></Form.Item>
 
-                    {/* Khu vực Upload Files Form Data */}
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 mb-4">
                         <Title level={5} className="text-blue-700">Tài Liệu Đính Kèm (Upload)</Title>
-                        <Form.Item name="realImageFiles" label="Ảnh Thực Tế Chiến Mã" valuePropName="fileList" getValueFromEvent={normFile}>
+
+                        <Form.Item name="realImageFiles" label="Ảnh Thực Tế Chiến Mã" valuePropName="fileList" getValueFromEvent={normFile} rules={[{ required: !editingHorseId, message: 'Bắt buộc tải lên ảnh thực tế chiến mã!' }]}>
                             <Upload multiple beforeUpload={() => false} listType="picture"><Button icon={<UploadOutlined />}>Tải Lên Ảnh</Button></Upload>
                         </Form.Item>
-                        <Form.Item name="certFiles" label="Giấy Chứng Nhận Nguồn Gốc" valuePropName="fileList" getValueFromEvent={normFile}>
+
+                        <Form.Item name="certFiles" label="Giấy Chứng Nhận Nguồn Gốc" valuePropName="fileList" getValueFromEvent={normFile} rules={[{ required: !editingHorseId, message: 'Bắt buộc tải lên giấy chứng nhận!' }]}>
                             <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải Lên Giấy Tờ</Button></Upload>
                         </Form.Item>
-                        <Form.Item name="vetRecordFiles" label="Sổ Tiêm Phòng/Khám Bệnh" valuePropName="fileList" getValueFromEvent={normFile}>
+
+                        <Form.Item name="vetRecordFiles" label="Sổ Tiêm Phòng/Khám Bệnh" valuePropName="fileList" getValueFromEvent={normFile} rules={[{ required: !editingHorseId, message: 'Bắt buộc tải lên sổ y tế!' }]}>
                             <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải Lên Hồ Sơ Thú Y</Button></Upload>
                         </Form.Item>
                     </div>
@@ -183,7 +190,6 @@ const OwnerHorseManagementPage = () => {
                 </Form>
             </Modal>
 
-            {/* MODAL LỊCH SỬ ĐẤU */}
             <Modal title={<span className="text-xl font-bold">Lịch Sử Thi Đấu: <span className="text-blue-600">{selectedHorseHistory?.horse?.name}</span></span>} open={isHistoryVisible} onCancel={() => setIsHistoryVisible(false)} footer={null} width={700} centered>
                 {selectedHorseHistory?.data?.length > 0 ? (
                     <Table columns={historyColumns} dataSource={selectedHorseHistory.data} rowKey="id" pagination={false} className="mt-4" />

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ public class HorseServiceImpl implements HorseService {
 
     private final HorseRepository horseRepository;
     private final UserRepository userRepository;
-    private final FileStorageService fileStorageService; // Bơm dịch vụ lưu file
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -40,45 +41,36 @@ public class HorseServiceImpl implements HorseService {
                 .breed(request.getBreed())
                 .color(request.getColor())
                 .status(request.getStatus() != null ? request.getStatus() : HorseStatus.PENDING)
-                .attachments(new java.util.ArrayList<>()) // Khởi tạo mảng file
+                .attachments(new ArrayList<>())
                 .build();
 
-        // Xử lý lưu các file đính kèm
         saveAttachments(horse, request);
-
         return mapToResponseDTO(horseRepository.save(horse));
     }
 
     @Override
     public List<HorseResponseDTO> getAllHorses() {
-        return horseRepository.findAll().stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+        return horseRepository.findAll().stream().map(this::mapToResponseDTO).collect(Collectors.toList());
     }
 
     @Override
     public List<HorseResponseDTO> getHorsesByOwnerId(Integer ownerId) {
-        return horseRepository.findByOwnerId(ownerId).stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+        return horseRepository.findByOwnerId(ownerId).stream().map(this::mapToResponseDTO).collect(Collectors.toList());
     }
 
     @Override
     public HorseResponseDTO getHorseById(Integer id) {
-        Horse horse = horseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Ngựa với ID: " + id));
+        Horse horse = horseRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy Ngựa!"));
         return mapToResponseDTO(horse);
     }
 
     @Override
     @Transactional
     public HorseResponseDTO updateHorse(Integer id, HorseRequestDTO request) {
-        Horse horse = horseRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Ngựa với ID: " + id));
+        Horse horse = horseRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy Ngựa!"));
 
         if (request.getOwnerId() != null && !horse.getOwner().getId().equals(request.getOwnerId())) {
-            User newOwner = userRepository.findById(request.getOwnerId())
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Chủ ngựa mới với ID: " + request.getOwnerId()));
+            User newOwner = userRepository.findById(request.getOwnerId()).orElseThrow();
             horse.setOwner(newOwner);
         }
 
@@ -88,38 +80,37 @@ public class HorseServiceImpl implements HorseService {
         if (request.getColor() != null) horse.setColor(request.getColor());
         if (request.getStatus() != null) horse.setStatus(request.getStatus());
 
-        // Bổ sung thêm file đính kèm nếu có upload mới
         saveAttachments(horse, request);
-
         return mapToResponseDTO(horseRepository.save(horse));
     }
 
     @Override
     @Transactional
     public void deleteHorse(Integer id) {
-        if (!horseRepository.existsById(id)) {
-            throw new RuntimeException("Không tìm thấy Ngựa với ID: " + id);
-        }
+        if (!horseRepository.existsById(id)) throw new RuntimeException("Không tìm thấy Ngựa với ID: " + id);
         horseRepository.deleteById(id);
     }
 
-    // Hàm phụ trợ giúp lưu File ảnh/giấy tờ ngựa xuống đĩa
     private void saveAttachments(Horse horse, HorseRequestDTO request) {
+        String safeName = horse.getName() != null ? horse.getName().replaceAll("\\s+", "_") : "Unknown";
+        String ownerName = horse.getOwner() != null ? horse.getOwner().getUsername().replaceAll("\\s+", "") : "Owner";
+        String folder = "horses/" + ownerName + "_" + safeName;
+
         if (request.getCertFiles() != null) {
             for (MultipartFile file : request.getCertFiles()) {
-                String url = fileStorageService.storeFile(file);
+                String url = fileStorageService.storeFile(file, folder);
                 if (url != null) horse.getAttachments().add(HorseAttachment.builder().horse(horse).docType(HorseDocType.CERTIFICATE).fileUrl(url).build());
             }
         }
         if (request.getRealImageFiles() != null) {
             for (MultipartFile file : request.getRealImageFiles()) {
-                String url = fileStorageService.storeFile(file);
+                String url = fileStorageService.storeFile(file, folder);
                 if (url != null) horse.getAttachments().add(HorseAttachment.builder().horse(horse).docType(HorseDocType.REAL_IMAGE).fileUrl(url).build());
             }
         }
         if (request.getVetRecordFiles() != null) {
             for (MultipartFile file : request.getVetRecordFiles()) {
-                String url = fileStorageService.storeFile(file);
+                String url = fileStorageService.storeFile(file, folder);
                 if (url != null) horse.getAttachments().add(HorseAttachment.builder().horse(horse).docType(HorseDocType.VET_RECORD).fileUrl(url).build());
             }
         }
@@ -131,10 +122,16 @@ public class HorseServiceImpl implements HorseService {
             winRate = (float) horse.getWinRaces() / horse.getTotalRaces() * 100;
         }
 
-        // Lấy File URL đầu tiên để hiển thị trong nút "Xem hồ sơ" của Admin
-        String docUrl = null;
-        if (horse.getAttachments() != null && !horse.getAttachments().isEmpty()) {
-            docUrl = horse.getAttachments().get(0).getFileUrl();
+        List<String> certs = new ArrayList<>();
+        List<String> reals = new ArrayList<>();
+        List<String> vets = new ArrayList<>();
+
+        if (horse.getAttachments() != null) {
+            for (HorseAttachment a : horse.getAttachments()) {
+                if (a.getDocType() == HorseDocType.CERTIFICATE) certs.add(a.getFileUrl());
+                if (a.getDocType() == HorseDocType.REAL_IMAGE) reals.add(a.getFileUrl());
+                if (a.getDocType() == HorseDocType.VET_RECORD) vets.add(a.getFileUrl());
+            }
         }
 
         return HorseResponseDTO.builder()
@@ -145,7 +142,9 @@ public class HorseServiceImpl implements HorseService {
                 .age(horse.getAge())
                 .breed(horse.getBreed())
                 .color(horse.getColor())
-                .documentUrl(docUrl) // Trả về link ảnh đầu tiên cho DTO
+                .certDocumentUrls(certs)
+                .realImageUrls(reals)
+                .vetRecordUrls(vets)
                 .status(horse.getStatus())
                 .totalRaces(horse.getTotalRaces())
                 .winRaces(horse.getWinRaces())

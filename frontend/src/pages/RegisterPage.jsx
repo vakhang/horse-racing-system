@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, DatePicker, Select, Typography, message, Row, Col, ConfigProvider, theme, Upload } from 'antd';
-import { UserOutlined, MailOutlined, LockOutlined, CalendarOutlined, InboxOutlined, TrophyOutlined, FireOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, LockOutlined, CalendarOutlined, InboxOutlined, TrophyOutlined, FireOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import api from '../config/api.js';
@@ -10,13 +10,17 @@ const { Title, Text } = Typography;
 
 const RegisterPage = () => {
     const [loading, setLoading] = useState(false);
+    const [form] = Form.useForm(); // Khởi tạo Form để ép báo lỗi trực tiếp vào ô Input
     const navigate = useNavigate();
+
+    // Lắng nghe sự thay đổi của Role để đổi Label ngày sinh tự động (21 hoặc 18)
+    const selectedRole = Form.useWatch('role', form);
+    const minAge = (selectedRole || 'SPECTATOR') === 'SPECTATOR' ? 21 : 18;
 
     const disabledDate = (current) => {
         return current && current > dayjs().endOf('day');
     };
 
-    // Hàm chuẩn hóa File List cho Form Antd
     const normFile = (e) => {
         if (Array.isArray(e)) return e;
         return e?.fileList;
@@ -32,10 +36,8 @@ const RegisterPage = () => {
         formData.append('role', values.role);
         formData.append('dob', values.dob.format('YYYY-MM-DD'));
 
-        // SỬA LẠI ĐOẠN NÀY
         if (values.kycFiles && values.kycFiles.length > 0) {
             values.kycFiles.forEach(file => {
-                // Thêm || file để đề phòng originFileObj bị undefined
                 formData.append('kycFiles', file.originFileObj || file);
             });
         }
@@ -46,10 +48,20 @@ const RegisterPage = () => {
             message.info("Vui lòng đợi Admin duyệt KYC mới có thể đăng nhập.");
             navigate('/login');
         } catch (error) {
-            if (error.response && error.response.data) {
-                message.error(error.response.data.error || 'Có lỗi xảy ra!');
+            // Lấy đúng message lỗi dạng JSON trả về từ Backend
+            const errorMsg = error.response?.data?.error || 'Có lỗi xảy ra!';
+
+            // Xử lý báo lỗi đỏ đúng trường Date of Birth (nếu lỗi liên quan đến tuổi/ngày sinh)
+            if (errorMsg.toLowerCase().includes('tuổi') || errorMsg.toLowerCase().includes('ngày sinh')) {
+                message.error('Thông tin đăng ký không hợp lệ!');
+                form.setFields([
+                    {
+                        name: 'dob',
+                        errors: [errorMsg], // Highlight khung màu đỏ và hiển thị text dưới ô Input
+                    },
+                ]);
             } else {
-                message.error('Không thể kết nối đến Server!');
+                message.error(errorMsg);
             }
         } finally {
             setLoading(false);
@@ -97,22 +109,64 @@ const RegisterPage = () => {
                         <Col xs={24} md={14} className="p-10">
                             <Title level={3} className="text-center mb-8 text-white uppercase tracking-wider">Tạo Tài Khoản Mới</Title>
 
-                            <Form name="register" layout="vertical" onFinish={handleRegister} scrollToFirstError size="large">
+                            <Form
+                                form={form}
+                                name="register"
+                                layout="vertical"
+                                onFinish={handleRegister}
+                                scrollToFirstError
+                                size="large"
+                                initialValues={{ role: 'SPECTATOR' }} // Giá trị khởi tạo mặc định
+                            >
                                 <Row gutter={24}>
                                     <Col span={12}>
                                         <Form.Item name="username" label={<span className="text-gray-300">Tên đăng nhập</span>} rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}>
                                             <Input prefix={<UserOutlined className="text-gray-400" />} placeholder="Ví dụ: Khang" className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
                                         </Form.Item>
+
                                         <Form.Item name="email" label={<span className="text-gray-300">Email</span>} rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ!' }]}>
                                             <Input prefix={<MailOutlined className="text-gray-400" />} placeholder="khang@gmail.com" className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
                                         </Form.Item>
-                                        <Form.Item name="password" label={<span className="text-gray-300">Mật khẩu</span>} rules={[{ required: true, min: 6, message: 'Mật khẩu ít nhất 6 ký tự!' }]}>
+
+                                        <Form.Item
+                                            name="password"
+                                            label={<span className="text-gray-300">Mật khẩu</span>}
+                                            hasFeedback
+                                            rules={[
+                                                { required: true, message: 'Vui lòng nhập mật khẩu!' },
+                                                { pattern: /^(?=.*[a-z])/, message: 'Mật khẩu phải chứa ít nhất 1 chữ cái thường!' },
+                                                { pattern: /^(?=.*[A-Z])/, message: 'Mật khẩu phải chứa ít nhất 1 chữ cái hoa!' },
+                                                { pattern: /^(?=.*\d)/, message: 'Mật khẩu phải chứa ít nhất 1 chữ số!' },
+                                                { pattern: /^(?=.*[@$!%*?&])/, message: 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt!' },
+                                                { min: 8, message: 'Mật khẩu phải có độ dài ít nhất 8 ký tự!' }
+                                            ]}
+                                        >
                                             <Input.Password prefix={<LockOutlined className="text-gray-400" />} placeholder="••••••••" className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
+                                        </Form.Item>
+
+                                        <Form.Item
+                                            name="confirmPassword"
+                                            label={<span className="text-gray-300">Xác nhận mật khẩu</span>}
+                                            dependencies={['password']}
+                                            hasFeedback
+                                            rules={[
+                                                { required: true, message: 'Vui lòng xác nhận lại mật khẩu!' },
+                                                ({ getFieldValue }) => ({
+                                                    validator(_, value) {
+                                                        if (!value || getFieldValue('password') === value) {
+                                                            return Promise.resolve();
+                                                        }
+                                                        return Promise.reject(new Error('Mật khẩu xác nhận không trùng khớp!'));
+                                                    },
+                                                }),
+                                            ]}
+                                        >
+                                            <Input.Password prefix={<SafetyCertificateOutlined className="text-gray-400" />} placeholder="Nhập lại mật khẩu..." className="bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={12}>
-                                        <Form.Item name="role" label={<span className="text-gray-300">Tham gia với tư cách</span>} rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]} initialValue="SPECTATOR">
+                                        <Form.Item name="role" label={<span className="text-gray-300">Tham gia với tư cách</span>} rules={[{ required: true, message: 'Vui lòng chọn vai trò!' }]}>
                                             <Select popupClassName="bg-gray-800" className="[&>div]:bg-black/50 [&>div]:border-gray-600 [&>div]:rounded-xl [&>div]:text-white">
                                                 <Select.Option value="SPECTATOR">Khán giả (Cá cược)</Select.Option>
                                                 <Select.Option value="OWNER">Chủ ngựa</Select.Option>
@@ -120,7 +174,18 @@ const RegisterPage = () => {
                                                 <Select.Option value="REFEREE">Trọng tài</Select.Option>
                                             </Select>
                                         </Form.Item>
-                                        <Form.Item name="dob" label={<span className="text-gray-300">Ngày sinh (&gt;= 21 tuổi)</span>} rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}>
+
+                                        {/* ĐÃ CHỈNH SỬA LABEL THEO ROLE */}
+                                        <Form.Item
+                                            name="dob"
+                                            label={
+                                                <div className="leading-tight">
+                                                    <span className="text-gray-300">Ngày sinh</span>
+                                                    <span className="text-yellow-500 text-xs ml-2 italic">(Tối thiểu {minAge} tuổi)</span>
+                                                </div>
+                                            }
+                                            rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
+                                        >
                                             <DatePicker className="w-full bg-black/50 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl" disabledDate={disabledDate} prefix={<CalendarOutlined className="text-gray-400" />} />
                                         </Form.Item>
 

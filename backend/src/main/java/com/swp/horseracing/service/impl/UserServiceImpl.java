@@ -7,7 +7,7 @@ import com.swp.horseracing.repository.TransactionHistoryRepository;
 import com.swp.horseracing.repository.UserRepository;
 import com.swp.horseracing.repository.WalletRepository;
 import com.swp.horseracing.security.JwtUtils;
-import com.swp.horseracing.service.FileStorageService; // <-- THÊM
+import com.swp.horseracing.service.FileStorageService;
 import com.swp.horseracing.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class UserServiceImpl implements UserService {
     private final BetRepository betRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final JwtUtils jwtUtils;
-    private final FileStorageService fileStorageService; // Tiêm dịch vụ lưu trữ file
+    private final FileStorageService fileStorageService;
 
     @Override
     @Transactional
@@ -40,8 +41,14 @@ public class UserServiceImpl implements UserService {
 
         if (request.getDob() != null) {
             int age = Period.between(request.getDob(), LocalDate.now()).getYears();
-            if (age < 21) {
-                throw new RuntimeException("Bạn phải từ 21 tuổi trở lên mới được tham gia!");
+            if (request.getRole() == RoleEnum.SPECTATOR) {
+                if (age < 21) {
+                    throw new RuntimeException("Khán giả tham gia cá cược phải từ 21 tuổi trở lên!");
+                }
+            } else {
+                if (age < 18) {
+                    throw new RuntimeException("Bạn phải từ 18 tuổi trở lên để đăng ký vai trò này!");
+                }
             }
         } else {
             throw new RuntimeException("Vui lòng cung cấp ngày sinh!");
@@ -54,13 +61,14 @@ public class UserServiceImpl implements UserService {
                 .role(request.getRole())
                 .dob(request.getDob())
                 .status(UserStatus.PENDING)
-                .attachments(new java.util.ArrayList<>()) // Khởi tạo mảng
+                .attachments(new java.util.ArrayList<>())
                 .build();
 
-        // 1. Lưu file KYC xuống hệ thống nếu có
+        String folder = "users/" + request.getEmail().replace("@", "_") + "_" + request.getRole().name();
+
         if (request.getKycFiles() != null) {
             for (MultipartFile file : request.getKycFiles()) {
-                String url = fileStorageService.storeFile(file);
+                String url = fileStorageService.storeFile(file, folder);
                 if (url != null) {
                     newUser.getAttachments().add(UserAttachment.builder()
                             .user(newUser).docType(UserDocType.ID_CARD).fileUrl(url).build());
@@ -70,18 +78,16 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(newUser);
 
-        // NẾU LÀ KHÁN GIẢ HOẶC CHỦ NGỰA THÌ MỚI TẠO VÍ
-        if (request.getRole() == RoleEnum.SPECTATOR || request.getRole() == RoleEnum.OWNER) {
-            BigDecimal initialBalance = (request.getRole() == RoleEnum.SPECTATOR)
-                    ? new BigDecimal("100000.00")
-                    : BigDecimal.ZERO;
+        // ĐÃ FIX: TẠO VÍ CHO TẤT CẢ MỌI VAI TRÒ, KHÁN GIẢ SẼ ĐƯỢC 100K MẶC ĐỊNH
+        BigDecimal initialBalance = (request.getRole() == RoleEnum.SPECTATOR)
+                ? new BigDecimal("100000.00")
+                : BigDecimal.ZERO;
 
-            Wallet wallet = Wallet.builder()
-                    .user(savedUser)
-                    .balance(initialBalance)
-                    .build();
-            walletRepository.save(wallet);
-        }
+        Wallet wallet = Wallet.builder()
+                .user(savedUser)
+                .balance(initialBalance)
+                .build();
+        walletRepository.save(wallet);
 
         return mapToResponseDTO(savedUser);
     }
@@ -94,20 +100,17 @@ public class UserServiceImpl implements UserService {
         if (!user.getPassword().equals(request.getPassword())) {
             throw new RuntimeException("Email hoặc mật khẩu không chính xác!");
         }
-
         if (user.getStatus() == UserStatus.PENDING) {
             throw new RuntimeException("Tài khoản của bạn đang chờ Admin duyệt KYC. Vui lòng quay lại sau!");
         }
-
         if (user.getStatus() == UserStatus.REJECTED) {
             throw new RuntimeException("Tài liệu KYC của bạn đã bị từ chối. Không thể đăng nhập!");
         }
+        if (user.getStatus() == UserStatus.BANNED) {
+            throw new RuntimeException("Tài khoản của bạn đã bị khóa bởi Quản trị viên!");
+        }
 
-        String token = jwtUtils.generateToken(
-                user.getId(),
-                user.getRole().name()
-        );
-
+        String token = jwtUtils.generateToken(user.getId(), user.getRole().name());
         UserResponseDTO response = mapToResponseDTO(user);
         response.setToken(token);
         return response;
@@ -138,27 +141,40 @@ public class UserServiceImpl implements UserService {
         if (request.getDob() != null) user.setDob(request.getDob());
         if (request.getStatus() != null) user.setStatus(request.getStatus());
         if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
-
-        // Cập nhật thông tin JOCKEY
         if (request.getWeight() != null) user.setWeight(request.getWeight());
         if (request.getHeight() != null) user.setHeight(request.getHeight());
 
-        // Lưu file cho JOCKEY
+        String folder = "users/" + user.getEmail().replace("@", "_") + "_" + user.getRole().name();
+
+        if (request.getKycFiles() != null) {
+            for (MultipartFile file : request.getKycFiles()) {
+                String url = fileStorageService.storeFile(file, folder);
+                if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.ID_CARD).fileUrl(url).build());
+            }
+        }
         if (request.getCertFiles() != null) {
             for (MultipartFile file : request.getCertFiles()) {
-                String url = fileStorageService.storeFile(file);
+                String url = fileStorageService.storeFile(file, folder);
                 if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.JOCKEY_CERT).fileUrl(url).build());
             }
         }
         if (request.getHealthFiles() != null) {
             for (MultipartFile file : request.getHealthFiles()) {
-                String url = fileStorageService.storeFile(file);
+                String url = fileStorageService.storeFile(file, folder);
                 if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.HEALTH_CHECK).fileUrl(url).build());
             }
         }
 
-        User updatedUser = userRepository.save(user);
-        return mapToResponseDTO(updatedUser);
+        return mapToResponseDTO(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDTO updateUserStatus(Integer id, UserStatus status) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy User với ID: " + id));
+        user.setStatus(status);
+        return mapToResponseDTO(userRepository.save(user));
     }
 
     @Override
@@ -175,10 +191,16 @@ public class UserServiceImpl implements UserService {
                 .map(Wallet::getBalance)
                 .orElse(BigDecimal.ZERO);
 
-        // Lấy link KYC đầu tiên để trả về cho Admin
-        String kycUrl = null;
-        if (user.getAttachments() != null && !user.getAttachments().isEmpty()) {
-            kycUrl = user.getAttachments().get(0).getFileUrl();
+        List<String> kycUrls = new ArrayList<>();
+        List<String> certUrls = new ArrayList<>();
+        List<String> healthUrls = new ArrayList<>();
+
+        if (user.getAttachments() != null) {
+            for (UserAttachment a : user.getAttachments()) {
+                if (a.getDocType() == UserDocType.ID_CARD) kycUrls.add(a.getFileUrl());
+                if (a.getDocType() == UserDocType.JOCKEY_CERT) certUrls.add(a.getFileUrl());
+                if (a.getDocType() == UserDocType.HEALTH_CHECK) healthUrls.add(a.getFileUrl());
+            }
         }
 
         return UserResponseDTO.builder()
@@ -190,7 +212,9 @@ public class UserServiceImpl implements UserService {
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
                 .phoneNumber(user.getPhoneNumber())
-                .kycDocumentUrl(kycUrl) // Map link KYC
+                .kycDocumentUrls(kycUrls)
+                .certDocumentUrls(certUrls)
+                .healthDocumentUrls(healthUrls)
                 .weight(user.getWeight())
                 .height(user.getHeight())
                 .balance(balance)
@@ -199,9 +223,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<BetHistoryResponseDTO> getMyBets(Integer userId) {
-        List<Bet> bets = betRepository.findBySpectatorIdOrderByCreatedAtDesc(userId);
-
-        return bets.stream().map(bet -> BetHistoryResponseDTO.builder()
+        return betRepository.findBySpectatorIdOrderByCreatedAtDesc(userId).stream().map(bet -> BetHistoryResponseDTO.builder()
                 .id(bet.getId())
                 .raceName(bet.getRace().getName())
                 .horseName(bet.getRegistration().getHorse().getName())
@@ -215,9 +237,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<TransactionHistoryResponseDTO> getMyTransactions(Integer userId) {
-        List<TransactionHistory> txs = transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(userId);
-
-        return txs.stream().map(tx -> TransactionHistoryResponseDTO.builder()
+        return transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(userId).stream().map(tx -> TransactionHistoryResponseDTO.builder()
                 .transactionCode(tx.getTransactionCode())
                 .amount(tx.getAmount())
                 .type(tx.getType())

@@ -210,10 +210,11 @@ const BettingPage = () => {
                         <Title level={5} className="mb-4">Số tiền muốn cược (VNĐ):</Title>
                         <div className="flex gap-4">
                             <InputNumber
-                                className="w-full text-lg"
+                                style={{ width: '100%' }}
+                                className="text-lg"
                                 size="large"
                                 min={10000}
-                                step={10000}
+                                step={50000}
                                 value={betAmount}
                                 onChange={setBetAmount}
                                 formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}

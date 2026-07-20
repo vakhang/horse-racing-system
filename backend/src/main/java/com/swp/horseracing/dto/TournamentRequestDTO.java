@@ -10,4 +10,5 @@ public class TournamentRequestDTO {
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private TournamentStatus status;
+    private String reason; // Phục vụ lưu Nhật ký khi Hủy/Hoãn
 }

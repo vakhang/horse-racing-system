@@ -1,7 +1,6 @@
-// @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge } from 'antd';
-import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert } from 'antd';
+import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
 
@@ -21,6 +20,11 @@ const AdminTournamentPage = () => {
     const [raceForm] = Form.useForm();
     const [selectedTourId, setSelectedTourId] = useState(null);
     const [editingRaceId, setEditingRaceId] = useState(null);
+
+    // Modal quản lý trạng thái ngựa rút lui
+    const [isWithdrawModalVisible, setIsWithdrawModalVisible] = useState(false);
+    const [raceRegistrations, setRaceRegistrations] = useState([]);
+    const [selectedRaceForWithdraw, setSelectedRaceForWithdraw] = useState(null);
 
     const fetchTournaments = async () => {
         setLoading(true);
@@ -63,24 +67,38 @@ const AdminTournamentPage = () => {
                 name: values.name,
                 startDate: values.dates[0].format('YYYY-MM-DDTHH:mm:ss'),
                 endDate: values.dates[1].format('YYYY-MM-DDTHH:mm:ss'),
-                status: values.status
+                status: values.status,
+                reason: values.reason // Nhật ký khi Hủy / Hoãn
             };
             if (editingTourId) await api.put(`/tournaments/${editingTourId}`, payload);
             else await api.post('/tournaments', payload);
-            message.success('Thành công!');
+
+            message.success('Thiết lập giải đấu thành công!');
             setIsTourModalVisible(false);
             fetchTournaments();
-        } catch (e) { message.error(e.response?.data?.message || 'Lỗi!'); }
+        } catch (e) {
+            const errorMsg = e.response?.data?.error || e.response?.data?.message || 'Có lỗi xảy ra!';
+            message.error(errorMsg);
+        }
+    };
+
+    const handleDeleteTournament = async (id) => {
+        try {
+            await api.delete(`/tournaments/${id}`);
+            message.success("Đã xóa hoàn toàn giải đấu khỏi hệ thống!");
+            fetchTournaments();
+        } catch (e) {
+            message.error("Không thể xóa do giải đấu này đã phát sinh dữ liệu (Chặng đua/Vé cược)!");
+        }
     };
 
     const handleSaveRace = async (values) => {
         try {
-            // Đã tích hợp gửi thẳng dữ liệu thật lên Backend
             const payload = {
                 tournamentId: selectedTourId,
                 name: values.name,
                 raceTime: values.raceTime.format('YYYY-MM-DDTHH:mm:ss'),
-                status: values.status || 'PENDING',
+                status: values.status,
                 refereeId: values.refereeId,
                 prize1: values.prize1 || 0,
                 prize2: values.prize2 || 0,
@@ -96,14 +114,17 @@ const AdminTournamentPage = () => {
             message.success('Thiết lập chặng đua thành công!');
             setIsRaceModalVisible(false);
             await fetchRacesForTournament(selectedTourId);
-        } catch (e) { message.error(e.response?.data?.message || 'Lỗi!'); }
+        } catch (e) {
+            const errorMsg = e.response?.data?.error || e.response?.data?.message || 'Có lỗi xảy ra!';
+            message.error(errorMsg);
+        }
     };
 
     const handleCancelRace = async (race) => {
         try {
             const payload = { ...race, status: 'CANCELED' };
             await api.put(`/races/${race.id}`, payload);
-            message.success('Đã hủy chặng đua! Hệ thống đang tiến hành hoàn tiền cho toàn bộ khán giả.');
+            message.success('Đã hủy chặng đua! Hệ thống đang tiến hành hoàn trả tiền cho khán giả.');
             await fetchRacesForTournament(race.tournamentId);
         } catch (e) {
             message.error('Lỗi khi hủy chặng đua!');
@@ -124,6 +145,39 @@ const AdminTournamentPage = () => {
             prize3: record.prize3 || 0,
         });
         setIsRaceModalVisible(true);
+    };
+
+    // QUẢN LÝ NGỰA TRONG CHẶNG (RÚT LUI)
+    const openWithdrawModal = async (race) => {
+        setSelectedRaceForWithdraw(race);
+        try {
+            const response = await api.get(`/registrations`, { params: { raceId: race.id } });
+            setRaceRegistrations(response.data);
+            setIsWithdrawModalVisible(true);
+        } catch(e) {
+            message.error("Lỗi lấy danh sách ngựa!");
+        }
+    };
+
+    const handleWithdrawHorse = async (regId) => {
+        const reason = prompt("Pháp lý bắt buộc: Nhập lý do ngựa rút lui để lưu Nhật ký sự kiện (Audit Log):");
+        if (!reason) return message.warning("Bắt buộc nhập lý do mới được loại ngựa!");
+
+        try {
+            await api.put(`/registrations/${regId}`, {
+                status: 'WITHDRAWN',
+                reason: reason
+            });
+            message.success("Đã loại ngựa và tự động hoàn trả (Refund) tiền cược cho khán giả!");
+            const response = await api.get(`/registrations`, { params: { raceId: selectedRaceForWithdraw.id } });
+            setRaceRegistrations(response.data);
+        } catch(e) {
+            message.error("Lỗi xử lý rút lui!");
+        }
+    };
+
+    const disabledDate = (current) => {
+        return current && current < dayjs().startOf('day');
     };
 
     const expandedRowRender = (tournament) => {
@@ -153,6 +207,7 @@ const AdminTournamentPage = () => {
                 align: 'right',
                 render: (_, record) => (
                     <Space>
+                        <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>Loại Ngựa</Button>
                         <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openEditRaceModal(record)}>Thiết Lập</Button>
                         {record.status === 'PENDING' && (
                             <Popconfirm
@@ -194,46 +249,140 @@ const AdminTournamentPage = () => {
                     { title: 'ID', dataIndex: 'id' },
                     { title: 'Tên Giải Đấu', dataIndex: 'name', render: t => <Text strong className="text-blue-700 text-lg">{t}</Text> },
                     { title: 'Thời Gian Tổ Chức', render: (_, r) => `${dayjs(r.startDate).format('DD/MM/YYYY')} - ${dayjs(r.endDate).format('DD/MM/YYYY')}` },
+                    { title: 'Trạng Thái', dataIndex: 'status', render: s => {
+                            if (s === 'POSTPONED') return <Tag color="warning" className="font-bold">ĐÃ DỜI LỊCH</Tag>;
+                            if (s === 'CANCELED') return <Tag color="error" className="font-bold">ĐÃ HỦY</Tag>;
+                            return <Tag color="blue" className="font-bold">{s}</Tag>;
+                        }},
                     {
                         title: 'Thao Tác',
                         align: 'right',
                         render: (_, r) => <Space>
                             <Button type="dashed" className="font-bold" icon={<FlagOutlined />} onClick={() => { setSelectedTourId(r.id); setEditingRaceId(null); raceForm.resetFields(); setIsRaceModalVisible(true); }}>Thêm Chặng Đua</Button>
-                            <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status}); setIsTourModalVisible(true); }} />
+                            <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status, reason: ''}); setIsTourModalVisible(true); }} />
+                            <Popconfirm title="Xác nhận xóa hoàn toàn giải đấu này?" onConfirm={() => handleDeleteTournament(r.id)} okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy">
+                                <Button danger icon={<DeleteOutlined />} />
+                            </Popconfirm>
                         </Space>
                     }
                 ]} dataSource={tournaments} rowKey="id" loading={loading} expandable={{ expandedRowRender, onExpand: (exp, rec) => exp && fetchRacesForTournament(rec.id) }} className="border rounded-xl" />
             </Card>
 
+            {/* MODAL QUẢN LÝ GIẢI ĐẤU */}
             <Modal title={<span className="text-xl">{editingTourId ? 'Chỉnh Sửa Giải Đấu' : 'Tạo Giải Đấu Mới'}</span>} open={isTourModalVisible} onCancel={() => setIsTourModalVisible(false)} footer={null} centered>
                 <Form form={tourForm} layout="vertical" onFinish={handleSaveTournament} className="mt-4">
-                    <Form.Item name="name" label={<Text strong>Tên Giải Đấu</Text>} rules={[{ required: true }]}><Input size="large" placeholder="VD: Siêu Cúp Mùa Hè..."/></Form.Item>
-                    <Form.Item name="dates" label={<Text strong>Thời Gian Tổ Chức</Text>} rules={[{ required: true }]}><DatePicker.RangePicker size="large" className="w-full" /></Form.Item>
-                    <Form.Item name="status" label={<Text strong>Trạng Thái</Text>}><Select size="large"><Option value="UPCOMING">Sắp diễn ra</Option><Option value="ONGOING">Đang thi đấu</Option></Select></Form.Item>
+                    <Form.Item name="name" label={<Text strong>Tên Giải Đấu</Text>} rules={[{ required: true, message: 'Vui lòng nhập tên giải đấu' }]}>
+                        <Input size="large" placeholder="VD: Siêu Cúp Mùa Hè..."/>
+                    </Form.Item>
+
+                    <Form.Item
+                        name="dates"
+                        label={<Text strong>Thời Gian Tổ Chức</Text>}
+                        rules={[
+                            { required: true, message: 'Vui lòng chọn thời gian tổ chức!' },
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (!value || value.length < 2) return Promise.resolve();
+                                    return Promise.resolve();
+                                },
+                            }),
+                        ]}
+                    >
+                        <DatePicker.RangePicker showTime={{ format: 'HH:mm' }} format="YYYY-MM-DD HH:mm" disabledDate={disabledDate} size="large" className="w-full" />
+                    </Form.Item>
+
+                    {/* HIỂN THỊ CÁC TRẠNG THÁI NGOẠI LỆ CHO PHÉP ADMIN CAN THIỆP */}
+                    {editingTourId && (
+                        <>
+                            <Form.Item name="status" label={<Text strong>Trạng Thái Nhanh (Ngoại Lệ Can Thiệp)</Text>}>
+                                <Select size="large" onChange={(val) => {
+                                    if (val === 'CANCELED' || val === 'POSTPONED') tourForm.setFieldsValue({ reason: '' });
+                                }}>
+                                    <Option value="UPCOMING"><span className="text-gray-400">Tự động (Sắp diễn ra)</span></Option>
+                                    <Option value="CANCELED"><span className="text-red-600 font-bold">🚫 Hủy Bỏ Toàn Bộ (Auto Refund 100%)</span></Option>
+                                    <Option value="POSTPONED"><span className="text-orange-500 font-bold">⏳ Dời Lịch / Hoãn (Auto Refund nếu quá 36h)</span></Option>
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.status !== currentValues.status}>
+                                {({ getFieldValue }) =>
+                                    (getFieldValue('status') === 'CANCELED' || getFieldValue('status') === 'POSTPONED') ? (
+                                        <Form.Item name="reason" label={<Text strong className="text-red-500">Lý do (Bắt buộc để lưu Sổ Nhật ký Hệ thống)</Text>} rules={[{ required: true, message: 'Ban kiểm soát bắt buộc bạn phải nhập lý do!' }]}>
+                                            <Input.TextArea rows={3} placeholder="Ví dụ: Bão lớn, đình công, sự cố kỹ thuật..." />
+                                        </Form.Item>
+                                    ) : null
+                                }
+                            </Form.Item>
+                        </>
+                    )}
+
                     <Button type="primary" htmlType="submit" size="large" block className="bg-blue-600 font-bold mt-2">LƯU GIẢI ĐẤU</Button>
                 </Form>
+            </Modal>
+
+            {/* MODAL QUẢN LÝ NGỰA BỊ LOẠI */}
+            <Modal title={<span className="text-xl text-red-600 font-bold"><CloseCircleOutlined /> Đình Chỉ / Rút Lui Chiến Mã</span>} open={isWithdrawModalVisible} onCancel={() => setIsWithdrawModalVisible(false)} footer={null} centered>
+                <Alert message="Hoàn tiền tự động (Refund)" description="Việc đánh dấu một con ngựa 'Rút lui' sẽ lập tức hủy toàn bộ các vé cược liên quan đến riêng con ngựa đó và hoàn tiền 100% về ví khán giả." type="warning" showIcon className="mb-4" />
+                <ul className="space-y-3">
+                    {raceRegistrations.length === 0 && <Text className="text-gray-500">Chưa có ngựa nào đăng ký chặng này.</Text>}
+                    {raceRegistrations.map(r => (
+                        <li key={r.id} className="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm">
+                            <div>
+                                <Text strong className="text-lg block">{r.horseName}</Text>
+                                <Text type="secondary">Nài: {r.jockeyUsername || 'Trống'}</Text>
+                            </div>
+                            {r.status !== 'WITHDRAWN' ? (
+                                <Button type="primary" danger onClick={() => handleWithdrawHorse(r.id)}>Loại Ngựa</Button>
+                            ) : (
+                                <Tag color="error" className="font-bold text-sm px-3 py-1">ĐÃ RÚT LUI (REFUNDED)</Tag>
+                            )}
+                        </li>
+                    ))}
+                </ul>
             </Modal>
 
             <Modal title={<span className="text-xl font-bold">{editingRaceId ? '⚙️ Thiết Lập Chặng Đua' : '➕ Thêm Chặng Đua Mới'}</span>} open={isRaceModalVisible} onCancel={() => setIsRaceModalVisible(false)} footer={null} width={800} centered>
                 <Form form={raceForm} layout="vertical" onFinish={handleSaveRace}>
                     <Divider orientation="left" className="border-blue-500"><Text className="text-blue-600 font-bold">1. Thông Tin Cơ Bản</Text></Divider>
                     <Row gutter={16}>
-                        <Col span={12}><Form.Item name="name" label={<Text strong>Tên Chặng Đua</Text>} rules={[{ required: true }]}><Input size="large" placeholder="VD: Chặng 1 - Khởi động"/></Form.Item></Col>
-                        <Col span={12}><Form.Item name="raceTime" label={<Text strong>Giờ Xuất Phát</Text>} rules={[{ required: true }]}><DatePicker showTime size="large" className="w-full" /></Form.Item></Col>
+                        <Col span={12}><Form.Item name="name" label={<Text strong>Tên Chặng Đua</Text>} rules={[{ required: true, message: 'Nhập tên chặng đua' }]}><Input size="large" placeholder="VD: Chặng 1 - Khởi động"/></Form.Item></Col>
+                        <Col span={12}>
+                            <Form.Item
+                                name="raceTime"
+                                label={<Text strong>Giờ Xuất Phát</Text>}
+                                rules={[
+                                    { required: true, message: 'Vui lòng chọn giờ xuất phát!' },
+                                    ({ getFieldValue }) => ({
+                                        validator(_, value) {
+                                            if (!value) return Promise.resolve();
+                                            if (value.isBefore(dayjs(), 'minute')) {
+                                                return Promise.reject(new Error('Giờ xuất phát phải lớn hơn thời gian hiện tại!'));
+                                            }
+                                            return Promise.resolve();
+                                        },
+                                    }),
+                                ]}
+                            >
+                                <DatePicker showTime format="YYYY-MM-DD HH:mm" disabledDate={disabledDate} size="large" className="w-full" />
+                            </Form.Item>
+                        </Col>
                     </Row>
 
                     <Divider orientation="left" className="border-blue-500"><Text className="text-blue-600 font-bold">2. Vận Hành & Nhân Sự</Text></Divider>
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item name="status" label={<Text strong>Trạng Thái</Text>} initialValue="PENDING">
-                                <Select size="large">
-                                    <Option value="PENDING"><Badge status="warning" /> Chờ diễn ra (PENDING)</Option>
-                                    <Option value="RUNNING"><Badge status="processing" /> Đang đua (RUNNING)</Option>
-                                    <Option value="FINISHED"><Badge status="success" /> Đã kết thúc (FINISHED)</Option>
-                                </Select>
-                            </Form.Item>
+                            {editingRaceId && (
+                                <Form.Item name="status" label={<Text strong>Trạng Thái</Text>} initialValue="PENDING">
+                                    <Select size="large">
+                                        <Option value="PENDING"><Badge status="warning" /> Chờ diễn ra (PENDING)</Option>
+                                        <Option value="RUNNING"><Badge status="processing" /> Đang đua (RUNNING)</Option>
+                                        <Option value="FINISHED"><Badge status="success" /> Đã kết thúc (FINISHED)</Option>
+                                        <Option value="CANCELED"><Badge status="default" /> Đã hủy (CANCELED)</Option>
+                                    </Select>
+                                </Form.Item>
+                            )}
                         </Col>
-                        <Col span={12}>
+                        <Col span={editingRaceId ? 12 : 24}>
                             <Form.Item name="refereeId" label={<Text strong>Phân Công Trọng Tài</Text>} rules={[{required: true, message: 'Bắt buộc chọn Trọng tài giám sát!'}]}>
                                 <Select placeholder="-- Chọn Trọng tài --" size="large" showSearch optionFilterProp="children">
                                     {referees.map(r => <Option key={r.id} value={r.id}>👨‍⚖️ {r.username}</Option>)}
@@ -246,17 +395,17 @@ const AdminTournamentPage = () => {
                     <Row gutter={16}>
                         <Col span={8}>
                             <Form.Item name="prize1" label={<Text strong className="text-yellow-600">🥇 Tiền thưởng Hạng 1</Text>}>
-                                <InputNumber size="large" className="w-full font-bold text-lg" min={0} step={1000000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
+                                <InputNumber style={{ width: '100%' }} size="large" className="font-bold text-lg" min={0} step={50000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item name="prize2" label={<Text strong className="text-gray-500">🥈 Tiền thưởng Hạng 2</Text>}>
-                                <InputNumber size="large" className="w-full font-bold text-lg" min={0} step={1000000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
+                                <InputNumber style={{ width: '100%' }} size="large" className="font-bold text-lg" min={0} step={50000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
                             <Form.Item name="prize3" label={<Text strong className="text-orange-700">🥉 Tiền thưởng Hạng 3</Text>}>
-                                <InputNumber size="large" className="w-full font-bold text-lg" min={0} step={1000000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
+                                <InputNumber style={{ width: '100%' }} size="large" className="font-bold text-lg" min={0} step={50000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
                             </Form.Item>
                         </Col>
                     </Row>
