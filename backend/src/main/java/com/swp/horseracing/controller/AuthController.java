@@ -11,13 +11,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
-
-    public AuthController(UserService userService) {
-        this.userService = userService;
-    }
 
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<?> register(@ModelAttribute RegisterRequestDTO request) {

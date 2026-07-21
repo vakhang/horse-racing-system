@@ -11,9 +11,20 @@ public class RegisterRequestDTO {
     private String username;
     private String password;
     private String email;
+
+    private String phoneNumber;
+    private String idNumber;
+    private LocalDate idIssueDate;
+    private String idIssuePlace;
+    private String pinCode;
+
+    // CÁC TRƯỜNG LƯU TRẠNG THÁI ĐỒNG Ý PHÁP LÝ (MỚI)
+    private Boolean agreedRule1;
+    private Boolean agreedRule2;
+    private Boolean agreedRule3;
+    private Boolean agreedRule4;
+
     private RoleEnum role;
     private LocalDate dob;
-
-    // Thêm trường này để hứng danh sách file KYC từ Frontend
     private List<MultipartFile> kycFiles;
 }

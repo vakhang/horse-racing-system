@@ -93,7 +93,7 @@ const ProfilePage = () => {
                     <Form.Item label="Địa chỉ Email (Định danh đăng nhập)" name="email">
                         <Input prefix={<MailOutlined />} disabled className="bg-gray-100" />
                     </Form.Item>
-                    <Form.Item label="Họ và Tên (Username)" name="username" rules={[{ required: true }]}>
+                    <Form.Item label="Họ và Tên" name="username" rules={[{ required: true }]}>
                         <Input prefix={<UserOutlined />} placeholder="Nhập tên hiển thị của bạn" />
                     </Form.Item>
                     <Form.Item label="Số điện thoại liên hệ" name="phoneNumber" rules={[{ required: true }]}>

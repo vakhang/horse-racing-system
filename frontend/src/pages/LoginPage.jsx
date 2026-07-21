@@ -18,7 +18,7 @@ const LoginPage = () => {
         setLoading(true);
         try {
             const response = await axios.post('http://localhost:8080/api/auth/login', {
-                email: values.email,
+                email: values.email, // Backend sẽ dùng chuỗi này quét cả cột email và cột sdt
                 password: values.password
             });
 
@@ -68,10 +68,12 @@ const LoginPage = () => {
                     </div>
 
                     <Form name="login" layout="vertical" onFinish={handleLogin} size="large">
-                        <Form.Item name="email" rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ!' }]}>
+                        {/* Đã sửa Label thành Email hoặc SDT */}
+                        <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập định danh đăng nhập!' }]}>
                             <Input
                                 prefix={<MailOutlined className="text-gray-400" />}
-                                placeholder="Email đã đăng ký..."
+                                placeholder="Nhập Email hoặc Số điện thoại..."
+                                autoComplete="email"
                                 className="bg-black/60 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl px-4 py-3"
                             />
                         </Form.Item>
@@ -80,6 +82,7 @@ const LoginPage = () => {
                             <Input.Password
                                 prefix={<LockOutlined className="text-gray-400" />}
                                 placeholder="Mật khẩu của bạn..."
+                                autoComplete="current-password"
                                 className="bg-black/60 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl px-4 py-3"
                             />
                         </Form.Item>
@@ -118,15 +121,12 @@ const LoginPage = () => {
                     centered
                     className="custom-ban-modal"
                 >
-                    {/* Sử dụng màu text sáng trên nền tối của Modal */}
                     <div className="text-base text-gray-300 space-y-4 my-6">
-                        {/* Hộp cảnh báo: Nền đỏ trong suốt, chữ đỏ nhạt */}
                         <div className="bg-red-900/40 p-4 rounded-xl border border-red-500/50 text-red-200">
                             Tài khoản của bạn đã bị <b className="text-red-400">Quản trị viên (Admin) khóa</b> do nghi ngờ vi phạm quy định của hệ thống hoặc có hành vi gian lận trong quá trình tham gia.
                         </div>
                         <p>Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ ngay với Ban Quản Trị qua các kênh dưới đây để được hỗ trợ mở lại tài khoản:</p>
 
-                        {/* Hộp liên hệ: Nền trắng trong suốt (kính), chữ xám sáng */}
                         <div className="bg-white/10 p-5 rounded-xl border border-white/20 shadow-inner space-y-4">
                             <div className="flex items-center gap-3">
                                 <span className="text-2xl">📞</span>

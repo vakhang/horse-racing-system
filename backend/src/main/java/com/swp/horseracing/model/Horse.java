@@ -9,7 +9,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "horses")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Horse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,6 +29,7 @@ public class Horse {
     private String color;
 
     @OneToMany(mappedBy = "horse", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private java.util.List<HorseAttachment> attachments = new java.util.ArrayList<>();
 
     @Enumerated(EnumType.STRING)

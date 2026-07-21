@@ -10,7 +10,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +24,33 @@ public class User {
     private String email;
 
     @Column(name = "phone_number")
-    private String phoneNumber; // Thêm từ DB
+    private String phoneNumber;
+
+    @Column(name = "id_number")
+    private String idNumber;
+
+    @Column(name = "id_issue_date")
+    private LocalDate idIssueDate;
+
+    @Column(name = "id_issue_place")
+    private String idIssuePlace;
+
+    @Column(name = "pin_code")
+    private String pinCode;
+
+    // --- CÁC TRƯỜNG ĐỒNG Ý ĐIỀU KHOẢN PHÁP LÝ ---
+    @Column(name = "agreed_rule_1")
+    private Boolean agreedRule1;
+
+    @Column(name = "agreed_rule_2")
+    private Boolean agreedRule2;
+
+    @Column(name = "agreed_rule_3")
+    private Boolean agreedRule3;
+
+    @Column(name = "agreed_rule_4")
+    private Boolean agreedRule4;
+    // -------------------------------------------
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
@@ -34,10 +63,10 @@ public class User {
     private UserStatus status;
 
     @Column(name = "last_login")
-    private LocalDateTime lastLogin; // Thêm từ DB
+    private LocalDateTime lastLogin;
 
     @Column(name = "failed_attempts")
-    private Integer failedAttempts; // Thêm từ DB
+    private Integer failedAttempts;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -47,5 +76,6 @@ public class User {
     private Double height;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private java.util.List<UserAttachment> attachments = new java.util.ArrayList<>();
 }

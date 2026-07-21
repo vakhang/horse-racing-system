@@ -2,7 +2,6 @@ package com.swp.horseracing.service.impl;
 
 import com.swp.horseracing.dto.DepositRequestDTO;
 import com.swp.horseracing.dto.PaymentResponseDTO;
-import com.swp.horseracing.model.Wallet;
 import com.swp.horseracing.repository.WalletRepository;
 import com.swp.horseracing.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +33,8 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         // CÚ PHÁP MỚI: NAP + ID Người dùng + Ký tự ngẫu nhiên (Ví dụ: NAP1X9A)
-        // Điều này đảm bảo mỗi mã QR là duy nhất, nhưng ta vẫn dễ dàng bóc tách ID người dùng.
+        // Điều này đảm bảo mỗi mã QR là duy nhất, nhưng ta vẫn dễ dàng bóc tách ID
+        // người dùng.
         String randomSuffix = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         String txCode = "NAP" + request.getUserId() + randomSuffix;
 

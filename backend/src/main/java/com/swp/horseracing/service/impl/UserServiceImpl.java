@@ -38,6 +38,19 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email này đã được sử dụng!");
         }
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new RuntimeException("Số điện thoại này đã được sử dụng!");
+        }
+
+        // KIỂM TRA ĐÃ TICK ĐỦ CÁC Ô ĐỒNG Ý ĐIỀU KHOẢN CHƯA
+        if (!Boolean.TRUE.equals(request.getAgreedRule1()) ||
+                !Boolean.TRUE.equals(request.getAgreedRule2()) ||
+                !Boolean.TRUE.equals(request.getAgreedRule3())) {
+            throw new RuntimeException("BẮT BUỘC: Bạn phải đồng ý với tất cả các điều khoản pháp lý!");
+        }
+        if (request.getRole() == RoleEnum.SPECTATOR && !Boolean.TRUE.equals(request.getAgreedRule4())) {
+            throw new RuntimeException("BẮT BUỘC: Khán giả phải đồng ý đủ 4 điều khoản pháp lý!");
+        }
 
         if (request.getDob() != null) {
             int age = Period.between(request.getDob(), LocalDate.now()).getYears();
@@ -58,6 +71,15 @@ public class UserServiceImpl implements UserService {
                 .username(request.getUsername())
                 .password(request.getPassword())
                 .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .idNumber(request.getIdNumber())
+                .idIssueDate(request.getIdIssueDate())
+                .idIssuePlace(request.getIdIssuePlace())
+                .pinCode(request.getPinCode())
+                .agreedRule1(request.getAgreedRule1()) // Lưu DB
+                .agreedRule2(request.getAgreedRule2()) // Lưu DB
+                .agreedRule3(request.getAgreedRule3()) // Lưu DB
+                .agreedRule4(request.getAgreedRule4()) // Lưu DB
                 .role(request.getRole())
                 .dob(request.getDob())
                 .status(UserStatus.PENDING)
@@ -78,7 +100,6 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(newUser);
 
-        // ĐÃ FIX: TẠO VÍ CHO TẤT CẢ MỌI VAI TRÒ, KHÁN GIẢ SẼ ĐƯỢC 100K MẶC ĐỊNH
         BigDecimal initialBalance = (request.getRole() == RoleEnum.SPECTATOR)
                 ? new BigDecimal("100000.00")
                 : BigDecimal.ZERO;
@@ -94,11 +115,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO loginUser(LoginRequestDTO request) {
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Email hoặc mật khẩu không chính xác!"));
+        // ĐÃ SỬA: Hỗ trợ tìm bằng cả Email hoặc Số điện thoại
+        User user = userRepository.findByEmailOrPhoneNumber(request.getEmail(), request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Tài khoản hoặc mật khẩu không chính xác!"));
 
         if (!user.getPassword().equals(request.getPassword())) {
-            throw new RuntimeException("Email hoặc mật khẩu không chính xác!");
+            throw new RuntimeException("Tài khoản hoặc mật khẩu không chính xác!");
         }
         if (user.getStatus() == UserStatus.PENDING) {
             throw new RuntimeException("Tài khoản của bạn đang chờ Admin duyệt KYC. Vui lòng quay lại sau!");
@@ -136,32 +158,45 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy User với ID: " + id));
 
-        if (request.getUsername() != null) user.setUsername(request.getUsername());
-        if (request.getRole() != null) user.setRole(request.getRole());
-        if (request.getDob() != null) user.setDob(request.getDob());
-        if (request.getStatus() != null) user.setStatus(request.getStatus());
-        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
-        if (request.getWeight() != null) user.setWeight(request.getWeight());
-        if (request.getHeight() != null) user.setHeight(request.getHeight());
+        if (request.getUsername() != null)
+            user.setUsername(request.getUsername());
+        if (request.getRole() != null)
+            user.setRole(request.getRole());
+        if (request.getDob() != null)
+            user.setDob(request.getDob());
+        if (request.getStatus() != null)
+            user.setStatus(request.getStatus());
+        if (request.getPhoneNumber() != null)
+            user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getWeight() != null)
+            user.setWeight(request.getWeight());
+        if (request.getHeight() != null)
+            user.setHeight(request.getHeight());
 
         String folder = "users/" + user.getEmail().replace("@", "_") + "_" + user.getRole().name();
 
         if (request.getKycFiles() != null) {
             for (MultipartFile file : request.getKycFiles()) {
                 String url = fileStorageService.storeFile(file, folder);
-                if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.ID_CARD).fileUrl(url).build());
+                if (url != null)
+                    user.getAttachments()
+                            .add(UserAttachment.builder().user(user).docType(UserDocType.ID_CARD).fileUrl(url).build());
             }
         }
         if (request.getCertFiles() != null) {
             for (MultipartFile file : request.getCertFiles()) {
                 String url = fileStorageService.storeFile(file, folder);
-                if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.JOCKEY_CERT).fileUrl(url).build());
+                if (url != null)
+                    user.getAttachments().add(
+                            UserAttachment.builder().user(user).docType(UserDocType.JOCKEY_CERT).fileUrl(url).build());
             }
         }
         if (request.getHealthFiles() != null) {
             for (MultipartFile file : request.getHealthFiles()) {
                 String url = fileStorageService.storeFile(file, folder);
-                if (url != null) user.getAttachments().add(UserAttachment.builder().user(user).docType(UserDocType.HEALTH_CHECK).fileUrl(url).build());
+                if (url != null)
+                    user.getAttachments().add(
+                            UserAttachment.builder().user(user).docType(UserDocType.HEALTH_CHECK).fileUrl(url).build());
             }
         }
 
@@ -197,9 +232,12 @@ public class UserServiceImpl implements UserService {
 
         if (user.getAttachments() != null) {
             for (UserAttachment a : user.getAttachments()) {
-                if (a.getDocType() == UserDocType.ID_CARD) kycUrls.add(a.getFileUrl());
-                if (a.getDocType() == UserDocType.JOCKEY_CERT) certUrls.add(a.getFileUrl());
-                if (a.getDocType() == UserDocType.HEALTH_CHECK) healthUrls.add(a.getFileUrl());
+                if (a.getDocType() == UserDocType.ID_CARD)
+                    kycUrls.add(a.getFileUrl());
+                if (a.getDocType() == UserDocType.JOCKEY_CERT)
+                    certUrls.add(a.getFileUrl());
+                if (a.getDocType() == UserDocType.HEALTH_CHECK)
+                    healthUrls.add(a.getFileUrl());
             }
         }
 
@@ -223,28 +261,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<BetHistoryResponseDTO> getMyBets(Integer userId) {
-        return betRepository.findBySpectatorIdOrderByCreatedAtDesc(userId).stream().map(bet -> BetHistoryResponseDTO.builder()
-                .id(bet.getId())
-                .raceName(bet.getRace().getName())
-                .horseName(bet.getRegistration().getHorse().getName())
-                .amount(bet.getAmount())
-                .odds(bet.getOdds())
-                .rewardAmount(bet.getStatus() == BetStatus.WON ? bet.getReward() : BigDecimal.ZERO)
-                .status(bet.getStatus())
-                .createdAt(bet.getCreatedAt())
-                .build()).collect(Collectors.toList());
+        return betRepository.findBySpectatorIdOrderByCreatedAtDesc(userId).stream()
+                .map(bet -> BetHistoryResponseDTO.builder()
+                        .id(bet.getId())
+                        .raceName(bet.getRace().getName())
+                        .horseName(bet.getRegistration().getHorse().getName())
+                        .amount(bet.getAmount())
+                        .odds(bet.getOdds())
+                        .rewardAmount(bet.getStatus() == BetStatus.WON ? bet.getReward() : BigDecimal.ZERO)
+                        .status(bet.getStatus())
+                        .createdAt(bet.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<TransactionHistoryResponseDTO> getMyTransactions(Integer userId) {
-        return transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(userId).stream().map(tx -> TransactionHistoryResponseDTO.builder()
-                .transactionCode(tx.getTransactionCode())
-                .amount(tx.getAmount())
-                .type(tx.getType())
-                .direction(tx.getDirection())
-                .status(tx.getStatus())
-                .proofUrl(tx.getProofUrl())
-                .createdAt(tx.getCreatedAt())
-                .build()).collect(Collectors.toList());
+        return transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(userId).stream()
+                .map(tx -> TransactionHistoryResponseDTO.builder()
+                        .transactionCode(tx.getTransactionCode())
+                        .amount(tx.getAmount())
+                        .type(tx.getType())
+                        .direction(tx.getDirection())
+                        .status(tx.getStatus())
+                        .proofUrl(tx.getProofUrl())
+                        .createdAt(tx.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 }
