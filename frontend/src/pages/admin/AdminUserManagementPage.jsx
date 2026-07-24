@@ -91,10 +91,15 @@ const AdminUserManagementPage = () => {
             items.push({ key: 'APPROVED', icon: <CheckCircleOutlined className="text-green-500" />, label: 'Duyệt Hồ Sơ' });
             items.push({ key: 'REJECTED', danger: true, icon: <CloseCircleOutlined />, label: 'Từ Chối KYC' });
         } else {
-            if (record.status === 'APPROVED') {
+            if (record.status === 'APPROVED' || record.status === 'RED_FLAG') {
                 items.push({ key: 'BANNED', danger: true, icon: <LockOutlined />, label: 'Khóa Tài Khoản (Ban)' });
+                if (record.status === 'APPROVED') {
+                    items.push({ key: 'RED_FLAG', danger: true, icon: <CloseCircleOutlined />, label: 'Cảnh Báo (Red Flag)' });
+                } else {
+                    items.push({ key: 'APPROVED', icon: <CheckCircleOutlined className="text-green-500" />, label: 'Gỡ Cảnh Báo' });
+                }
             } else {
-                items.push({ key: 'APPROVED', icon: <UnlockOutlined className="text-green-500" />, label: 'Mở Khóa (Unban)' });
+                items.push({ key: 'APPROVED', icon: <UnlockOutlined className="text-green-500" />, label: 'Mở Khóa (Unban / Hủy Tự Cấm)' });
             }
         }
         return items;
@@ -122,6 +127,10 @@ const AdminUserManagementPage = () => {
             list = list.filter(u => u.status === 'PENDING');
         } else if (filterStatus === 'BANNED') {
             list = list.filter(u => u.status === 'BANNED');
+        } else if (filterStatus === 'RED_FLAG') {
+            list = list.filter(u => u.status === 'RED_FLAG');
+        } else if (filterStatus === 'SELF_EXCLUSION') {
+            list = list.filter(u => u.status === 'SELF_EXCLUSION');
         } else if (filterStatus === 'FULL_DOCS') {
             list = list.filter(u => u.status === 'APPROVED' && isFullDocs(u));
         } else if (filterStatus === 'MISSING_DOCS') {
@@ -236,8 +245,10 @@ const AdminUserManagementPage = () => {
                                     { value: 'ALL', label: 'Tất cả trạng thái' },
                                     { value: 'PENDING', label: `⏳ Chưa duyệt (${pendingCount})` },
                                     { value: 'APPROVED', label: '🟢 Đang hoạt động' },
+                                    { value: 'RED_FLAG', label: '🚩 Cảnh báo (Red Flag)' },
                                     { value: 'FULL_DOCS', label: '✅ Đã nộp (Đủ hồ sơ)' },
                                     { value: 'MISSING_DOCS', label: '⚠️ Thiếu hồ sơ' },
+                                    { value: 'SELF_EXCLUSION', label: '🛑 Tự nguyện cấm' },
                                     { value: 'BANNED', label: '🔴 Bị khóa (Banned)' },
                                 ]}
                             />

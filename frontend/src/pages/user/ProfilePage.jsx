@@ -11,6 +11,7 @@ const ProfilePage = () => {
     const { user, login } = useAuth();
     const [loading, setLoading] = useState(false);
     const [form] = Form.useForm();
+    const [isExcluding, setIsExcluding] = useState(false);
 
     const token = localStorage.getItem('token') || user?.token;
 
@@ -69,6 +70,25 @@ const ProfilePage = () => {
             message.error(error.response?.data?.error || 'Cập nhật thất bại!');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSelfExclusion = async () => {
+        if (!window.confirm("CẢNH BÁO: Tự nguyện cấm (Self-Exclusion) là một phần của chương trình Cá Cược Có Trách Nhiệm. Bạn sẽ BỊ KHÓA tài khoản ngay lập tức và không thể truy cập lại. Bạn có chắc chắn muốn TỰ CẤM mình không?")) return;
+        
+        setIsExcluding(true);
+        try {
+            await axios.put(`http://localhost:8080/api/users/${user.id}/self-exclusion`, {}, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            message.success('Tài khoản của bạn đã được khóa theo yêu cầu tự nguyện cấm.');
+            setTimeout(() => {
+                login(null);
+                window.location.href = '/login';
+            }, 2000);
+        } catch (error) {
+            message.error('Lỗi hệ thống!');
+            setIsExcluding(false);
         }
     };
 
@@ -161,6 +181,14 @@ const ProfilePage = () => {
                         <Button type="primary" htmlType="submit" loading={loading} className="w-full mt-4 h-12 text-lg font-bold">LƯU THAY ĐỔI</Button>
                     </Form.Item>
                 </Form>
+                
+                {user?.role === 'SPECTATOR' && (
+                    <div className="mt-8 pt-6 border-t border-red-200">
+                        <Title level={4} className="text-red-600 mb-2">Chương Trình Cá Cược Có Trách Nhiệm (Responsible Gambling)</Title>
+                        <Text className="block mb-4 text-gray-600">Nếu bạn cảm thấy mất kiểm soát và muốn ngừng chơi, hãy sử dụng tính năng tự cấm. Tính năng này sẽ KHÓA TÀI KHOẢN của bạn và bạn sẽ không thể tham gia hệ thống cho đến khi liên hệ Admin.</Text>
+                        <Button danger type="primary" loading={isExcluding} onClick={handleSelfExclusion} className="h-10 px-8 font-bold">TỰ NGUYỆN CẤM (SELF-EXCLUSION)</Button>
+                    </div>
+                )}
             </Card>
         </div>
     );

@@ -49,6 +49,12 @@ public class Horse {
     @Builder.Default
     private String healthStatus = "READY"; // Sẵn sàng (READY) hoặc Chấn thương (INJURED)
 
+    @Column(name = "microchip_code")
+    private String microchipCode;
+
+    @Column(name = "last_health_check")
+    private LocalDateTime lastHealthCheck;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

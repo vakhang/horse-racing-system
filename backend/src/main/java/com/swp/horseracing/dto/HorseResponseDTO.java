@@ -26,4 +26,7 @@ public class HorseResponseDTO {
     private Integer winRaces;
     private Float winRate;
     private String healthStatus;
+    
+    private String microchipCode;
+    private java.time.LocalDateTime lastHealthCheck;
 }

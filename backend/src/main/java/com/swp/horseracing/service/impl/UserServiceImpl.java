@@ -223,7 +223,7 @@ public class UserServiceImpl implements UserService {
 
     private UserResponseDTO mapToResponseDTO(User user) {
         BigDecimal balance = walletRepository.findByUserId(user.getId())
-                .map(Wallet::getBalance)
+                .map(w -> w.getBalance())
                 .orElse(BigDecimal.ZERO);
 
         List<String> kycUrls = new ArrayList<>();
@@ -267,7 +267,7 @@ public class UserServiceImpl implements UserService {
                         .raceName(bet.getRace().getName())
                         .horseName(bet.getRegistration().getHorse().getName())
                         .amount(bet.getAmount())
-                        .odds(bet.getOdds())
+                        .expectedOdds(bet.getExpectedOdds())
                         .rewardAmount(bet.getStatus() == BetStatus.WON ? bet.getReward() : BigDecimal.ZERO)
                         .status(bet.getStatus())
                         .createdAt(bet.getCreatedAt())

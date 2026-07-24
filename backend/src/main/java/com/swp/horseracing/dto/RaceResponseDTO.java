@@ -20,4 +20,6 @@ public class RaceResponseDTO {
     private BigDecimal prize1;
     private BigDecimal prize2;
     private BigDecimal prize3;
+    private BigDecimal rakePercentage;
+    private BigDecimal totalPool;
 }

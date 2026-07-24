@@ -32,7 +32,36 @@ const Header = () => {
             }
         };
 
-        const generateNotifications = () => {
+        const fetchAnnouncements = async () => {
+            if (user?.id && token) {
+                try {
+                    const res = await axios.get('http://localhost:8080/api/admin/announcements', {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    
+                    const allNews = res.data;
+                    const validNews = allNews.filter(news => {
+                        // Lọc theo Role
+                        const roles = news.targetRoles ? news.targetRoles.split(',') : [];
+                        const roleMatch = roles.length === 0 || roles.includes(user.role);
+                        
+                        // Lọc theo Status
+                        const statuses = news.targetStatuses ? news.targetStatuses.split(',') : [];
+                        const statusMatch = statuses.length === 0 || statuses.includes(user.status);
+                        
+                        return roleMatch && statusMatch;
+                    });
+                    
+                    return validNews;
+                } catch (err) {
+                    console.error("Lỗi lấy thông báo hệ thống:", err);
+                    return [];
+                }
+            }
+            return [];
+        };
+
+        const generateNotifications = async () => {
             let notifs = [];
 
             if (user?.status === 'APPROVED') {
@@ -41,16 +70,20 @@ const Header = () => {
                 notifs.push({ title: 'Chờ duyệt KYC', desc: 'Vui lòng đợi Admin kiểm tra hồ sơ của bạn.', color: 'orange' });
             }
 
-            // FIX LỖI 2: Ngăn crash nếu LocalStorage lưu data bị hỏng (Không phải mảng)
-            try {
-                const adminNewsStr = localStorage.getItem('admin_announcements');
-                const adminNews = adminNewsStr ? JSON.parse(adminNewsStr) : [];
-                if (Array.isArray(adminNews)) {
-                    adminNews.forEach(news => {
-                        notifs.push({ title: '📢 TIN TỪ BAN TỔ CHỨC', desc: news.content, color: 'blue', date: news.date });
-                    });
+            // Lấy thông báo từ Database
+            const systemNews = await fetchAnnouncements();
+            systemNews.forEach(news => {
+                let dateStr = news.createdAt;
+                if (Array.isArray(dateStr)) {
+                    dateStr = new Date(dateStr[0], dateStr[1] - 1, dateStr[2], dateStr[3] || 0, dateStr[4] || 0, dateStr[5] || 0);
                 }
-            } catch (e) { console.error("Lỗi parse thông báo Admin", e); }
+                notifs.push({ 
+                    title: `📢 TIN TỪ BAN TỔ CHỨC`, 
+                    desc: news.content, 
+                    color: 'blue', 
+                    date: dateStr
+                });
+            });
 
             if (user?.id) {
                 try {

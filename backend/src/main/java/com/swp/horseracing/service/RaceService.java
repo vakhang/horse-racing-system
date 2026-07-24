@@ -14,5 +14,6 @@ public interface RaceService {
     void deleteRace(Integer id);
 
     java.util.List<com.swp.horseracing.dto.LiveOddsResponseDTO> getLiveOdds(Integer raceId);
+    void payoutRace(Integer id);
 
 }

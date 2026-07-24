@@ -13,4 +13,8 @@ public interface TransactionHistoryRepository extends JpaRepository<TransactionH
     java.util.List<TransactionHistory> findByWallet_UserIdOrderByCreatedAtDesc(Integer userId);
     // Thêm dòng này vào trong Repository của bạn:
     Optional<TransactionHistory> findByTransactionCode(String transactionCode);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("SELECT t FROM TransactionHistory t WHERE t.id = :id")
+    Optional<TransactionHistory> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Integer id);
 }

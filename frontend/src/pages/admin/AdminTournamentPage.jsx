@@ -102,7 +102,8 @@ const AdminTournamentPage = () => {
                 refereeId: values.refereeId,
                 prize1: values.prize1 || 0,
                 prize2: values.prize2 || 0,
-                prize3: values.prize3 || 0
+                prize3: values.prize3 || 0,
+                rakePercentage: values.rakePercentage || 20
             };
 
             if (editingRaceId) {
@@ -143,8 +144,18 @@ const AdminTournamentPage = () => {
             prize1: record.prize1 || 0,
             prize2: record.prize2 || 0,
             prize3: record.prize3 || 0,
+            rakePercentage: record.rakePercentage || 20,
         });
         setIsRaceModalVisible(true);
+    };
+
+    const handlePayout = async (raceId) => {
+        try {
+            await api.post(`/races/${raceId}/payout`);
+            message.success('Đã trả thưởng thành công cho khán giả!');
+        } catch(e) {
+            message.error(e.response?.data || 'Lỗi khi trả thưởng!');
+        }
     };
 
     // QUẢN LÝ NGỰA TRONG CHẶNG (RÚT LUI)
@@ -184,6 +195,8 @@ const AdminTournamentPage = () => {
         const columns = [
             { title: 'Tên Chặng', dataIndex: 'name', key: 'name', render: t => <Text strong>{t}</Text> },
             { title: 'Giờ Xuất Phát', dataIndex: 'raceTime', render: v => v ? dayjs(v).format('DD/MM/YYYY HH:mm') : 'Chưa định' },
+            { title: 'Live Pool', dataIndex: 'totalPool', render: v => <Text strong className="text-green-600">{v ? v.toLocaleString() + ' đ' : '0 đ'}</Text> },
+            { title: 'Takeout Rate', dataIndex: 'rakePercentage', render: v => <Text strong className="text-yellow-600">{v || 20}%</Text> },
             {
                 title: 'Trọng Tài Phụ Trách',
                 key: 'referee',
@@ -209,6 +222,11 @@ const AdminTournamentPage = () => {
                     <Space>
                         <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>Loại Ngựa</Button>
                         <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openEditRaceModal(record)}>Thiết Lập</Button>
+                        {record.status === 'FINISHED' && (
+                            <Popconfirm title="Thực hiện trả thưởng cho khán giả?" onConfirm={() => handlePayout(record.id)}>
+                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold">Bắt đầu Trả Thưởng</Button>
+                            </Popconfirm>
+                        )}
                         {record.status === 'PENDING' && (
                             <Popconfirm
                                 title={<span className="font-bold text-red-600">Xác nhận hủy chặng đua?</span>}
@@ -406,6 +424,15 @@ const AdminTournamentPage = () => {
                         <Col span={8}>
                             <Form.Item name="prize3" label={<Text strong className="text-orange-700">🥉 Tiền thưởng Hạng 3</Text>}>
                                 <InputNumber style={{ width: '100%' }} size="large" className="font-bold text-lg" min={0} step={50000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+
+                    <Divider orientation="left" className="border-green-500"><Text className="text-green-600 font-bold">4. Cấu hình Pari-mutuel</Text></Divider>
+                    <Row gutter={16}>
+                        <Col span={12}>
+                            <Form.Item name="rakePercentage" label={<Text strong>Tỷ lệ giữ lại (Takeout Rate %)</Text>} extra="Chỉ được phép sửa đổi trước khi cuộc đua bắt đầu." rules={[{required:true, message: 'Bắt buộc nhập'}]}>
+                                <InputNumber disabled={raceForm.getFieldValue('status') !== 'PENDING' && editingRaceId != null} min={0} max={100} size="large" addonAfter="%" style={{ width: '100%' }} />
                             </Form.Item>
                         </Col>
                     </Row>

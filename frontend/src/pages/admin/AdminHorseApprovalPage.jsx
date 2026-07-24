@@ -33,6 +33,7 @@ const AdminHorseApprovalPage = () => {
     }, []);
 
     const handleApproval = async (horseId, newStatus) => {
+        setLoading(true);
         try {
             // FIX 415: API Backend Update Ngựa yêu cầu FormData (multipart/form-data)
             const formData = new FormData();
@@ -40,9 +41,26 @@ const AdminHorseApprovalPage = () => {
 
             await api.put(`/horses/${horseId}`, formData);
             message.success(`Đã chuyển trạng thái chiến mã thành ${newStatus}!`);
-            fetchHorses();
+            await fetchHorses();
         } catch (error) {
             message.error('Có lỗi xảy ra khi xử lý!');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleUpdateHorse = async (horseId, data) => {
+        setLoading(true);
+        try {
+            const formData = new FormData();
+            Object.keys(data).forEach(key => formData.append(key, data[key]));
+            await api.put(`/horses/${horseId}`, formData);
+            message.success('Đã cập nhật thông tin thành công!');
+            await fetchHorses();
+        } catch (error) {
+            message.error('Lỗi khi cập nhật thông tin!');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -57,6 +75,25 @@ const AdminHorseApprovalPage = () => {
     };
 
     const columns = [
+        {
+            title: 'Mã Nhận Dạng',
+            key: 'microchipCode',
+            render: (_, record) => (
+                <div className="flex flex-col gap-1">
+                    <Text strong className={record.microchipCode ? "text-green-600" : "text-red-500"}>
+                        {record.microchipCode || 'CHƯA CÓ'}
+                    </Text>
+                    {activeTab === 'APPROVED' && (
+                        <Button size="small" disabled={loading} onClick={() => {
+                            const code = prompt('Nhập mã số Microchip/ID:');
+                            if (code) handleUpdateHorse(record.id, { microchipCode: code });
+                        }}>
+                            Cập nhật ID
+                        </Button>
+                    )}
+                </div>
+            )
+        },
         {
             title: 'Tên Chiến Mã 🐎',
             key: 'horseName',
@@ -89,6 +126,31 @@ const AdminHorseApprovalPage = () => {
             ),
         },
         {
+            title: 'Sức Khỏe Định Kỳ',
+            key: 'health',
+            render: (_, record) => {
+                const lastCheck = record.lastHealthCheck ? new Date(record.lastHealthCheck) : null;
+                const isOverdue = !lastCheck || (Date.now() - lastCheck.getTime()) > (3 * 30 * 24 * 60 * 60 * 1000);
+                
+                return (
+                    <div className="flex flex-col gap-1">
+                        <Text className={isOverdue ? "text-red-500 font-bold" : "text-green-600"}>
+                            {lastCheck ? lastCheck.toLocaleDateString() : 'Chưa khám'}
+                        </Text>
+                        {isOverdue && <Tag color="red" className="m-0 mt-1">⚠️ Quá hạn 3 tháng</Tag>}
+                        
+                        {activeTab === 'APPROVED' && (
+                            <Button size="small" disabled={loading} onClick={() => {
+                                handleUpdateHorse(record.id, { lastHealthCheck: new Date().toISOString() });
+                            }}>
+                                Cập nhật Doping/Khám
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
             title: 'Hành Động ⚡',
             key: 'action',
             align: 'center',
@@ -100,13 +162,13 @@ const AdminHorseApprovalPage = () => {
                     <Space size="middle">
                         <Popconfirm title="Bạn chắc chắn muốn DUYỆT chiến mã này?" onConfirm={() => handleApproval(record.id, 'APPROVED')} okText="Duyệt" cancelText="Hủy">
                             <Tooltip title="Duyệt cho phép thi đấu">
-                                <Button type="primary" className="bg-green-500 hover:bg-green-600 border-none" icon={<CheckCircleOutlined />}>Duyệt</Button>
+                                <Button type="primary" className="bg-green-500 hover:bg-green-600 border-none" icon={<CheckCircleOutlined />} disabled={loading}>Duyệt</Button>
                             </Tooltip>
                         </Popconfirm>
 
                         <Popconfirm title="TỪ CHỐI hồ sơ chiến mã này?" onConfirm={() => handleApproval(record.id, 'REJECTED')} okText="Từ chối" okButtonProps={{ danger: true }} cancelText="Hủy">
                             <Tooltip title="Từ chối nếu hồ sơ không đạt yêu cầu">
-                                <Button danger icon={<CloseCircleOutlined />}>Từ chối</Button>
+                                <Button danger icon={<CloseCircleOutlined />} disabled={loading}>Từ chối</Button>
                             </Tooltip>
                         </Popconfirm>
                     </Space>
@@ -127,9 +189,9 @@ const AdminHorseApprovalPage = () => {
                 <Row justify="space-between" align="middle" className="mb-6">
                     <Col>
                         <Title level={2} className="m-0 flex items-center gap-3 text-gray-800">
-                            <FileSearchOutlined className="text-blue-600" /> Quản Lý Phê Duyệt Ngựa
+                            <FileSearchOutlined className="text-blue-600" /> Quản Lý Chiến Mã
                         </Title>
-                        <Text className="text-gray-500 text-base">Kiểm tra tình trạng bổ sung hồ sơ và cấp phép thi đấu 🏇</Text>
+                        <Text className="text-gray-500 text-base">Hồ sơ cấp phép thi đấu, theo dõi sức khỏe và thẻ Microchip 🏇</Text>
                     </Col>
                     <Col>
                         <Button type="primary" size="large" icon={<ReloadOutlined />} onClick={fetchHorses} loading={loading}>

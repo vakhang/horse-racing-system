@@ -23,6 +23,9 @@ public class Wallet {
 
     private BigDecimal balance;
 
+    @Version
+    private Integer version;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

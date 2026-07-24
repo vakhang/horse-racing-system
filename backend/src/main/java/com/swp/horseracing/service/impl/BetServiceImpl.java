@@ -45,8 +45,23 @@ public class BetServiceImpl implements BetService {
             throw new RuntimeException("Số dư không đủ để đặt cược!");
         }
 
-        // CHỐT KÈO (FIXED-ODDS): Lấy odds cố định từ Registration
-        java.math.BigDecimal fixedOdds = reg.getOdds() != null ? reg.getOdds() : java.math.BigDecimal.ONE;
+        // TÍNH LIVE ODDS (Pari-Mutuel) TẠI THỜI ĐIỂM CƯỢC
+        BigDecimal currentTotalPool = race.getTotalPool() != null ? race.getTotalPool() : BigDecimal.ZERO;
+        BigDecimal newTotalPool = currentTotalPool.add(request.getAmount());
+
+        BigDecimal rakePercentage = race.getRakePercentage() != null ? race.getRakePercentage() : new BigDecimal("20.00");
+        BigDecimal netPool = newTotalPool.multiply(
+                BigDecimal.valueOf(100).subtract(rakePercentage)
+        ).divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
+
+        BigDecimal totalBetOnHorse = betRepository.sumAmountByRaceIdAndRegistrationId(race.getId(), reg.getId());
+        if (totalBetOnHorse == null) totalBetOnHorse = BigDecimal.ZERO;
+        BigDecimal newTotalBetOnHorse = totalBetOnHorse.add(request.getAmount());
+
+        BigDecimal expectedOdds = BigDecimal.ONE; // Mặc định 1.0 nếu có lỗi
+        if (newTotalBetOnHorse.compareTo(BigDecimal.ZERO) > 0) {
+            expectedOdds = netPool.divide(newTotalBetOnHorse, 2, java.math.RoundingMode.HALF_UP);
+        }
 
         // Trừ tiền ví
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
@@ -59,7 +74,7 @@ public class BetServiceImpl implements BetService {
                 .registration(reg)
                 .amount(request.getAmount())
                 .status(BetStatus.PENDING)
-                .odds(fixedOdds) // KHÓA ODDS Ở ĐÂY, VĨNH VIỄN KHÔNG ĐỔI
+                .expectedOdds(expectedOdds) // Tỷ lệ tạm tính Pari-Mutuel
                 .build();
         Bet savedBet = betRepository.save(bet);
 

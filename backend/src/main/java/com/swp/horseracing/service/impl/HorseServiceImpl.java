@@ -41,6 +41,8 @@ public class HorseServiceImpl implements HorseService {
                 .breed(request.getBreed())
                 .color(request.getColor())
                 .status(request.getStatus() != null ? request.getStatus() : HorseStatus.PENDING)
+                .microchipCode(request.getMicrochipCode())
+                .lastHealthCheck(request.getLastHealthCheck())
                 .attachments(new ArrayList<>())
                 .build();
 
@@ -79,6 +81,8 @@ public class HorseServiceImpl implements HorseService {
         if (request.getBreed() != null) horse.setBreed(request.getBreed());
         if (request.getColor() != null) horse.setColor(request.getColor());
         if (request.getStatus() != null) horse.setStatus(request.getStatus());
+        if (request.getMicrochipCode() != null) horse.setMicrochipCode(request.getMicrochipCode());
+        if (request.getLastHealthCheck() != null) horse.setLastHealthCheck(request.getLastHealthCheck());
 
         saveAttachments(horse, request);
         return mapToResponseDTO(horseRepository.save(horse));
@@ -150,6 +154,8 @@ public class HorseServiceImpl implements HorseService {
                 .winRaces(horse.getWinRaces())
                 .winRate(winRate)
                 .healthStatus(horse.getHealthStatus())
+                .microchipCode(horse.getMicrochipCode())
+                .lastHealthCheck(horse.getLastHealthCheck())
                 .build();
     }
 }

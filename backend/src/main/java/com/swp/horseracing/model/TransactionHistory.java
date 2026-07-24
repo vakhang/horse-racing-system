@@ -56,6 +56,10 @@ public class TransactionHistory {
     @Column(name = "account_name")
     private String accountName;
 
+    @Column(name = "tax_amount")
+    @Builder.Default
+    private BigDecimal taxAmount = BigDecimal.ZERO;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
