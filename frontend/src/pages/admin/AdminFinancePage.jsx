@@ -9,6 +9,7 @@ const AdminFinancePage = () => {
     const [transactions, setTransactions] = useState([]);
     const [ggr, setGgr] = useState(0);
     const [ngr, setNgr] = useState(0);
+    const [tax, setTax] = useState(0);
     const [loading, setLoading] = useState(false);
 
     const [searchCodeWithdraw, setSearchCodeWithdraw] = useState('');
@@ -24,6 +25,7 @@ const AdminFinancePage = () => {
             setTransactions(res.data?.transactions || []);
             setGgr(res.data?.ggr || 0);
             setNgr(res.data?.ngr || 0);
+            setTax(res.data?.taxCollected || 0);
         } catch (error) {
             message.error('Lỗi tải dữ liệu sổ cái!');
             setTransactions([]);
@@ -112,16 +114,20 @@ const AdminFinancePage = () => {
         <div className="p-8 bg-gray-100 min-h-screen">
             <Card className="shadow-xl rounded-2xl border-none mb-6 bg-gradient-to-r from-gray-900 to-blue-900">
                 <Row gutter={24}>
-                    <Col span={8}>
-                        <Text className="text-gray-400">Tổng GGR (Tiền cược vào)</Text>
+                    <Col span={6}>
+                        <Text className="text-gray-400">Tổng Pool (Tiền cược vào)</Text>
                         <Title level={2} className="text-white m-0"><RiseOutlined className="text-green-400"/> {ggr.toLocaleString()} VNĐ</Title>
                     </Col>
-                    <Col span={8}>
-                        <Text className="text-gray-400">NGR Sàn Thực Nhận (20% Phế)</Text>
+                    <Col span={6}>
+                        <Text className="text-gray-400">Doanh Thu Gộp (Tỷ lệ giữ lại)</Text>
                         <Title level={2} className="text-yellow-400 m-0">{ngr.toLocaleString()} VNĐ</Title>
                     </Col>
-                    <Col span={8}>
-                        <Text className="text-gray-400">Số Lượng Yêu Cầu Rút</Text>
+                    <Col span={6}>
+                        <Text className="text-gray-400">Thuế TNCN Đã Thu</Text>
+                        <Title level={2} className="text-purple-400 m-0">{tax.toLocaleString()} VNĐ</Title>
+                    </Col>
+                    <Col span={6}>
+                        <Text className="text-gray-400">Yêu Cầu Rút Tiền</Text>
                         <Title level={2} className="text-red-400 m-0">{pendingWithdrawals.length} Lệnh</Title>
                     </Col>
                 </Row>

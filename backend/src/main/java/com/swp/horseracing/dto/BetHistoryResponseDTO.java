@@ -13,8 +13,8 @@ public class BetHistoryResponseDTO {
     private String raceName;
     private String horseName;
     private BigDecimal amount;
-    private BigDecimal odds;
-    private BigDecimal rewardAmount; // = amount * odds nếu thắng
+    private BigDecimal expectedOdds;
+    private BigDecimal rewardAmount;
     private BetStatus status;
     private LocalDateTime createdAt;
 }

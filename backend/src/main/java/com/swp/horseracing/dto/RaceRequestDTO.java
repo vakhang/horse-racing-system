@@ -15,4 +15,5 @@ public class RaceRequestDTO {
     private BigDecimal prize1;
     private BigDecimal prize2;
     private BigDecimal prize3;
+    private BigDecimal rakePercentage;
 }

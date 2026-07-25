@@ -69,4 +69,13 @@ public class RaceController {
         }
     }
 
+    @PostMapping("/{id}/payout")
+    public ResponseEntity<?> payoutRace(@PathVariable Integer id) {
+        try {
+            raceService.payoutRace(id);
+            return ResponseEntity.ok("Trả thưởng chặng đua thành công!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

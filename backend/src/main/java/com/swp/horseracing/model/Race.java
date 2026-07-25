@@ -17,7 +17,7 @@ public class Race {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tournament_id", referencedColumnName = "id")
     private Tournament tournament;
 
@@ -39,7 +39,7 @@ public class Race {
     private RaceStatus status;
 
     // --- CÁC THUỘC TÍNH MỚI BỔ SUNG ---
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "referee_id", referencedColumnName = "id")
     private User referee;
 

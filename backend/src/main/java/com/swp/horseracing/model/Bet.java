@@ -27,7 +27,10 @@ public class Bet {
     private Registration registration;
 
     private BigDecimal amount;
-    private BigDecimal odds;
+    
+    // Tỷ lệ cược tạm tính tại thời điểm mua vé (Dùng cho Pari-Mutuel, chỉ mang tính chất tham khảo/kiểm toán)
+    @Column(name = "expected_odds")
+    private BigDecimal expectedOdds;
 
     @Enumerated(EnumType.STRING)
     @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)

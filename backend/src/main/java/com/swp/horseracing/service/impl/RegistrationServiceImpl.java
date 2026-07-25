@@ -44,6 +44,19 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy Nài ngựa ID: " + request.getJockeyId()));
         }
 
+        // BỨC TƯỜNG LỬA CHẶN NGỰA BỆNH HOẶC CHƯA ĐƯỢC DUYỆT (TC_OWN_004)
+        if (horse.getStatus() != HorseStatus.APPROVED) {
+            throw new RuntimeException("Ngựa chưa được duyệt hoặc đã bị từ chối! Không thể đăng ký đua.");
+        }
+        if ("INJURED".equalsIgnoreCase(horse.getHealthStatus()) || "SICK".equalsIgnoreCase(horse.getHealthStatus())) {
+            throw new RuntimeException("Ngựa đang gặp vấn đề về sức khỏe (INJURED/SICK)! Không thể đăng ký đua.");
+        }
+
+        // CHỐNG TRÙNG LẶP ĐĂNG KÝ (FR-10)
+        if (registrationRepository.existsByRaceIdAndHorseId(race.getId(), horse.getId())) {
+            throw new RuntimeException("Ngựa này đã được đăng ký trong chặng đua này rồi!");
+        }
+
         Registration registration = Registration.builder()
                 .race(race)
                 .horse(horse)
@@ -112,12 +125,17 @@ public class RegistrationServiceImpl implements RegistrationService {
         List<Bet> bets = betRepository.findByRaceId(reg.getRace().getId());
         int affectedCount = 0;
         BigDecimal totalRefund = BigDecimal.ZERO;
+        Race race = reg.getRace();
 
         for (Bet bet : bets) {
             // Chỉ dò tìm những vé cược đặt vào DUY NHẤT con ngựa bị rút lui này
             if (bet.getRegistration().getId().equals(reg.getId()) && bet.getStatus() == BetStatus.PENDING) {
-                bet.setStatus(BetStatus.CANCELED);
+                bet.setStatus(BetStatus.REFUNDED);
                 betRepository.save(bet);
+                
+                // TRỪ POOL: Khấu trừ tiền cược (Gross Sales -> Net Sales)
+                BigDecimal currentPool = race.getTotalPool() != null ? race.getTotalPool() : BigDecimal.ZERO;
+                race.setTotalPool(currentPool.subtract(bet.getAmount()));
 
                 Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId()).orElse(null);
                 if (wallet != null) {
@@ -139,6 +157,8 @@ public class RegistrationServiceImpl implements RegistrationService {
                 }
             }
         }
+        // Cập nhật lại Quỹ Tổng (Total Pool)
+        raceRepository.save(race);
 
         // Ghi Sổ Nhật Ký (Audit Log)
         AuditLog log = AuditLog.builder()

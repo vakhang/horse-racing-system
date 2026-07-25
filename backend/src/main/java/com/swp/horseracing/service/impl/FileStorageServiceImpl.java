@@ -19,7 +19,7 @@ public class FileStorageServiceImpl implements FileStorageService {
     private final Cloudinary cloudinary;
 
     // Các định dạng file cho phép
-    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "gif", "pdf", "docx");
+    private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png", "pdf", "zip");
 
     @Override
     public String storeFile(MultipartFile file) {
@@ -35,7 +35,7 @@ public class FileStorageServiceImpl implements FileStorageService {
         String ext = originalName.substring(originalName.lastIndexOf(".") + 1).toLowerCase();
 
         if (!ALLOWED_EXTENSIONS.contains(ext))
-            throw new RuntimeException("Định dạng file không hỗ trợ: " + ext);
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.UNSUPPORTED_MEDIA_TYPE, "Định dạng file không được hỗ trợ: " + ext);
 
         try {
             // ĐÃ SỬA LỖI BÁO ĐỎ Ở ĐÂY: Sử dụng java.util.Map.of() an toàn kiểu

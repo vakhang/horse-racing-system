@@ -66,6 +66,16 @@ public class UserController {
         }
     }
 
+    // Tự nguyện cấm (Self-Exclusion) dành cho người chơi
+    @PutMapping("/{id}/self-exclusion")
+    public ResponseEntity<?> selfExclusion(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(userService.updateUserStatus(id, UserStatus.SELF_EXCLUSION));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // Lịch sử Cược
     @GetMapping("/my-bets")
     public ResponseEntity<?> getMyBets(@RequestParam Integer userId) {

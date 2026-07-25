@@ -11,6 +11,8 @@ import java.util.List;
 public interface RegistrationRepository extends JpaRepository<Registration, Integer> {
     List<Registration> findByRaceId(Integer raceId);
 
+    boolean existsByRaceIdAndHorseId(Integer raceId, Integer horseId);
+
     List<Registration> findByOwnerId(Integer ownerId);
 
     List<Registration> findByJockeyId(Integer jockeyId);

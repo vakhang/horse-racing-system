@@ -42,4 +42,7 @@ public class Registration {
 
     private String note;
     private java.math.BigDecimal odds;
+    
+    @Column(name = "rank")
+    private Integer rank;
 }
