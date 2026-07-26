@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Statistic, Table, Tabs, Tag, message } from 'antd';
 import { WalletOutlined, HistoryOutlined, FallOutlined, RiseOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import api from '../../config/api';
 
 const UserDashboard = () => {
     const [balance, setBalance] = useState(0);

@@ -4,6 +4,7 @@ import { UserOutlined, LogoutOutlined, WalletOutlined, BellOutlined, Notificatio
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import api from '../../config/api';
 import dayjs from 'dayjs';
 
 const { Header: AntHeader } = Layout;
@@ -21,7 +22,7 @@ const Header = () => {
     useEffect(() => {
         const fetchWalletBalance = () => {
             if (user?.id && token) {
-                axios.get(`https://horse-racing-system-production-492c.up.railway.app/api/wallets/my-wallet?userId=${user.id}`, {
+                api.get(`/wallets/my-wallet?userId=${user.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                     .then(res => {
@@ -35,7 +36,7 @@ const Header = () => {
         const fetchAnnouncements = async () => {
             if (user?.id && token) {
                 try {
-                    const res = await axios.get('https://horse-racing-system-production-492c.up.railway.app/api/admin/announcements', {
+                    const res = await api.get('/admin/announcements', {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     

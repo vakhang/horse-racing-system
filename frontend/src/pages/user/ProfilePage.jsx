@@ -3,6 +3,7 @@ import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Ta
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UploadOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import api from '../../config/api';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -59,7 +60,7 @@ const ProfilePage = () => {
         }
 
         try {
-            const response = await axios.put(`https://horse-racing-system-production-492c.up.railway.app/api/users/${user.id}`, formData, {
+            const response = await api.put(`/users/${user.id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -78,7 +79,7 @@ const ProfilePage = () => {
         
         setIsExcluding(true);
         try {
-            await axios.put(`https://horse-racing-system-production-492c.up.railway.app/api/users/${user.id}/self-exclusion`, {}, {
+            await api.put(`/users/${user.id}/self-exclusion`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Tài khoản của bạn đã được khóa theo yêu cầu tự nguyện cấm.');

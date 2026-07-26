@@ -3,6 +3,7 @@ import { Card, Statistic, Table, Tabs, Tag, Typography } from 'antd';
 import { WalletOutlined, HistoryOutlined, TrophyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import api from '../config/api';
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -18,10 +19,7 @@ const HomePage = () => {
     const userId = user?.id;
     const token = user?.token || localStorage.getItem('token');
 
-    const api = axios.create({
-        baseURL: 'https://horse-racing-system-production-492c.up.railway.app/api',
-        headers: { Authorization: `Bearer ${token}` }
-    });
+    
 
     useEffect(() => {
         if (userId && token) {

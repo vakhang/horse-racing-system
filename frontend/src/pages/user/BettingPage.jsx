@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin } from 'antd';
 import { RocketOutlined, DollarOutlined, LineChartOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
@@ -24,10 +25,7 @@ const BettingPage = () => {
     const [betAmount, setBetAmount] = useState(100000); // Mặc định cược 100k
     const [submittingBet, setSubmittingBet] = useState(false);
 
-    const api = axios.create({
-        baseURL: 'https://horse-racing-system-production-492c.up.railway.app/api',
-        headers: { Authorization: `Bearer ${token}` }
-    });
+    
 
     // 1. Lấy danh sách Chặng đua khi vào trang
     useEffect(() => {
