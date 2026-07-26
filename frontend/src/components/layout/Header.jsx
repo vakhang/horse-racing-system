@@ -21,7 +21,7 @@ const Header = () => {
     useEffect(() => {
         const fetchWalletBalance = () => {
             if (user?.id && token) {
-                axios.get(`http://localhost:8080/api/wallets/my-wallet?userId=${user.id}`, {
+                axios.get(`https://horse-racing-system-production-492c.up.railway.app/api/wallets/my-wallet?userId=${user.id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                     .then(res => {
@@ -35,7 +35,7 @@ const Header = () => {
         const fetchAnnouncements = async () => {
             if (user?.id && token) {
                 try {
-                    const res = await axios.get('http://localhost:8080/api/admin/announcements', {
+                    const res = await axios.get('https://horse-racing-system-production-492c.up.railway.app/api/admin/announcements', {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     

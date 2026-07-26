@@ -17,7 +17,7 @@ const LoginPage = () => {
     const handleLogin = async (values) => {
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:8080/api/auth/login', {
+            const response = await axios.post('https://horse-racing-system-production-492c.up.railway.app/api/auth/login', {
                 email: values.email, // Backend sẽ dùng chuỗi này quét cả cột email và cột sdt
                 password: values.password
             });

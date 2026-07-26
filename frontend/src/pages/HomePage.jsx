@@ -19,7 +19,7 @@ const HomePage = () => {
     const token = user?.token || localStorage.getItem('token');
 
     const api = axios.create({
-        baseURL: 'http://localhost:8080/api',
+        baseURL: 'https://horse-racing-system-production-492c.up.railway.app/api',
         headers: { Authorization: `Bearer ${token}` }
     });
 

@@ -59,7 +59,7 @@ const ProfilePage = () => {
         }
 
         try {
-            const response = await axios.put(`http://localhost:8080/api/users/${user.id}`, formData, {
+            const response = await axios.put(`https://horse-racing-system-production-492c.up.railway.app/api/users/${user.id}`, formData, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -78,7 +78,7 @@ const ProfilePage = () => {
         
         setIsExcluding(true);
         try {
-            await axios.put(`http://localhost:8080/api/users/${user.id}/self-exclusion`, {}, {
+            await axios.put(`https://horse-racing-system-production-492c.up.railway.app/api/users/${user.id}/self-exclusion`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             message.success('Tài khoản của bạn đã được khóa theo yêu cầu tự nguyện cấm.');
