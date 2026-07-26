@@ -53,13 +53,11 @@ public class User {
     // -------------------------------------------
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RoleEnum role;
 
     private LocalDate dob;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private UserStatus status;
 
     @Column(name = "last_login")
