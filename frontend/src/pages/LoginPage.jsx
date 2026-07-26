@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message, ConfigProvider, theme, Modal } from 'antd';
 import { MailOutlined, LockOutlined, TrophyOutlined, FireOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../config/api';
 import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
@@ -17,7 +17,7 @@ const LoginPage = () => {
     const handleLogin = async (values) => {
         setLoading(true);
         try {
-            const response = await axios.post('https://horse-racing-system-production-492c.up.railway.app/api/auth/login', {
+            const response = await api.post('/auth/login', {
                 email: values.email, // Backend sẽ dùng chuỗi này quét cả cột email và cột sdt
                 password: values.password
             });
