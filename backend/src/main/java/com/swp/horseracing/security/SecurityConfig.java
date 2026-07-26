@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/webhook").permitAll()
 
                         .requestMatchers("/error").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
