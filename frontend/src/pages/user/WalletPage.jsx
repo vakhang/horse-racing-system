@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Form, Input, Row, Col, Space, Divider, Result, Tag } from 'antd';
-import { WalletOutlined, BankOutlined, ExportOutlined, ArrowLeftOutlined, CopyOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Form, Input, Row, Col, Space, Divider, Result, Tag, Tooltip } from 'antd';
+import { WalletOutlined, BankOutlined, ExportOutlined, ArrowLeftOutlined, CopyOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -111,7 +111,11 @@ const WalletPage = () => {
                 content: (
                     <div className="mt-4 text-base">
                         <p>Mã giao dịch đối soát của bạn là:</p>
-                        <div className="text-2xl font-mono font-bold text-red-600 my-2 tracking-widest">{response.data.transactionCode}</div>
+                        <div className="text-2xl font-mono font-bold text-red-600 my-2 tracking-widest flex items-center justify-center gap-2">
+                            <Text copyable={{ text: response.data.transactionCode }} className="text-red-600">
+                                {response.data.transactionCode}
+                            </Text>
+                        </div>
                         <p className="text-gray-600 mt-3">Hệ thống đã ghi nhận yêu cầu và tạm trừ số dư. Kế toán sẽ kiểm tra hợp lệ và chuyển khoản qua ngân hàng cho bạn <b>chậm nhất sau 3 ngày làm việc.</b></p>
                         <p className="text-gray-600 mt-2">Nếu bạn cần tiền gấp, có thể đến quầy Lễ Tân (BTC) để được hỗ trợ giải ngân.</p>
                     </div>
@@ -145,7 +149,20 @@ const WalletPage = () => {
                 className="mb-6 text-left"
             />
             <div className="mb-6 text-center bg-gray-50 py-4 rounded-xl border border-gray-200">
-                <Text type="secondary" className="text-lg">Số dư khả dụng hiện tại: </Text>
+                <Space align="center">
+                    <Text type="secondary" className="text-lg">Số dư khả dụng hiện tại:</Text>
+                    <Tooltip title={
+                        <div className="text-xs">
+                            <p><b>Quy định khấu trừ tự động:</b></p>
+                            <ul className="pl-3 list-disc">
+                                <li><b>Thuế TNCN:</b> Khấu trừ 10% đối với phần thưởng cược &gt; 10.000.000 VNĐ.</li>
+                                <li><b>Hoa hồng sàn (Giải đua):</b> Chủ ngựa (5%), Nài ngựa (2%) trừ thẳng vào giải thưởng.</li>
+                            </ul>
+                        </div>
+                    }>
+                        <InfoCircleOutlined className="text-blue-400 cursor-pointer text-lg" />
+                    </Tooltip>
+                </Space>
                 <div className="text-4xl font-black text-blue-700 mt-2">{Number(balance || 0).toLocaleString()} VNĐ</div>
             </div>
 

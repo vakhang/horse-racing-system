@@ -19,7 +19,7 @@ const Footer = () => {
                 <Row gutter={[48, 32]}>
                     {/* CỘT 1: THÔNG TIN DOANH NGHIỆP */}
                     <Col xs={24} sm={12} lg={6}>
-                        <Title level={4} className="text-white mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2">
+                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2" style={{ color: 'white' }}>
                             THÔNG TIN DOANH NGHIỆP
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full">
@@ -42,7 +42,7 @@ const Footer = () => {
 
                     {/* CỘT 2: PHÁP LÝ & QUY ĐỊNH */}
                     <Col xs={24} sm={12} lg={6}>
-                        <Title level={4} className="text-white mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2">
+                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2" style={{ color: 'white' }}>
                             PHÁP LÝ & QUY ĐỊNH
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
@@ -66,7 +66,7 @@ const Footer = () => {
 
                     {/* CỘT 3: HỖ TRỢ KHÁCH HÀNG */}
                     <Col xs={24} sm={12} lg={6}>
-                        <Title level={4} className="text-white mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2">
+                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2" style={{ color: 'white' }}>
                             HỖ TRỢ KHÁCH HÀNG
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
@@ -99,7 +99,7 @@ const Footer = () => {
                                 <div className="bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-black text-lg shadow-[0_0_15px_rgba(220,38,38,0.5)]">
                                     21+
                                 </div>
-                                <Title level={5} className="text-red-400 m-0 uppercase text-sm">
+                                <Title level={5} className="m-0 uppercase text-sm" style={{ color: '#f87171' }}>
                                     CHỈ DÀNH CHO NGƯỜI TỪ ĐỦ 21 TUỔI TRỞ LÊN
                                 </Title>
                             </div>

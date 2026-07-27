@@ -221,6 +221,9 @@ const BettingPage = () => {
                     rowKey="registrationId"
                     pagination={false}
                     loading={loadingOdds}
+                    size="middle"
+                    scroll={{ y: '50vh' }}
+                    rowClassName={(record, index) => index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
                     className="mt-4 border rounded-lg"
                 />
 

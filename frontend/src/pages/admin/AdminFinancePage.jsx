@@ -68,7 +68,7 @@ const AdminFinancePage = () => {
     );
 
     const withdrawColumns = [
-        { title: 'Mã Lệnh', dataIndex: 'transactionCode', render: t => <Text className="text-xl font-bold tracking-widest text-blue-600">{t}</Text> },
+        { title: 'Mã Lệnh', dataIndex: 'transactionCode', render: t => <Text copyable className="text-xl font-bold tracking-widest text-blue-600">{t}</Text> },
         { title: 'Số Tiền Rút', dataIndex: 'amount', render: v => <Text className="text-red-600 font-bold text-lg">{v ? v.toLocaleString() : 0} VNĐ</Text> },
         {
             title: 'Thông Tin Nhận Tiền',
@@ -102,7 +102,7 @@ const AdminFinancePage = () => {
     ];
 
     const historyColumns = [
-        { title: 'Mã GD', dataIndex: 'transactionCode', render: t => <Text strong>{t}</Text> },
+        { title: 'Mã GD', dataIndex: 'transactionCode', render: t => <Text copyable strong>{t}</Text> },
         { title: 'Loại', dataIndex: 'type', render: t => <Tag color="blue">{t}</Tag> },
         { title: 'In/Out', dataIndex: 'direction', render: d => <Tag color={d === 'IN' ? 'green' : 'red'}>{d}</Tag> },
         { title: 'Số tiền', dataIndex: 'amount', render: v => <Text strong>{v ? v.toLocaleString() : 0} đ</Text> },
@@ -141,14 +141,34 @@ const AdminFinancePage = () => {
                         children: (
                             <>
                                 <Input size="large" placeholder="Nhập mã lệnh rút..." prefix={<SearchOutlined />} className="mb-6 w-1/2" onChange={e => setSearchCodeWithdraw(e.target.value)} allowClear/>
-                                <Table columns={withdrawColumns} dataSource={pendingWithdrawals} rowKey="id" loading={loading}/>
+                                <Table 
+                                    columns={withdrawColumns} 
+                                    dataSource={pendingWithdrawals} 
+                                    rowKey="id" 
+                                    loading={loading}
+                                    size="middle"
+                                    scroll={{ y: '50vh' }}
+                                    pagination={{ pageSize: 20 }}
+                                    rowClassName={(record, index) => index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                                />
                             </>
                         )
                     },
                     {
                         key: 'HISTORY',
                         label: 'Sổ Cái Dòng Tiền',
-                        children: <Table columns={historyColumns} dataSource={transactions} rowKey="id" loading={loading}/>
+                        children: (
+                            <Table 
+                                columns={historyColumns} 
+                                dataSource={transactions} 
+                                rowKey="id" 
+                                loading={loading}
+                                size="middle"
+                                scroll={{ y: '50vh' }}
+                                pagination={{ pageSize: 20 }}
+                                rowClassName={(record, index) => index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                            />
+                        )
                     }
                 ]} />
             </Card>

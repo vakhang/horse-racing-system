@@ -342,9 +342,27 @@ const RegisterPage = () => {
                                         </Row>
 
                                         <Form.Item name="kycFiles" label={<span className="text-gray-300">Tải lên mặt trước và mặt sau CCCD</span>} valuePropName="fileList" getValueFromEvent={normFile} rules={[{ required: true, message: 'Bắt buộc tải lên tài liệu xác minh KYC!' }]}>
-                                            <Upload.Dragger multiple beforeUpload={() => false} className="bg-black/50 border-gray-600 text-white rounded-xl">
+                                            <Upload.Dragger 
+                                                multiple 
+                                                beforeUpload={(file) => {
+                                                    const isJpgOrPngOrPdf = file.type === 'image/jpeg' || file.type === 'image/png' || file.type === 'application/pdf';
+                                                    if (!isJpgOrPngOrPdf) {
+                                                        message.error('Chỉ hỗ trợ file định dạng JPG/PNG/PDF!');
+                                                        return Upload.LIST_IGNORE;
+                                                    }
+                                                    const isLt5M = file.size / 1024 / 1024 < 5;
+                                                    if (!isLt5M) {
+                                                        message.error('Dung lượng file tải lên phải nhỏ hơn 5MB!');
+                                                        return Upload.LIST_IGNORE;
+                                                    }
+                                                    return false; // Prevent auto upload
+                                                }} 
+                                                className="bg-black/50 border-gray-600 text-white rounded-xl"
+                                                accept=".jpg,.jpeg,.png,.pdf"
+                                            >
                                                 <p className="ant-upload-drag-icon"><InboxOutlined className="text-yellow-400" /></p>
-                                                <p className="ant-upload-text text-gray-300 text-sm">Kéo thả hoặc Click (Nhiều File)</p>
+                                                <p className="ant-upload-text text-gray-300 text-sm">Kéo thả hoặc Click để tải lên</p>
+                                                <p className="ant-upload-hint text-gray-400 text-xs mt-2">Hỗ trợ JPG, PNG, PDF (Tối đa 5MB)</p>
                                             </Upload.Dragger>
                                         </Form.Item>
                                     </Col>
@@ -355,7 +373,7 @@ const RegisterPage = () => {
                                     {/* ĐÃ FIX: Thu hẹp khoảng cách, đưa checkbox lên trước */}
                                     <div className="flex flex-col gap-0">
                                         {(roleCheckboxes[selectedRole || 'SPECTATOR'] || []).map((text, idx) => (
-                                            <Form.Item key={idx} name={`agreedRule${idx + 1}`} valuePropName="checked" rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject(new Error('Bắt buộc!')) }]} style={{ marginBottom: '12px' }}>
+                                            <Form.Item key={idx} name={`agreedRule${idx + 1}`} valuePropName="checked" rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject(new Error('Vui lòng đọc và đánh dấu đồng ý điều khoản này!')) }]} style={{ marginBottom: '12px' }}>
                                                 <Checkbox className="text-gray-300 text-[13.5px] leading-snug flex items-start">
                                                     <span className="mt-[-2px]">{text}</span>
                                                 </Checkbox>
