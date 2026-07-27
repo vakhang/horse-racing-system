@@ -224,9 +224,9 @@ public class UserServiceImpl implements UserService {
         if (status == UserStatus.APPROVED && user.getRole() == RoleEnum.SPECTATOR) {
             Wallet wallet = walletRepository.findByUserIdForUpdate(user.getId()).orElse(null);
             if (wallet != null && wallet.getBalance().compareTo(BigDecimal.ZERO) == 0) {
-                // Kiểm tra xem đã từng nhận thưởng chưa để tránh cộng dồn nếu Admin đổi trạng thái liên tục
+                // Kiểm tra xem đã từng nhận thưởng chưa bằng prefix transactionCode "BONUS-"
                 boolean hasBonus = transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(user.getId())
-                        .stream().anyMatch(t -> t.getType() == TransactionType.DEPOSIT && "TIỀN CƯỢC KHỞI NGHIỆP".equals(t.getReason()));
+                        .stream().anyMatch(t -> t.getTransactionCode() != null && t.getTransactionCode().startsWith("BONUS-"));
                 
                 if (!hasBonus) {
                     BigDecimal bonusAmount = new BigDecimal("100000.00");
@@ -240,7 +240,7 @@ public class UserServiceImpl implements UserService {
                             .type(TransactionType.DEPOSIT)
                             .direction(TransactionDirection.IN)
                             .status(TransactionStatus.COMPLETED)
-                            .reason("TIỀN CƯỢC KHỞI NGHIỆP")
+                            // Xóa trường reason vì không tồn tại trong DB
                             .build();
                     transactionHistoryRepository.save(tx);
                 }
