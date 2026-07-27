@@ -21,4 +21,12 @@ public interface BetRepository extends JpaRepository<Bet, Integer> {
     // Truy xuất lịch sử cược của User
     // Đổi UserId thành SpectatorId
     List<Bet> findBySpectatorIdOrderByCreatedAtDesc(Integer spectatorId);
+
+    // Tính tổng tiền cược trong ngày của khán giả
+    @Query("SELECT COALESCE(SUM(b.amount), 0) FROM Bet b WHERE b.spectator.id = :spectatorId AND b.createdAt >= :startDate AND b.createdAt <= :endDate")
+    BigDecimal sumDailyBetAmountBySpectatorId(
+        @Param("spectatorId") Integer spectatorId, 
+        @Param("startDate") java.time.LocalDateTime startDate, 
+        @Param("endDate") java.time.LocalDateTime endDate
+    );
 }

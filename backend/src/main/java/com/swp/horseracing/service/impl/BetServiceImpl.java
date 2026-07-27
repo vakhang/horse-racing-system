@@ -35,6 +35,24 @@ public class BetServiceImpl implements BetService {
             throw new RuntimeException("Chỉ có thể đặt cược vào chặng đua chưa bắt đầu!");
         }
 
+        // RÀO CẢN 1: Khóa cược 1 phút trước giờ xuất phát
+        if (race.getRaceTime() != null && java.time.LocalDateTime.now().plusMinutes(1).isAfter(race.getRaceTime())) {
+            throw new RuntimeException("Hệ thống đã khóa nhận cược cho chặng đua này!");
+        }
+
+        // RÀO CẢN 2: Giới hạn số tiền cược
+        if (request.getAmount().compareTo(new BigDecimal("10000")) < 0) {
+            throw new RuntimeException("Số tiền cược tối thiểu là 10,000 VNĐ!");
+        }
+
+        java.time.LocalDateTime startOfDay = java.time.LocalDateTime.now().with(java.time.LocalTime.MIN);
+        java.time.LocalDateTime endOfDay = java.time.LocalDateTime.now().with(java.time.LocalTime.MAX);
+        BigDecimal dailyTotal = betRepository.sumDailyBetAmountBySpectatorId(spectator.getId(), startOfDay, endOfDay);
+        
+        if (dailyTotal.add(request.getAmount()).compareTo(new BigDecimal("1000000")) > 0) {
+            throw new RuntimeException("Bạn đã vượt quá hạn mức cược tối đa 1,000,000 VNĐ/ngày!");
+        }
+
         Registration reg = registrationRepository.findById(request.getRegistrationId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy ngựa đăng ký!"));
 
