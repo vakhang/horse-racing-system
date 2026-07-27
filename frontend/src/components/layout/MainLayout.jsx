@@ -7,6 +7,7 @@ import {
     AppstoreAddOutlined, TeamOutlined, ExportOutlined
 } from '@ant-design/icons';
 import Header from './Header';
+import Footer from './Footer';
 import { useAuth } from '../../context/AuthContext';
 
 const { Content, Sider } = Layout;
@@ -105,6 +106,7 @@ const MainLayout = ({ children }) => {
                 <Content className="m-6 p-6 bg-white rounded-lg shadow-sm overflow-initial">
                     {children}
                 </Content>
+                <Footer />
             </Layout>
         </Layout>
     );

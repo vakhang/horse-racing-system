@@ -13,6 +13,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const WalletPage = lazy(() => import('./pages/user/WalletPage'));
 const LandingPage = lazy(() => import('./pages/user/LandingPage'));
+const CorporateLandingPage = lazy(() => import('./pages/CorporateLandingPage'));
 const ProfilePage = lazy(() => import('./pages/user/ProfilePage'));
 const BettingPage = lazy(() => import('./pages/user/BettingPage'));
 const JockeyInvitationPage = lazy(() => import('./pages/jockey/JockeyInvitationPage'));
@@ -44,7 +45,7 @@ const ProtectedRoute = ({ children }) => {
 const RootRedirect = () => {
     const { user, loading } = useAuth();
     if (loading) return <div className="flex h-screen items-center justify-center"><Spin size="large"/></div>;
-    if (!user) return <Navigate to="/login" />;
+    if (!user) return <CorporateLandingPage />;
 
     // Phân luồng đăng nhập
     if (user.role === 'ADMIN') return <Navigate to="/admin/kyc" replace />;
