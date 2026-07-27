@@ -35,11 +35,24 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDTO registerUser(RegisterRequestDTO request) {
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
+                request.getPassword() == null || request.getPassword().isEmpty() ||
+                request.getEmail() == null || request.getEmail().trim().isEmpty() ||
+                request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty() ||
+                request.getIdNumber() == null || request.getIdNumber().trim().isEmpty()) {
+            throw new RuntimeException("Vui lòng điền đầy đủ các thông tin bắt buộc!");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email này đã được sử dụng!");
         }
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new RuntimeException("Số điện thoại này đã được sử dụng!");
+        }
+
+        // Bổ sung chặn phía Backend nếu cố tình bypass Frontend để gửi API không có file
+        if (request.getKycFiles() == null || request.getKycFiles().isEmpty()) {
+            throw new RuntimeException("BẮT BUỘC: Bạn phải tải lên hình ảnh / tài liệu KYC!");
         }
 
         // KIỂM TRA ĐÃ TICK ĐỦ CÁC Ô ĐỒNG Ý ĐIỀU KHOẢN CHƯA
@@ -100,13 +113,10 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(newUser);
 
-        BigDecimal initialBalance = (request.getRole() == RoleEnum.SPECTATOR)
-                ? new BigDecimal("100000.00")
-                : BigDecimal.ZERO;
-
+        // Khởi tạo ví với 0 đồng cho TẤT CẢ các role lúc mới đăng ký
         Wallet wallet = Wallet.builder()
                 .user(savedUser)
-                .balance(initialBalance)
+                .balance(BigDecimal.ZERO)
                 .build();
         walletRepository.save(wallet);
 
@@ -209,6 +219,34 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy User với ID: " + id));
         user.setStatus(status);
+
+        // KỊCH BẢN: Nếu duyệt Khán giả thì tặng 100k khởi nghiệp
+        if (status == UserStatus.APPROVED && user.getRole() == RoleEnum.SPECTATOR) {
+            Wallet wallet = walletRepository.findByUserIdForUpdate(user.getId()).orElse(null);
+            if (wallet != null && wallet.getBalance().compareTo(BigDecimal.ZERO) == 0) {
+                // Kiểm tra xem đã từng nhận thưởng chưa để tránh cộng dồn nếu Admin đổi trạng thái liên tục
+                boolean hasBonus = transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(user.getId())
+                        .stream().anyMatch(t -> t.getType() == TransactionType.DEPOSIT && "TIỀN CƯỢC KHỞI NGHIỆP".equals(t.getReason()));
+                
+                if (!hasBonus) {
+                    BigDecimal bonusAmount = new BigDecimal("100000.00");
+                    wallet.setBalance(wallet.getBalance().add(bonusAmount));
+                    walletRepository.save(wallet);
+
+                    TransactionHistory tx = TransactionHistory.builder()
+                            .transactionCode("BONUS-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                            .wallet(wallet)
+                            .amount(bonusAmount)
+                            .type(TransactionType.DEPOSIT)
+                            .direction(TransactionDirection.IN)
+                            .status(TransactionStatus.COMPLETED)
+                            .reason("TIỀN CƯỢC KHỞI NGHIỆP")
+                            .build();
+                    transactionHistoryRepository.save(tx);
+                }
+            }
+        }
+
         return mapToResponseDTO(userRepository.save(user));
     }
 
