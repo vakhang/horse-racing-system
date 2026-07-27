@@ -30,7 +30,8 @@ const CorporateLandingPage = () => {
                         type="primary" 
                         size="large"
                         icon={<LoginOutlined />}
-                        className="bg-yellow-500 hover:bg-yellow-400 text-black border-none font-bold shadow-lg"
+                        style={{ background: '#eab308', color: 'black', border: 'none' }}
+                        className="font-bold shadow-lg hover:scale-105 transition-transform"
                         onClick={() => navigate('/login')}
                     >
                         ĐĂNG NHẬP
@@ -49,8 +50,10 @@ const CorporateLandingPage = () => {
                     </Text>
                     
                     <Button 
+                        type="primary"
                         size="large"
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-400 border-none text-black font-black h-16 px-12 text-xl hover:scale-105 transition-transform shadow-[0_0_30px_rgba(234,179,8,0.5)] rounded-full"
+                        style={{ background: 'linear-gradient(to right, #eab308, #facc15)', color: 'black', border: 'none' }}
+                        className="font-black h-16 px-12 text-xl hover:scale-105 transition-transform shadow-[0_0_30px_rgba(234,179,8,0.5)] rounded-full"
                         onClick={() => navigate('/login')}
                     >
                         ĐĂNG NHẬP HỆ THỐNG NỘI BỘ
@@ -134,27 +137,27 @@ const CorporateLandingPage = () => {
                     <Title level={2} className="text-3xl font-bold border-l-4 border-blue-500 pl-4 mb-10 text-white" style={{ color: 'white' }}>
                         Tin Tức & Thông Báo Pháp Lý
                     </Title>
-                    <div className="space-y-4">
-                        <div className="bg-white/5 p-6 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                    <div className="space-y-6">
+                        <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
                             <div>
                                 <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full mr-3">THÔNG BÁO</span>
                                 <Text className="text-white text-lg hover:text-yellow-400">Cập nhật Thể lệ đặt cược và Điều lệ đua mùa giải Mùa Hè 2026</Text>
                             </div>
-                            <Text className="text-gray-500 mt-2 md:mt-0 whitespace-nowrap">27/07/2026</Text>
+                            <Text className="text-gray-400 font-bold mt-2 md:mt-0 whitespace-nowrap">27/07/2026</Text>
                         </div>
-                        <div className="bg-white/5 p-6 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                        <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
                             <div>
                                 <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full mr-3">HỆ THỐNG</span>
                                 <Text className="text-white text-lg hover:text-yellow-400">Lịch bảo trì hệ thống máy chủ định kỳ tháng 8</Text>
                             </div>
-                            <Text className="text-gray-500 mt-2 md:mt-0 whitespace-nowrap">25/07/2026</Text>
+                            <Text className="text-gray-400 font-bold mt-2 md:mt-0 whitespace-nowrap">25/07/2026</Text>
                         </div>
-                        <div className="bg-white/5 p-6 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                        <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
                             <div>
                                 <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full mr-3">TIN TỨC</span>
                                 <Text className="text-white text-lg hover:text-yellow-400">Công bố danh sách Chiến mã và Nài ngựa xuất sắc nhất tháng qua</Text>
                             </div>
-                            <Text className="text-gray-500 mt-2 md:mt-0 whitespace-nowrap">20/07/2026</Text>
+                            <Text className="text-gray-400 font-bold mt-2 md:mt-0 whitespace-nowrap">20/07/2026</Text>
                         </div>
                     </div>
                 </div>
