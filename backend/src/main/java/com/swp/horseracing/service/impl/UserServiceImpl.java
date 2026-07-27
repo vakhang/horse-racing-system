@@ -38,16 +38,12 @@ public class UserServiceImpl implements UserService {
         if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
                 request.getPassword() == null || request.getPassword().isEmpty() ||
                 request.getEmail() == null || request.getEmail().trim().isEmpty() ||
-                request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty() ||
                 request.getIdNumber() == null || request.getIdNumber().trim().isEmpty()) {
             throw new RuntimeException("Vui lòng điền đầy đủ các thông tin bắt buộc!");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email này đã được sử dụng!");
-        }
-        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
-            throw new RuntimeException("Số điện thoại này đã được sử dụng!");
         }
 
         // Bổ sung chặn phía Backend nếu cố tình bypass Frontend để gửi API không có file
@@ -256,6 +252,16 @@ public class UserServiceImpl implements UserService {
         if (!userRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy User với ID: " + id);
         }
+
+        // Xóa Wallet và Lịch sử giao dịch trước để tránh lỗi Foreign Key
+        walletRepository.findByUserId(id).ifPresent(wallet -> {
+            java.util.List<TransactionHistory> txs = transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(id);
+            if (!txs.isEmpty()) {
+                transactionHistoryRepository.deleteAll(txs);
+            }
+            walletRepository.delete(wallet);
+        });
+
         userRepository.deleteById(id);
     }
 
