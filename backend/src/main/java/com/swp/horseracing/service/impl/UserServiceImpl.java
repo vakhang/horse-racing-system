@@ -38,12 +38,16 @@ public class UserServiceImpl implements UserService {
         if (request.getUsername() == null || request.getUsername().trim().isEmpty() ||
                 request.getPassword() == null || request.getPassword().isEmpty() ||
                 request.getEmail() == null || request.getEmail().trim().isEmpty() ||
+                request.getPhoneNumber() == null || request.getPhoneNumber().trim().isEmpty() ||
                 request.getIdNumber() == null || request.getIdNumber().trim().isEmpty()) {
             throw new RuntimeException("Vui lòng điền đầy đủ các thông tin bắt buộc!");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email này đã được sử dụng!");
+        }
+        if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
+            throw new RuntimeException("Số điện thoại này đã được sử dụng!");
         }
 
         // Bổ sung chặn phía Backend nếu cố tình bypass Frontend để gửi API không có file
