@@ -14,7 +14,7 @@ const { Title, Text } = Typography;
 
 const Footer = () => {
     return (
-        <div className="bg-[#001529] text-gray-300 py-12 px-6 lg:px-20 border-t border-gray-800 mt-auto">
+        <div className="bg-[#001529] text-slate-200 py-12 px-6 lg:px-20 border-t border-gray-800 mt-auto">
             <div className="max-w-7xl mx-auto">
                 <Row gutter={[48, 32]}>
                     {/* CỘT 1: THÔNG TIN DOANH NGHIỆP */}
@@ -27,8 +27,8 @@ const Footer = () => {
                                 <Text strong className="text-yellow-500 block mb-1">CÔNG TY CỔ PHẦN CÁ CƯỢC ĐUA NGỰA HỢP PHÁP VIỆT NAM</Text>
                             </div>
                             <div className="text-sm">
-                                <Text className="text-gray-400 block mb-1">Giấy chứng nhận đủ điều kiện kinh doanh đặt cược do Bộ Tài chính cấp.</Text>
-                                <Text className="text-gray-400 block">Tuân thủ Nghị định 06/2017/NĐ-CP.</Text>
+                                <Text className="text-slate-300 block mb-1">Giấy chứng nhận đủ điều kiện kinh doanh đặt cược do Bộ Tài chính cấp.</Text>
+                                <Text className="text-slate-300 block">Tuân thủ Nghị định 06/2017/NĐ-CP.</Text>
                             </div>
                             <div className="text-sm">
                                 <BankOutlined className="mr-2" />
@@ -46,16 +46,16 @@ const Footer = () => {
                             PHÁP LÝ & QUY ĐỊNH
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
-                            <Link to="/home" className="text-gray-400 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
                                 Điều lệ Đua ngựa (Đã được phê duyệt)
                             </Link>
-                            <Link to="/home" className="text-gray-400 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
                                 Thể lệ Đặt cược (Đã đăng ký BTC)
                             </Link>
-                            <Link to="/home" className="text-gray-400 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
                                 Chính sách Bảo mật & eKYC
                             </Link>
-                            <Link to="/home" className="text-gray-400 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
                                 Điều khoản Sử dụng & Miễn trừ
                             </Link>
                             <div className="mt-2 text-xs text-gray-500 italic">
@@ -70,19 +70,19 @@ const Footer = () => {
                             HỖ TRỢ KHÁCH HÀNG
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
-                            <Link to="/home" className="text-gray-400 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
                                 Hướng dẫn Tân thủ & Nạp/Rút
                             </Link>
-                            <Link to="/home" className="text-gray-400 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
                                 Câu hỏi thường gặp (FAQ)
                             </Link>
                             
                             <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
-                                <Text className="text-gray-300 block mb-2">
+                                <Text className="text-slate-200 block mb-2">
                                     <CustomerServiceOutlined className="mr-2 text-yellow-500" /> Tổng đài CSKH (24/7)
                                 </Text>
                                 <Text strong className="text-lg text-white block mb-2">1900 8888</Text>
-                                <Text className="text-gray-400 block">
+                                <Text className="text-slate-300 block">
                                     <MailOutlined className="mr-2" /> support@horse-racing.vn
                                 </Text>
                             </div>
@@ -104,7 +104,7 @@ const Footer = () => {
                                 </Title>
                             </div>
                             
-                            <Text className="text-gray-300 block mb-4 text-sm leading-relaxed">
+                            <Text className="text-slate-200 block mb-4 text-sm leading-relaxed">
                                 <WarningOutlined className="text-yellow-500 mr-2" />
                                 Hoạt động giải trí có thưởng luôn đi kèm rủi ro tài chính. Vui lòng tham gia có chừng mực và kiểm soát mức độ đặt cược phù hợp với khả năng thu nhập của bản thân.
                             </Text>
@@ -112,10 +112,10 @@ const Footer = () => {
                             <Divider className="border-red-900/50 my-4" />
                             
                             <div className="text-sm">
-                                <Text className="text-gray-400 block mb-1">Hạn mức cược tuân thủ pháp luật:</Text>
+                                <Text className="text-slate-300 block mb-1">Hạn mức cược tuân thủ pháp luật:</Text>
                                 <Text strong className="text-yellow-500 block text-base mb-3">Tối đa: 1.000.000 VNĐ / ngày</Text>
                                 
-                                <Text className="text-gray-400 block">Tổng đài tư vấn cờ bạc an toàn:</Text>
+                                <Text className="text-slate-300 block">Tổng đài tư vấn cờ bạc an toàn:</Text>
                                 <Text strong className="text-white block">
                                     <PhoneOutlined className="mr-2" /> 1800 9999
                                 </Text>
