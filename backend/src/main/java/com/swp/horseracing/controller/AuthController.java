@@ -35,4 +35,17 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/delete-spectators")
+    public ResponseEntity<?> deleteSpectators() {
+        java.util.List<com.swp.horseracing.dto.UserResponseDTO> users = userService.getAllUsers();
+        int count = 0;
+        for (com.swp.horseracing.dto.UserResponseDTO user : users) {
+            if (user.getRole() == com.swp.horseracing.model.RoleEnum.SPECTATOR) {
+                userService.deleteUser(user.getId());
+                count++;
+            }
+        }
+        return ResponseEntity.ok(Map.of("message", "Đã xóa " + count + " tài khoản khán giả thành công!"));
+    }
 }
