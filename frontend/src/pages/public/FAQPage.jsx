@@ -43,12 +43,12 @@ const FAQPage = () => {
             <PublicHeader />
 
             <div className="flex-grow max-w-4xl mx-auto w-full px-6 py-12 pt-32">
-                <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-2xl">
+                <div className="bg-white/5 p-8 rounded-2xl border border-white/10">
                     <div className="text-center mb-10">
-                        <Title level={1} className="text-3xl md:text-4xl font-black tracking-wide uppercase mb-2" style={{ color: '#0047b3' }}>
+                        <Title level={1} className="text-3xl md:text-4xl font-black tracking-wide uppercase mb-2 inline-block" style={{ color: '#facc15', WebkitTextStroke: '1px #facc15', textShadow: '0 0 15px rgba(250,204,21,0.6)' }}>
                             {title}
                         </Title>
-                        <Paragraph className="text-gray-500 text-lg">
+                        <Paragraph className="text-gray-400 text-lg">
                             Tổng hợp các câu hỏi và giải đáp chi tiết dành cho khách hàng.
                         </Paragraph>
                     </div>
@@ -59,23 +59,23 @@ const FAQPage = () => {
                         <Collapse
                             accordion
                             bordered={false}
-                            expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} style={{ color: '#0047b3', fontSize: '16px', marginTop: '4px' }} />}
+                            expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} style={{ color: '#facc15', fontSize: '16px', marginTop: '4px' }} />}
                             className="bg-transparent"
                             items={faqs.map((faq, index) => ({
                                 key: String(index),
                                 label: (
-                                    <span className="text-lg font-semibold text-gray-800 hover:text-[#0047b3] transition-colors duration-200">
+                                    <span className="text-lg font-semibold text-white hover:text-yellow-400 transition-colors duration-200">
                                         {faq.question}
                                     </span>
                                 ),
                                 children: (
-                                    <div className="pl-7 pr-4 py-2 border-l-2 border-blue-200 ml-2">
-                                        <Paragraph className="text-gray-600 text-base leading-relaxed mb-0 whitespace-pre-wrap">
+                                    <div className="pl-7 pr-4 py-2 border-l-2 border-yellow-400/50 ml-2">
+                                        <Paragraph className="text-gray-300 text-base leading-relaxed mb-0 whitespace-pre-wrap">
                                             {faq.answer}
                                         </Paragraph>
                                     </div>
                                 ),
-                                className: "mb-4 border border-gray-200 rounded-xl bg-gray-50 shadow-sm overflow-hidden"
+                                className: "mb-4 border border-white/10 rounded-xl bg-white/5 shadow-sm overflow-hidden"
                             }))}
                         />
                     ) : (
