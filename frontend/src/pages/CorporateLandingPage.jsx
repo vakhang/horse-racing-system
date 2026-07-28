@@ -6,7 +6,7 @@ import {
     BankOutlined,
     LoginOutlined
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 
 const { Title, Text } = Typography;
@@ -23,13 +23,14 @@ const CorporateLandingPage = () => {
                     <Text className="text-white font-black text-xl tracking-wider uppercase hidden md:block" style={{ color: 'white' }}>HORSE RACE</Text>
                 </div>
                 <div className="hidden lg:flex gap-8 items-center">
-                    <a href="#" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">TRANG CHỦ</a>
-                    <a href="#" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">LỊCH ĐUA</a>
-                    <a href="#" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">KẾT QUẢ</a>
-                    <a href="#" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">TIN TỨC</a>
-                    <a href="#" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">HƯỚNG DẪN</a>
+                    <Link to="/" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">TRANG CHỦ</Link>
+                    <Link to="/about" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">GIỚI THIỆU</Link>
+                    <Link to="/schedule" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">LỊCH ĐUA</Link>
+                    <Link to="/results" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">KẾT QUẢ</Link>
+                    <Link to="/news" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">TIN TỨC</Link>
+                    <Link to="/guide" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">HƯỚNG DẪN</Link>
                 </div>
-                <div className="flex items-center gap-2 md:gap-4">
+                <div className="flex items-center gap-1 md:gap-2">
                     <Button 
                         type="text" 
                         icon={<LoginOutlined />}
@@ -38,14 +39,6 @@ const CorporateLandingPage = () => {
                         onClick={() => navigate('/login')}
                     >
                         <span style={{ fontWeight: 900 }}>ĐĂNG NHẬP</span>
-                    </Button>
-                    <Button 
-                        type="primary" 
-                        style={{ background: '#eab308', color: 'black', border: 'none' }}
-                        className="shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:scale-105 transition-transform hidden sm:inline-flex"
-                        onClick={() => navigate('/register')}
-                    >
-                        <span style={{ fontWeight: 900 }}>ĐĂNG KÝ</span>
                     </Button>
                 </div>
             </div>
@@ -158,21 +151,21 @@ const CorporateLandingPage = () => {
                         Tin Tức & Thông Báo Pháp Lý
                     </Title>
                     <div className="space-y-6">
-                        <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                        <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
                             <div>
                                 <span className="border border-red-400 text-red-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">THÔNG BÁO</span>
                                 <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Cập nhật Thể lệ đặt cược và Điều lệ đua mùa giải Mùa Hè 2026</Text>
                             </div>
                             <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>27/07/2026</Text>
                         </div>
-                        <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                        <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
                             <div>
                                 <span className="border border-blue-400 text-blue-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">HỆ THỐNG</span>
                                 <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Lịch bảo trì hệ thống máy chủ định kỳ tháng 8</Text>
                             </div>
                             <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>25/07/2026</Text>
                         </div>
-                        <div className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                        <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
                             <div>
                                 <span className="border border-green-400 text-green-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">TIN TỨC</span>
                                 <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Công bố danh sách Chiến mã và Nài ngựa xuất sắc nhất tháng qua</Text>

@@ -46,16 +46,16 @@ const Footer = () => {
                             PHÁP LÝ & QUY ĐỊNH
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
-                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/terms" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Điều lệ Đua ngựa
                             </Link>
-                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/terms" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Thể lệ Đặt cược
                             </Link>
-                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/privacy" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Chính sách Bảo mật & eKYC
                             </Link>
-                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/terms" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Điều khoản Sử dụng & Miễn trừ
                             </Link>
                         </Space>
@@ -67,10 +67,10 @@ const Footer = () => {
                             HỖ TRỢ KHÁCH HÀNG
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
-                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/guide" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Hướng dẫn Tân thủ & Nạp/Rút
                             </Link>
-                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/faq" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Câu hỏi thường gặp (FAQ)
                             </Link>
                             
@@ -78,7 +78,9 @@ const Footer = () => {
                                 <Text className="text-white block mb-2" style={{ color: 'white' }}>
                                     <CustomerServiceOutlined className="mr-2 text-yellow-500" /> Tổng đài CSKH (24/7)
                                 </Text>
-                                <Text strong className="text-lg text-white block mb-2" style={{ color: 'white' }}>+84 971 966 715</Text>
+                                <Text strong className="text-lg text-white block mb-2" style={{ color: 'white' }}>
+                                    <PhoneOutlined className="mr-2" />+84 971 966 715
+                                </Text>
                                 <Text className="text-white block" style={{ color: 'white' }}>
                                     <MailOutlined className="mr-2" /> xuankhang2412@gmail.com
                                 </Text>

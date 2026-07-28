@@ -23,6 +23,16 @@ const AdminFinancePage = lazy(() => import('./pages/admin/AdminFinancePage'));
 const OwnerJockeyDirectoryPage = lazy(() => import('./pages/owner/OwnerJockeyDirectoryPage'));
 const AdminNewsPage = lazy(() => import('./pages/admin/AdminNewsPage'));
 
+// Các trang Public (Dành cho khách chưa đăng nhập)
+const AboutPage = lazy(() => import('./pages/public/AboutPage'));
+const SchedulePage = lazy(() => import('./pages/public/SchedulePage'));
+const ResultsPage = lazy(() => import('./pages/public/ResultsPage'));
+const NewsPage = lazy(() => import('./pages/public/NewsPage'));
+const GuidePage = lazy(() => import('./pages/public/GuidePage'));
+const TermsPage = lazy(() => import('./pages/public/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'));
+const FAQPage = lazy(() => import('./pages/public/FAQPage'));
+
 // Các trang của Admin
 const AdminKycApprovalPage = lazy(() => import('./pages/admin/AdminKycApprovalPage'));
 const AdminTournamentPage = lazy(() => import('./pages/admin/AdminTournamentPage'));
@@ -84,6 +94,16 @@ function App() {
                         <Route path="/register" element={<RegisterPage />} />
 
                         <Route path="/" element={<RootRedirect />} />
+
+                        {/* NHÓM PUBLIC: Các trang không yêu cầu đăng nhập */}
+                        <Route path="/about" element={<AboutPage />} />
+                        <Route path="/schedule" element={<SchedulePage />} />
+                        <Route path="/results" element={<ResultsPage />} />
+                        <Route path="/news" element={<NewsPage />} />
+                        <Route path="/guide" element={<GuidePage />} />
+                        <Route path="/terms" element={<TermsPage />} />
+                        <Route path="/privacy" element={<PrivacyPage />} />
+                        <Route path="/faq" element={<FAQPage />} />
 
                         {/* ========================================================= */}
                         {/* NHÓM 1: CÁC TRANG CỦA KHÁN GIẢ & CHỦ NGỰA (Bọc bằng MainLayout) */}
