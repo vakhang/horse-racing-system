@@ -4,8 +4,8 @@ import { HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
-import horseRacingImg from '../../assets/horseracing2.png';
-import horseRacingImg2 from '../../assets/horseracing.png';
+import horseRacingImg from '../../assets/anhgioithieu.jpg';
+import horseRacingImg2 from '../../assets/anhgioithieu1.png';
 
 const { Title, Paragraph } = Typography;
 

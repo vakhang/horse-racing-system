@@ -9,7 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 import PublicHeader from '../components/layout/PublicHeader';
-import horseRacingImg from '../assets/horseracing.png';
+import horseRacingImg from '../assets/anhgioithieu.jpg';
 
 const { Title, Text } = Typography;
 

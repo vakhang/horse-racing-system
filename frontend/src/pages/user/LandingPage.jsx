@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
 import dayjs from 'dayjs';
 import { useAuth } from '../../context/AuthContext';
-import horseRacingImg from '../../assets/horseracing.png';
+import horseRacingImg from '../../assets/anhgioithieu1.png';
 
 const { Title, Text } = Typography;
 
