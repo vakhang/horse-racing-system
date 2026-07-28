@@ -36,7 +36,7 @@ const Footer = () => {
                             </div>
                             <div className="text-sm text-white">
                                 <BankOutlined className="mr-2" />
-                                Trường đua ngựa Sóc Sơn, Hà Nội, Việt Nam.
+                                Trường đua ngựa KKAN, HCM, Việt Nam
                             </div>
                             <Text className="text-white text-xs mt-4 block" style={{ color: 'white' }}>
                                 © 2026 Horse Racing VN. Mọi quyền được bảo lưu.
