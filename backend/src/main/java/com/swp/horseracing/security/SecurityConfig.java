@@ -28,8 +28,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/wallets/deposit").permitAll()
                         .requestMatchers("/api/wallets/my-wallet").permitAll()
                         .requestMatchers("/api/users/my-transactions").permitAll()
-
-                        // MỞ KHÓA API MỚI CHO SEPAY WEBHOOK (thay đổi endpoint cũ)
+                        
+                        // MỞ KHÓA API CHO GIAO DIỆN PUBLIC
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/races").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/tournaments").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/registrations").permitAll()
+                        .requestMatchers("/api/public/content/**").permitAll()
                         .requestMatchers("/api/webhook/sepay").permitAll()
                         .requestMatchers("/api/payments/webhook").permitAll()
 

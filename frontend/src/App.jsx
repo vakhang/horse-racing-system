@@ -22,6 +22,7 @@ const AdminUserManagementPage = lazy(() => import('./pages/admin/AdminUserManage
 const AdminFinancePage = lazy(() => import('./pages/admin/AdminFinancePage'));
 const OwnerJockeyDirectoryPage = lazy(() => import('./pages/owner/OwnerJockeyDirectoryPage'));
 const AdminNewsPage = lazy(() => import('./pages/admin/AdminNewsPage'));
+const AdminContentPage = lazy(() => import('./pages/admin/AdminContentPage'));
 
 // Các trang Public (Dành cho khách chưa đăng nhập)
 const AboutPage = lazy(() => import('./pages/public/AboutPage'));
@@ -30,6 +31,7 @@ const ResultsPage = lazy(() => import('./pages/public/ResultsPage'));
 const NewsPage = lazy(() => import('./pages/public/NewsPage'));
 const GuidePage = lazy(() => import('./pages/public/GuidePage'));
 const TermsPage = lazy(() => import('./pages/public/TermsPage'));
+const RulesPage = lazy(() => import('./pages/public/RulesPage'));
 const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'));
 const FAQPage = lazy(() => import('./pages/public/FAQPage'));
 
@@ -102,6 +104,7 @@ function App() {
                         <Route path="/news" element={<NewsPage />} />
                         <Route path="/guide" element={<GuidePage />} />
                         <Route path="/terms" element={<TermsPage />} />
+                        <Route path="/rules" element={<RulesPage />} />
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/faq" element={<FAQPage />} />
 
@@ -148,6 +151,7 @@ function App() {
 
                         {/* Nhóm của ADMIN */}
                         <Route path="/admin/news" element={<ProtectedRoute><AdminLayout><AdminNewsPage /></AdminLayout></ProtectedRoute>} />
+                        <Route path="/admin/content" element={<ProtectedRoute><AdminLayout><AdminContentPage /></AdminLayout></ProtectedRoute>} />
 
                         {/* ========================================================= */}
                         {/* NHÓM 2: CÁC TRANG CỦA ADMIN (Bọc bằng AdminLayout)        */}

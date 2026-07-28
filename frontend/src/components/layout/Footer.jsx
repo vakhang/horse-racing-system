@@ -53,7 +53,7 @@ const Footer = () => {
                             <Link to="/terms" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Điều lệ Đua ngựa
                             </Link>
-                            <Link to="/terms" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/rules" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Thể lệ Đặt cược
                             </Link>
                             <Link to="/privacy" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>

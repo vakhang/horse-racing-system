@@ -4,7 +4,7 @@ import {
     TrophyOutlined, LogoutOutlined, UserOutlined, SettingOutlined,
     FileSearchOutlined, TeamOutlined, DollarOutlined,
     MenuFoldOutlined, MenuUnfoldOutlined,
-    NotificationOutlined // <--- Bạn thêm chữ này vào là xong!
+    NotificationOutlined, EditOutlined
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
@@ -23,6 +23,7 @@ const AdminLayout = ({ children }) => {
         { key: '/admin/horses', icon: <FileSearchOutlined />, label: 'Duyệt Chiến Mã' },
         { key: '/admin/tournaments', icon: <TrophyOutlined />, label: 'Giải Đấu & Chặng Đua' },
         { key: '/admin/news', icon: <NotificationOutlined />, label: 'Đăng Thông Báo' },
+        { key: '/admin/content', icon: <EditOutlined />, label: 'Quản Lý Nội Dung CMS' },
     ];
 
     const handleLogout = () => {
