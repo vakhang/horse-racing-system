@@ -173,6 +173,18 @@ const AdminContentPage = () => {
                                     theme="snow" 
                                     value={content} 
                                     onChange={setContent} 
+                                    modules={{
+                                        toolbar: [
+                                            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                                            ['bold', 'italic', 'underline', 'strike'],
+                                            [{ 'color': [] }, { 'background': [] }],
+                                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                            [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                            [{ 'align': [] }],
+                                            ['link', 'image'],
+                                            ['clean']
+                                        ]
+                                    }}
                                     style={{ height: '400px', marginBottom: '50px' }} 
                                 />
                             </Suspense>

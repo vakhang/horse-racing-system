@@ -24,6 +24,22 @@ body {
     max-width: 100%;
 }
 
+/* Khôi phục lại định dạng danh sách (bullet và số) bị Tailwind reset */
+.content-html-container ul {
+    list-style-type: disc !important;
+    padding-left: 2.5rem !important;
+    margin-bottom: 1rem;
+}
+.content-html-container ol {
+    list-style-type: decimal !important;
+    padding-left: 2.5rem !important;
+    margin-bottom: 1rem;
+}
+.content-html-container li {
+    margin-bottom: 0.5rem;
+    display: list-item;
+}
+
 .content-html-container h1, .content-html-container h2, .content-html-container h3, .content-html-container h4 {
     color: #facc15;
     font-weight: bold;
