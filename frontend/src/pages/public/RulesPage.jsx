@@ -41,7 +41,7 @@ const RulesPage = () => {
                         <div className="flex justify-center p-12"><Spin size="large" /></div>
                     ) : (
                         <div 
-                            className="text-gray-300 text-lg leading-relaxed content-html-container" 
+                            className="text-gray-300 text-lg leading-relaxed content-html-container ql-editor" 
                             style={{ color: '#d1d5db' }}
                             dangerouslySetInnerHTML={{ __html: (content || 'Nội dung đang được cập nhật...').replace(/&nbsp;/g, ' ') }} 
                         />
