@@ -26,14 +26,13 @@ body {
     counter-reset: my-ol-counter;
 }
 
-/* Reset counter when encountering paragraphs or headings */
+/* Reset counter when encountering headings (to start a new section like Điều 1, Điều 2) */
 .content-html-container h1,
 .content-html-container h2,
 .content-html-container h3,
 .content-html-container h4,
 .content-html-container h5,
-.content-html-container h6,
-.content-html-container p {
+.content-html-container h6 {
     counter-reset: my-ol-counter;
 }
 
@@ -71,8 +70,8 @@ body {
     content: counter(my-ol-counter) ". " !important;
     position: absolute;
     left: -1.5rem;
-    color: #facc15;
-    font-weight: bold;
+    font-weight: normal;
+    color: inherit;
 }
 
 /* Override padding của ql-editor để không bị dư khoảng trắng */
