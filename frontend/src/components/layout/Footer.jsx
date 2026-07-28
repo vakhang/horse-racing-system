@@ -19,7 +19,7 @@ const Footer = () => {
                 <Row gutter={[48, 32]}>
                     {/* CỘT 1: THÔNG TIN DOANH NGHIỆP */}
                     <Col xs={24} sm={12} lg={6}>
-                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2" style={{ color: 'white' }}>
+                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2 whitespace-nowrap" style={{ color: 'white' }}>
                             THÔNG TIN DOANH NGHIỆP
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full">
@@ -42,7 +42,7 @@ const Footer = () => {
 
                     {/* CỘT 2: PHÁP LÝ & QUY ĐỊNH */}
                     <Col xs={24} sm={12} lg={6}>
-                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2" style={{ color: 'white' }}>
+                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2 whitespace-nowrap" style={{ color: 'white' }}>
                             PHÁP LÝ & QUY ĐỊNH
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
@@ -63,7 +63,7 @@ const Footer = () => {
 
                     {/* CỘT 3: HỖ TRỢ KHÁCH HÀNG */}
                     <Col xs={24} sm={12} lg={6}>
-                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2" style={{ color: 'white' }}>
+                        <Title level={4} className="mb-6 uppercase tracking-wider text-sm border-b border-gray-700 pb-2 whitespace-nowrap" style={{ color: 'white' }}>
                             HỖ TRỢ KHÁCH HÀNG
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
@@ -111,7 +111,7 @@ const Footer = () => {
                                 
                                 <Text className="text-white block" style={{ color: 'white' }}>Tổng đài tư vấn cờ bạc an toàn:</Text>
                                 <Text strong className="text-white block" style={{ color: 'white' }}>
-                                    <PhoneOutlined className="mr-2" /> 1800 9999
+                                    <PhoneOutlined className="mr-2" /> +84 971 966 715
                                 </Text>
                             </div>
                         </div>

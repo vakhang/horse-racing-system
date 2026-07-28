@@ -49,7 +49,7 @@ const CorporateLandingPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-[#001529]/95 via-[#001529]/60 to-[#001529] z-10"></div>
                 
                 <div className="z-20 text-center px-4 max-w-5xl mx-auto">
-                    <Title level={1} className="text-5xl md:text-7xl font-black text-white tracking-widest uppercase mb-4" style={{ color: 'white', textShadow: '0 4px 10px rgba(0,0,0,0.8)' }}>
+                    <Title level={1} className="text-5xl md:text-7xl font-black tracking-widest uppercase mb-4" style={{ color: '#facc15', textShadow: '0 4px 15px rgba(250, 204, 21, 0.3), 0 4px 10px rgba(0,0,0,0.8)' }}>
                         ĐUA NGỰA VIỆT NAM
                     </Title>
                     <Title level={3} className="text-2xl md:text-3xl text-white uppercase tracking-widest font-black mb-6" style={{ color: 'white', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
