@@ -52,10 +52,10 @@ const CorporateLandingPage = () => {
                     <Title level={1} className="text-5xl md:text-7xl font-black text-white tracking-widest uppercase mb-4" style={{ color: 'white', textShadow: '0 4px 10px rgba(0,0,0,0.8)' }}>
                         ĐUA NGỰA VIỆT NAM
                     </Title>
-                    <Title level={3} className="text-2xl md:text-3xl text-white uppercase tracking-widest font-black mb-6" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
+                    <Title level={3} className="text-2xl md:text-3xl text-white uppercase tracking-widest font-black mb-6" style={{ color: 'white', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
                         Đỉnh Cao Tốc Độ - Minh Bạch Giao Dịch - Tuân Thủ Pháp Luật
                     </Title>
-                    <Text className="text-white text-xl md:text-2xl block mb-12 max-w-3xl mx-auto leading-relaxed font-semibold" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
+                    <Text className="text-white text-xl md:text-2xl block mb-12 max-w-3xl mx-auto leading-relaxed font-semibold" style={{ color: 'white', textShadow: '0 1px 4px rgba(0,0,0,0.8)' }}>
                         Nền tảng quản trị và vận hành giải trí có thưởng uy tín hàng đầu, được cấp phép và chịu sự giám sát chặt chẽ của các cơ quan quản lý Nhà nước.
                     </Text>
                     
@@ -79,10 +79,10 @@ const CorporateLandingPage = () => {
                             <Title level={2} className="text-4xl font-black border-l-4 border-yellow-500 pl-4 mb-6 text-white" style={{ color: 'white' }}>
                                 Về Chúng Tôi
                             </Title>
-                            <Text className="text-white text-lg font-medium leading-relaxed block mb-4 text-justify">
+                            <Text className="text-white text-lg font-medium leading-relaxed block mb-4 text-justify" style={{ color: 'white' }}>
                                 Chúng tôi tự hào là đơn vị tiên phong được cấp Giấy chứng nhận đủ điều kiện kinh doanh đặt cược đua ngựa tại Việt Nam. Với dự án đầu tư trường đua đạt chuẩn quốc tế cùng tổng vốn đầu tư tối thiểu 1.000 tỷ đồng, chúng tôi mang đến một môi trường giải trí chuyên nghiệp, đóng góp vào sự phát triển kinh tế và hỗ trợ cộng đồng.
                             </Text>
-                            <Text className="text-white text-lg font-medium leading-relaxed block text-justify">
+                            <Text className="text-white text-lg font-medium leading-relaxed block text-justify" style={{ color: 'white' }}>
                                 Hoạt động kinh doanh của chúng tôi tuân thủ nghiêm ngặt Nghị định 06/2017/NĐ-CP, đặt tính khách quan và sự bảo vệ quyền lợi người chơi lên hàng đầu.
                             </Text>
                         </Col>
