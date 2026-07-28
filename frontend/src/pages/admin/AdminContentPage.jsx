@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Select, Button, Typography, message, Spin } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import api from '../../config/api';
 
 const { Title } = Typography;
