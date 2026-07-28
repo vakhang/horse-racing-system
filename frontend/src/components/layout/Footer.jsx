@@ -24,9 +24,11 @@ const Footer = () => {
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full">
                             <div>
-                                <Title level={4} className="text-yellow-500 font-bold mb-4 uppercase tracking-wider" style={{ color: '#eab308' }}>
-                                    TỔ CHỨC ĐUA NGỰA KKAN
-                                </Title>
+                                <Link to="/about">
+                                    <Text className="text-yellow-500 font-bold mb-4 uppercase tracking-wider block text-base hover:text-yellow-400 transition-colors" style={{ color: '#eab308', textShadow: '0 0 10px rgba(234, 179, 8, 0.6)' }}>
+                                        TỔ CHỨC ĐUA NGỰA KKAN
+                                    </Text>
+                                </Link>
                             </div>
                             <div className="text-sm">
                                 <Text className="text-white block mb-1" style={{ color: 'white' }}>Giấy chứng nhận đủ điều kiện kinh doanh đặt cược do Bộ Tài chính cấp.</Text>

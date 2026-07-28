@@ -21,9 +21,9 @@ const GuidePage = () => {
                     ]}
                 />
                 <div className="bg-white/5 p-8 rounded-2xl border border-white/10">
-                    <Title level={2} className="text-white mb-6 uppercase tracking-wider" style={{ color: 'white' }}>GuidePage</Title>
+                    <div className="text-center mb-12"><Title level={1} className="text-4xl md:text-5xl font-black tracking-widest uppercase mb-4 inline-block" style={{ color: '#facc15', WebkitTextStroke: '2px #facc15', textShadow: '0 0 15px rgba(250,204,21,0.6)' }}>HƯỚNG DẪN</Title></div>
                     <Paragraph className="text-gray-300 text-lg leading-relaxed mb-4" style={{ color: '#d1d5db' }}>
-                        Đây là trang mẫu cho GuidePage. Nội dung chi tiết sẽ được ban quản trị cập nhật trong thời gian sớm nhất.
+                        Đây là trang mẫu cho Hướng dẫn. Nội dung chi tiết sẽ được ban quản trị cập nhật trong thời gian sớm nhất.
                     </Paragraph>
                     <Paragraph className="text-gray-300 text-lg leading-relaxed" style={{ color: '#d1d5db' }}>
                         Cảm ơn bạn đã đồng hành cùng Horse Racing VN.
@@ -37,4 +37,5 @@ const GuidePage = () => {
 };
 
 export default GuidePage;
+
 
