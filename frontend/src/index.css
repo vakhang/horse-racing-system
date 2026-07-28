@@ -20,9 +20,7 @@ body {
 
 /* Định dạng HTML từ ReactQuill (CKEditor) cho các trang public */
 .content-html-container {
-    overflow-wrap: break-word;
-    word-break: normal;
-    text-align: justify;
+    text-align: left;
     max-width: 100%;
 }
 

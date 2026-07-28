@@ -43,7 +43,7 @@ const PrivacyPage = () => {
                         <div 
                             className="text-gray-300 text-lg leading-relaxed content-html-container" 
                             style={{ color: '#d1d5db' }}
-                            dangerouslySetInnerHTML={{ __html: content || 'Ná»™i dung Ä‘ang Ä‘Æ°á»£c cáº­p nháº­t...' }} 
+                            dangerouslySetInnerHTML={{ __html: (content || 'Nội dung đang được cập nhật...').replace(/&nbsp;/g, ' ') }} 
                         />
                     )}
                 </div>
