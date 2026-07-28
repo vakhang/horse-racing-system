@@ -22,8 +22,8 @@ const PublicHeader = () => {
 
     const getDropdownItemClass = (path) => {
         return location.pathname === path
-            ? "text-yellow-400 font-bold block w-full"
-            : "text-gray-200 hover:text-yellow-400 font-semibold block w-full transition-colors";
+            ? "!text-yellow-400 font-bold block w-full pl-2 border-l-4 border-yellow-400"
+            : "!text-white hover:!text-yellow-400 font-semibold block w-full transition-colors pl-2 border-l-4 border-transparent hover:border-yellow-400/50";
     };
 
     const supportMenuItems = [
