@@ -26,13 +26,15 @@ body {
     counter-reset: my-ol-counter;
 }
 
-/* Reset counter when encountering headings (to start a new section like Điều 1, Điều 2) */
+/* Use counter-set (modern) and counter-reset (fallback) to forcefully restart numbering when encountering headings or paragraphs (to start a new section like Điều 1, Điều 2) */
 .content-html-container h1,
 .content-html-container h2,
 .content-html-container h3,
 .content-html-container h4,
 .content-html-container h5,
-.content-html-container h6 {
+.content-html-container h6,
+.content-html-container p {
+    counter-set: my-ol-counter 0;
     counter-reset: my-ol-counter;
 }
 

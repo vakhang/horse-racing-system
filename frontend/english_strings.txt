@@ -1,0 +1,70 @@
+Header.jsx:68 | if (user?.status === 'APPROVED') {
+Header.jsx:70 | } else if (user?.status === 'PENDING') {
+Header.jsx:155 | <Tag color={user?.status === 'APPROVED' ? 'success' : 'warning'}>KYC: {user?.status}</Tag>
+PublicHeader.jsx:47 | <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center font-black text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]">HR</div>
+PublicHeader.jsx:48 | <Text className="text-white font-black text-xl tracking-wider uppercase hidden md:block" style={{ color: 'white' }}>HORSE RACE</Text>
+AdminFinancePage.jsx:67 | t?.type === 'WITHDRAW' && t?.status === 'PENDING' && (t?.transactionCode || '').includes(searchCodeWithdraw)
+AdminFinancePage.jsx:109 | { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'COMPLETED' ? 'green' : (s === 'REJECTED' ? 'red' : 'gold')}>{s}</Tag> },
+AdminHorseApprovalPage.jsx:86 | {activeTab === 'APPROVED' && (
+AdminHorseApprovalPage.jsx:142 | {activeTab === 'APPROVED' && (
+AdminHorseApprovalPage.jsx:181 | { key: 'PENDING', label: `Chờ Duyệt (${horses.filter(h => h.status === 'PENDING').length})` },
+AdminHorseApprovalPage.jsx:182 | { key: 'APPROVED', label: `Đã Duyệt (${horses.filter(h => h.status === 'APPROVED').length})` },
+AdminHorseApprovalPage.jsx:183 | { key: 'REJECTED', label: `Bị Từ Chối (${horses.filter(h => h.status === 'REJECTED').length})` },
+AdminKycApprovalPage.jsx:165 | { key: 'PENDING', label: `Chờ Duyệt (${users.filter(u => u.status === 'PENDING').length})` },
+AdminKycApprovalPage.jsx:166 | { key: 'APPROVED', label: `Đã Duyệt (${users.filter(u => u.status === 'APPROVED').length})` },
+AdminKycApprovalPage.jsx:167 | { key: 'REJECTED', label: `Bị Từ Chối (${users.filter(u => u.status === 'REJECTED').length})` },
+AdminLayout.jsx:45 | {!collapsed && <span className="ml-3 text-white font-black text-xl tracking-widest uppercase">ADMIN PANEL</span>}
+AdminNewsPage.jsx:19 | { label: 'Đang chờ (PENDING)', value: 'PENDING' },
+AdminNewsPage.jsx:20 | { label: 'Đã duyệt (APPROVED)', value: 'APPROVED' },
+AdminTournamentPage.jsx:211 | if (s === 'PENDING') return <Tag color="orange">Chờ diễn ra</Tag>;
+AdminTournamentPage.jsx:212 | if (s === 'RUNNING') return <Tag color="red">Đang đua (Live)</Tag>;
+AdminTournamentPage.jsx:214 | if (s === 'CANCELED') return <Tag color="default">Đã hủy</Tag>;
+AdminTournamentPage.jsx:230 | {record.status === 'PENDING' && (
+AdminTournamentPage.jsx:272 | if (s === 'CANCELED') return <Tag color="error" className="font-bold">ĐÃ HỦY</Tag>;
+AdminTournamentPage.jsx:317 | if (val === 'CANCELED' || val === 'POSTPONED') tourForm.setFieldsValue({ reason: '' });
+AdminTournamentPage.jsx:327 | (getFieldValue('status') === 'CANCELED' || getFieldValue('status') === 'POSTPONED') ? (
+AdminTournamentPage.jsx:435 | <InputNumber disabled={raceForm.getFieldValue('status') !== 'PENDING' && editingRaceId != null} min={0} max={100} size="large" addonAfter="%" style={{ width: '100%' }} />
+AdminUserManagementPage.jsx:90 | if (record.status === 'PENDING') {
+AdminUserManagementPage.jsx:91 | items.push({ key: 'APPROVED', icon: <CheckCircleOutlined className="text-green-500" />, label: 'Duyệt Hồ Sơ' });
+AdminUserManagementPage.jsx:92 | items.push({ key: 'REJECTED', danger: true, icon: <CloseCircleOutlined />, label: 'Từ Chối KYC' });
+AdminUserManagementPage.jsx:94 | if (record.status === 'APPROVED' || record.status === 'RED_FLAG') {
+AdminUserManagementPage.jsx:96 | if (record.status === 'APPROVED') {
+AdminUserManagementPage.jsx:99 | items.push({ key: 'APPROVED', icon: <CheckCircleOutlined className="text-green-500" />, label: 'Gỡ Cảnh Báo' });
+AdminUserManagementPage.jsx:102 | items.push({ key: 'APPROVED', icon: <UnlockOutlined className="text-green-500" />, label: 'Mở Khóa (Unban / Hủy Tự Cấm)' });
+AdminUserManagementPage.jsx:124 | if (filterStatus === 'APPROVED') {
+AdminUserManagementPage.jsx:125 | list = list.filter(u => u.status === 'APPROVED');
+AdminUserManagementPage.jsx:126 | } else if (filterStatus === 'PENDING') {
+AdminUserManagementPage.jsx:127 | list = list.filter(u => u.status === 'PENDING');
+AdminUserManagementPage.jsx:135 | list = list.filter(u => u.status === 'APPROVED' && isFullDocs(u));
+AdminUserManagementPage.jsx:150 | { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+AdminUserManagementPage.jsx:172 | { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+AdminUserManagementPage.jsx:195 | { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+AdminUserManagementPage.jsx:216 | { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+AdminUserManagementPage.jsx:246 | { value: 'PENDING', label: `⏳ Chưa duyệt (${pendingCount})` },
+AdminUserManagementPage.jsx:247 | { value: 'APPROVED', label: '🟢 Đang hoạt động' },
+HomePage.jsx:69 | let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
+HomePage.jsx:110 | if (status === 'PENDING') return <Tag color="warning" className="font-bold px-3 py-1">ĐANG XỬ LÝ</Tag>;
+HomePage.jsx:111 | if (status === 'COMPLETED') return <Tag color="success" className="font-bold px-3 py-1">THÀNH CÔNG</Tag>;
+HomePage.jsx:112 | if (status === 'REJECTED') return <Tag color="error" className="font-bold px-3 py-1">TỪ CHỐI</Tag>;
+JockeyInvitationPage.jsx:43 | PENDING: <Tag color="orange">Đang Chờ</Tag>,
+JockeyInvitationPage.jsx:45 | REJECTED: <Tag color="red">Đã Từ Chối</Tag>,
+JockeyInvitationPage.jsx:46 | CANCELED: <Tag color="default">Đã Hủy</Tag>
+LoginPage.jsx:153 | <span className="text-xs font-bold uppercase block text-gray-400">Facebook Admin</span>
+OwnerHorseManagementPage.jsx:128 | { title: 'Trạng Thái', dataIndex: 'status', render: s => s === 'APPROVED' ? <Tag color="green">Đã Duyệt</Tag> : (s === 'REJECTED' ? <Tag color="red">Từ Chối</Tag> : <Tag color="orange">Chờ Duyệt</Tag>) },
+OwnerRaceRegistrationPage.jsx:34 | setRaces(response.data.filter(race => race.status === 'PENDING'));
+OwnerRaceRegistrationPage.jsx:42 | setMyHorses(response.data.filter(horse => horse.status === 'APPROVED'));
+ResultsPage.jsx:30 | race.status === 'COMPLETED' || race.status === 'RESULT_CONFIRMED'
+RefereeDashboardPage.jsx:48 | setRegistrations(res.data.filter(r => r.status === 'APPROVED_BY_ADMIN' || r.status === 'PENDING_APPROVAL'));
+RefereeDashboardPage.jsx:58 | status: 'RUNNING'
+RefereeDashboardPage.jsx:167 | { title: 'Trạng Thái', dataIndex: 'status', render: s => <Tag color={statusMap[s]} className="font-bold">{s === 'RUNNING' ? 'LIVE (Đang đua)' : s}</Tag> },
+RefereeDashboardPage.jsx:174 | if (record.status === 'CANCELED') return <Text type="secondary">Chặng Bị Hủy</Text>;
+RefereeDashboardPage.jsx:242 | <Button type="primary" size="large" icon={<PlayCircleOutlined />} className="bg-green-600 w-32 font-bold" onClick={startTimer}>START</Button>
+RefereeDashboardPage.jsx:243 | <Button size="large" icon={<PauseCircleOutlined />} className="w-32 bg-gray-600 text-white font-bold border-none hover:bg-gray-500" onClick={pauseTimer}>PAUSE</Button>
+RefereeDashboardPage.jsx:244 | <Button size="large" icon={<ReloadOutlined />} className="w-32 font-bold" onClick={resetTimer}>RESET</Button>
+RegisterPage.jsx:278 | <Form.Item name="email" label={<span className="text-gray-300">Email</span>} rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email!' }]}>
+LandingPage.jsx:39 | COMPLETED: { color: 'default', text: 'ĐÃ KẾT THÚC' }
+ProfilePage.jsx:104 | {user?.status === 'APPROVED' ? (
+UserDashboard.jsx:67 | let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
+UserDashboard.jsx:99 | let color = status === 'COMPLETED' ? 'green' : status === 'REJECTED' ? 'red' : 'gold';
+WalletPage.jsx:183 | <Input placeholder="NGUYEN VAN A" className="uppercase" />
+WalletPage.jsx:296 | <Button size="small" type="primary" icon={<CopyOutlined />} onClick={() => handleCopyText(paymentData.note)}>Copy</Button>
