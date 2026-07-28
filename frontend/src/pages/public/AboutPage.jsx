@@ -4,6 +4,8 @@ import { HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
+import horseRacingImg from '../../assets/horseracing2.png';
+import horseRacingImg2 from '../../assets/horseracing.png';
 
 const { Title, Paragraph } = Typography;
 
@@ -30,13 +32,13 @@ const AboutPage = () => {
                             </Paragraph>
                         </div>
                         <div className="rounded-xl overflow-hidden shadow-2xl border border-white/10 h-full max-h-[400px]">
-                            <img src="https://media.vneconomy.vn/images/upload/2022/04/18/dua-ngua.jpg" alt="Horse Racing" className="w-full h-full object-cover" />
+                            <img src={horseRacingImg} alt="Horse Racing" className="w-full h-full object-cover" />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                         <div className="order-2 md:order-1 rounded-xl overflow-hidden shadow-2xl border border-white/10 h-full max-h-[400px]">
-                            <img src="https://hoangphucphoto.com/wp-content/uploads/2025/07/anh-dua-ngua-6.webp" alt="Horse Racing Event" className="w-full h-full object-cover" />
+                            <img src={horseRacingImg2} alt="Horse Racing Event" className="w-full h-full object-cover" />
                         </div>
                         <div className="order-1 md:order-2">
                             <Paragraph className="text-gray-300 text-xl leading-relaxed text-justify mb-4" style={{ color: '#d1d5db' }}>
