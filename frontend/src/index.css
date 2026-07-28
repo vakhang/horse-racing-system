@@ -19,6 +19,13 @@ body {
 }
 
 /* Định dạng HTML từ ReactQuill (CKEditor) cho các trang public */
+.content-html-container {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
 .content-html-container h1, .content-html-container h2, .content-html-container h3, .content-html-container h4 {
     color: #facc15;
     font-weight: bold;
