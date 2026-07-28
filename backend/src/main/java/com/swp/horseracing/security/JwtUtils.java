@@ -12,7 +12,9 @@ import java.util.Date;
 @Component
 public class JwtUtils {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    // Use a fixed key so tokens remain valid across backend restarts
+    private final String SECRET = "HorseRacingVnSuperSecretKey2026-HorseRacingVnSuperSecretKey2026!";
+    private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     public String generateToken(Integer userId, String role) {
 
