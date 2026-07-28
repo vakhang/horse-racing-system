@@ -14,7 +14,7 @@ const RulesPage = () => {
     useEffect(() => {
         const fetchContent = async () => {
             try {
-                const res = await api.get('/api/public/content/RULES');
+                const res = await api.get('/public/content/RULES');
                 setContent(res.data.content);
                 if (res.data.title) setTitle(res.data.title);
             } catch (error) {

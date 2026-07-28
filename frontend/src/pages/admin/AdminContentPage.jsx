@@ -21,7 +21,7 @@ const AdminContentPage = () => {
     const fetchContent = async (id) => {
         try {
             setLoading(true);
-            const res = await api.get(`/api/public/content/${id}`);
+            const res = await api.get(`/public/content/${id}`);
             setContent(res.data.content || '');
         } catch (error) {
             console.error('Failed to load content', error);
@@ -35,7 +35,7 @@ const AdminContentPage = () => {
         try {
             setSaving(true);
             const title = pageId === 'TERMS' ? 'Điều Khoản Sử Dụng' : 'Thể Lệ Đặt Cược';
-            await api.put(`/api/admin/content/${pageId}`, {
+            await api.put(`/admin/content/${pageId}`, {
                 title: title,
                 content: content
             });

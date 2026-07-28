@@ -14,7 +14,7 @@ const TermsPage = () => {
     useEffect(() => {
         const fetchContent = async () => {
             try {
-                const res = await api.get('/api/public/content/TERMS');
+                const res = await api.get('/public/content/TERMS');
                 setContent(res.data.content);
                 if (res.data.title) setTitle(res.data.title);
             } catch (error) {

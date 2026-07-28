@@ -24,7 +24,7 @@ const SchedulePage = () => {
 
     const fetchScheduledRaces = async () => {
         try {
-            const res = await api.get('/api/races');
+            const res = await api.get('/races');
             // Filter only scheduled or future races
             const futureRaces = res.data.filter(race => 
                 race.status === 'SCHEDULED' || race.status === 'REGISTRATION_OPEN' || race.status === 'REGISTRATION_CLOSED'
@@ -43,7 +43,7 @@ const SchedulePage = () => {
         setIsModalOpen(true);
         setModalLoading(true);
         try {
-            const res = await api.get(`/api/registrations?raceId=${raceId}`);
+            const res = await api.get(`/registrations?raceId=${raceId}`);
             const approved = res.data.filter(r => r.status === 'APPROVED');
             setParticipants(approved);
         } catch (error) {
@@ -113,14 +113,17 @@ const SchedulePage = () => {
                     {loading ? (
                         <div className="flex justify-center p-12"><Spin size="large" /></div>
                     ) : (
-                        <Table 
-                            columns={columns} 
-                            dataSource={races} 
-                            rowKey="id"
-                            pagination={{ pageSize: 10 }}
-                            className="bg-transparent"
-                            rowClassName="hover:bg-white/5 transition-colors"
-                        />
+                        <div className="[&_.ant-table]:bg-transparent [&_.ant-table-thead>tr>th]:bg-white/10 [&_.ant-table-thead>tr>th]:text-white [&_.ant-table-thead>tr>th]:border-b-white/10 [&_.ant-table-tbody>tr>td]:border-b-white/10 [&_.ant-table-tbody>tr.ant-table-row:hover>td]:bg-white/5 [&_.ant-pagination-item]:bg-transparent [&_.ant-pagination-item>a]:text-white [&_.ant-pagination-item-active]:border-yellow-500 [&_.ant-pagination-item-active>a]:text-yellow-500 [&_.ant-table-placeholder]:bg-transparent [&_.ant-table-placeholder:hover>td]:bg-transparent [&_.ant-empty-description]:text-gray-400 [&_.ant-table-cell]:text-gray-200">
+                            <Table 
+                                columns={columns} 
+                                dataSource={races} 
+                                rowKey="id"
+                                pagination={{ pageSize: 10 }}
+                                className="bg-transparent"
+                                rowClassName="transition-colors"
+                                locale={{ emptyText: 'Chưa có lịch thi đấu' }}
+                            />
+                        </div>
                     )}
                 </div>
             </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Button, Dropdown } from 'antd';
+import { Typography, Button, Dropdown, ConfigProvider } from 'antd';
 import { LoginOutlined } from '@ant-design/icons';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
@@ -20,12 +20,18 @@ const PublicHeader = () => {
         ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1 cursor-pointer"
         : "text-gray-300 hover:text-yellow-400 font-semibold transition-colors cursor-pointer";
 
+    const getDropdownItemClass = (path) => {
+        return location.pathname === path
+            ? "text-yellow-400 font-bold block w-full"
+            : "text-gray-200 hover:text-yellow-400 font-semibold block w-full transition-colors";
+    };
+
     const supportMenuItems = [
-        { key: '1', label: <Link to="/guide">Hướng dẫn Tân thủ & Nạp/Rút</Link> },
-        { key: '2', label: <Link to="/faq">Câu hỏi thường gặp (FAQ)</Link> },
-        { key: '3', label: <Link to="/rules">Thể lệ Đặt cược</Link> },
-        { key: '4', label: <Link to="/terms">Điều khoản Sử dụng & Miễn trừ trách nhiệm</Link> },
-        { key: '5', label: <Link to="/privacy">Chính sách Bảo mật & eKYC</Link> }
+        { key: '1', label: <Link to="/guide" className={getDropdownItemClass('/guide')}>Hướng dẫn Tân thủ & Nạp/Rút</Link> },
+        { key: '2', label: <Link to="/faq" className={getDropdownItemClass('/faq')}>Câu hỏi thường gặp (FAQ)</Link> },
+        { key: '3', label: <Link to="/rules" className={getDropdownItemClass('/rules')}>Thể lệ Đặt cược</Link> },
+        { key: '4', label: <Link to="/terms" className={getDropdownItemClass('/terms')}>Điều khoản Sử dụng & Miễn trừ</Link> },
+        { key: '5', label: <Link to="/privacy" className={getDropdownItemClass('/privacy')}>Chính sách Bảo mật & eKYC</Link> }
     ];
 
     return (
@@ -46,9 +52,25 @@ const PublicHeader = () => {
                 <Link to="/schedule" className={getLinkClass('/schedule')}>LỊCH ĐUA</Link>
                 <Link to="/results" className={getLinkClass('/results')}>KẾT QUẢ</Link>
                 
-                <Dropdown menu={{ items: supportMenuItems }} placement="bottom">
-                    <span className={supportLinkClass}>HỖ TRỢ</span>
-                </Dropdown>
+                <ConfigProvider
+                    theme={{
+                        components: {
+                            Dropdown: {
+                                colorBgElevated: '#001529',
+                                controlItemBgHover: 'rgba(255, 255, 255, 0.1)',
+                                paddingBlock: 8,
+                            },
+                            Menu: {
+                                colorBgContainer: '#001529',
+                                colorItemBgHover: 'rgba(255, 255, 255, 0.1)',
+                            }
+                        }
+                    }}
+                >
+                    <Dropdown menu={{ items: supportMenuItems, className: 'border border-white/20 shadow-lg' }} placement="bottom">
+                        <span className={supportLinkClass}>HỖ TRỢ</span>
+                    </Dropdown>
+                </ConfigProvider>
             </div>
             <div className="flex items-center gap-1 md:gap-2">
                 <Button 
