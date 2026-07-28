@@ -49,7 +49,7 @@ const CorporateLandingPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-[#001529]/95 via-[#001529]/60 to-[#001529] z-10"></div>
                 
                 <div className="z-20 text-center px-4 max-w-5xl mx-auto">
-                    <Title level={1} className="text-5xl md:text-7xl font-black tracking-widest uppercase mb-4" style={{ color: '#facc15', textShadow: '0 4px 15px rgba(250, 204, 21, 0.3), 0 4px 10px rgba(0,0,0,0.8)' }}>
+                    <Title level={1} className="text-5xl md:text-7xl font-black tracking-widest uppercase mb-4" style={{ color: '#facc15', textShadow: '0 0 15px rgba(250,204,21,0.6), 0 0 30px rgba(250,204,21,0.4), 0 4px 10px rgba(0,0,0,0.8)' }}>
                         ĐUA NGỰA VIỆT NAM
                     </Title>
                     <Title level={3} className="text-2xl md:text-3xl text-white uppercase tracking-widest font-black mb-6" style={{ color: 'white', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
@@ -63,10 +63,10 @@ const CorporateLandingPage = () => {
                         type="primary"
                         size="large"
                         style={{ background: 'linear-gradient(to right, #eab308, #facc15)', color: 'black', border: 'none' }}
-                        className="font-black h-16 px-12 text-xl hover:scale-105 transition-transform shadow-[0_0_30px_rgba(234,179,8,0.5)] rounded-full mt-4"
+                        className="h-16 px-12 text-xl hover:scale-105 transition-transform shadow-[0_0_30px_rgba(234,179,8,0.5)] rounded-full mt-4"
                         onClick={() => navigate('/login')}
                     >
-                        ĐĂNG NHẬP NGAY
+                        <span style={{ fontWeight: 900 }}>ĐĂNG NHẬP NGAY</span>
                     </Button>
                 </div>
             </div>

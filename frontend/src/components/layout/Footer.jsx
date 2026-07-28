@@ -47,10 +47,10 @@ const Footer = () => {
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
                             <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
-                                Điều lệ Đua ngựa (Đã được phê duyệt)
+                                Điều lệ Đua ngựa
                             </Link>
                             <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
-                                Thể lệ Đặt cược (Đã đăng ký BTC)
+                                Thể lệ Đặt cược
                             </Link>
                             <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Chính sách Bảo mật & eKYC
@@ -89,11 +89,11 @@ const Footer = () => {
                     {/* CỘT 4: CÁ CƯỢC CÓ TRÁCH NHIỆM */}
                     <Col xs={24} sm={12} lg={6}>
                         <div className="bg-red-950/30 p-6 rounded-xl border border-red-900/50 h-full">
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="bg-red-600 text-white w-12 h-10 rounded-full flex items-center justify-center font-black text-lg shadow-[0_0_15px_rgba(220,38,38,0.5)] shrink-0">
+                            <div className="flex items-center gap-2 mb-4">
+                                <div className="bg-red-600 text-white w-10 h-8 rounded-full flex items-center justify-center font-black text-base shadow-[0_0_15px_rgba(220,38,38,0.5)] shrink-0">
                                     21+
                                 </div>
-                                <Title level={5} className="m-0 uppercase text-sm" style={{ color: '#f87171' }}>
+                                <Title level={5} className="m-0 uppercase text-[12px] leading-tight" style={{ color: '#f87171' }}>
                                     CHỈ DÀNH CHO NGƯỜI TỪ ĐỦ 21 TUỔI TRỞ LÊN
                                 </Title>
                             </div>
@@ -106,10 +106,7 @@ const Footer = () => {
                             <Divider className="border-red-900/50 my-4" />
                             
                             <div className="text-sm">
-                                <Text className="text-white block mb-1" style={{ color: 'white' }}>Hạn mức cược tuân thủ pháp luật:</Text>
-                                <Text strong className="text-yellow-500 block text-base mb-3" style={{ color: '#eab308' }}>Tối đa: 1.000.000 VNĐ / ngày</Text>
-                                
-                                <Text className="text-white block" style={{ color: 'white' }}>Tổng đài tư vấn cờ bạc an toàn:</Text>
+                                <Text className="text-white block" style={{ color: 'white' }}>Tổng đài tư vấn:</Text>
                                 <Text strong className="text-white block" style={{ color: 'white' }}>
                                     <PhoneOutlined className="mr-2" /> +84 971 966 715
                                 </Text>
