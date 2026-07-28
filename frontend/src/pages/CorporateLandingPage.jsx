@@ -29,15 +29,25 @@ const CorporateLandingPage = () => {
                     <a href="#" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">TIN TỨC</a>
                     <a href="#" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">HƯỚNG DẪN</a>
                 </div>
-                <Button 
-                    type="primary" 
-                    icon={<LoginOutlined />}
-                    style={{ background: '#eab308', color: 'black', border: 'none' }}
-                    className="font-bold shadow-lg hover:scale-105 transition-transform"
-                    onClick={() => navigate('/login')}
-                >
-                    ĐĂNG NHẬP
-                </Button>
+                <div className="flex items-center gap-2 md:gap-4">
+                    <Button 
+                        type="text" 
+                        icon={<LoginOutlined />}
+                        style={{ color: 'white' }}
+                        className="hover:scale-105 transition-transform hover:!text-yellow-400"
+                        onClick={() => navigate('/login')}
+                    >
+                        <span style={{ fontWeight: 900 }}>ĐĂNG NHẬP</span>
+                    </Button>
+                    <Button 
+                        type="primary" 
+                        style={{ background: '#eab308', color: 'black', border: 'none' }}
+                        className="shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:scale-105 transition-transform hidden sm:inline-flex"
+                        onClick={() => navigate('/register')}
+                    >
+                        <span style={{ fontWeight: 900 }}>ĐĂNG KÝ</span>
+                    </Button>
+                </div>
             </div>
 
             {/* PHẦN 1: HERO BANNER */}
@@ -49,7 +59,7 @@ const CorporateLandingPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-b from-[#001529]/95 via-[#001529]/60 to-[#001529] z-10"></div>
                 
                 <div className="z-20 text-center px-4 max-w-5xl mx-auto">
-                    <Title level={1} className="text-5xl md:text-7xl font-black tracking-widest uppercase mb-4" style={{ color: '#facc15', textShadow: '0 0 15px rgba(250,204,21,0.6), 0 0 30px rgba(250,204,21,0.4), 0 4px 10px rgba(0,0,0,0.8)' }}>
+                    <Title level={1} className="text-5xl md:text-7xl font-black tracking-widest uppercase mb-4" style={{ color: '#facc15', WebkitTextStroke: '2px #facc15', textShadow: '0 0 15px rgba(250,204,21,0.6), 0 0 30px rgba(250,204,21,0.4), 0 4px 10px rgba(0,0,0,0.8)' }}>
                         ĐUA NGỰA VIỆT NAM
                     </Title>
                     <Title level={3} className="text-2xl md:text-3xl text-white uppercase tracking-widest font-black mb-6" style={{ color: 'white', textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}>
