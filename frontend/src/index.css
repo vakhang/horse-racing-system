@@ -23,22 +23,62 @@ body {
 .content-html-container {
     text-align: left;
     max-width: 100%;
+    counter-reset: my-ol-counter;
 }
 
-/* Khôi phục lại định dạng danh sách (bullet và số) bị Tailwind reset */
-.content-html-container ul {
+/* Reset counter when encountering paragraphs or headings */
+.content-html-container h1,
+.content-html-container h2,
+.content-html-container h3,
+.content-html-container h4,
+.content-html-container h5,
+.content-html-container h6,
+.content-html-container p {
+    counter-reset: my-ol-counter;
+}
+
+/* Khôi phục lại bullet list (ul) bị quill.snow.css ẩn mất */
+.content-html-container.ql-editor ul {
     list-style-type: disc !important;
     padding-left: 2.5rem !important;
     margin-bottom: 1rem;
+    color: #d1d5db;
 }
-.content-html-container ol {
-    list-style-type: decimal !important;
+.content-html-container.ql-editor ul > li {
+    list-style-type: disc !important;
+    display: list-item !important;
+    margin-bottom: 0.5rem;
+}
+.content-html-container.ql-editor ul > li::before {
+    content: none !important;
+}
+
+/* Khôi phục ordered list (ol) và dùng CSS counter để fix lỗi 1, 1, 1 */
+.content-html-container.ql-editor ol {
+    list-style-type: none !important;
     padding-left: 2.5rem !important;
     margin-bottom: 1rem;
+    color: #d1d5db;
 }
-.content-html-container li {
+.content-html-container.ql-editor ol > li {
+    list-style-type: none !important;
+    display: list-item !important;
+    position: relative;
     margin-bottom: 0.5rem;
-    display: list-item;
+    counter-increment: my-ol-counter;
+}
+.content-html-container.ql-editor ol > li::before {
+    content: counter(my-ol-counter) ". " !important;
+    position: absolute;
+    left: -1.5rem;
+    color: #facc15;
+    font-weight: bold;
+}
+
+/* Override padding của ql-editor để không bị dư khoảng trắng */
+.content-html-container.ql-editor {
+    padding: 0;
+    overflow-y: visible;
 }
 
 .content-html-container h1, .content-html-container h2, .content-html-container h3, .content-html-container h4 {
@@ -54,16 +94,6 @@ body {
 .content-html-container p {
     margin-bottom: 1rem;
     color: #d1d5db;
-}
-
-/* Override padding của ql-editor để không bị dư khoảng trắng */
-.content-html-container.ql-editor {
-    padding: 0;
-    overflow-y: visible;
-}
-.content-html-container.ql-editor li::before {
-    color: #facc15;
-    font-weight: bold;
 }
 
 .content-html-container strong, .content-html-container b {
