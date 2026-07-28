@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { Typography, Breadcrumb } from 'antd';
 import { HomeOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
@@ -13,13 +13,7 @@ const GuidePage = () => {
             <PublicHeader />
 
             <div className="flex-grow max-w-7xl mx-auto w-full px-6 py-12 pt-32">
-                <Breadcrumb 
-                    className="mb-8"
-                    items={[
-                        { title: <Link to="/"><HomeOutlined className="text-gray-400" /></Link> },
-                        { title: <span className="text-yellow-500">GuidePage</span> }
-                    ]}
-                />
+
                 <div className="bg-white/5 p-8 rounded-2xl border border-white/10">
                     <div className="text-center mb-12"><Title level={1} className="text-4xl md:text-5xl font-black tracking-widest uppercase mb-4 inline-block" style={{ color: '#facc15', WebkitTextStroke: '2px #facc15', textShadow: '0 0 15px rgba(250,204,21,0.6)' }}>HƯỚNG DẪN</Title></div>
                     <Paragraph className="text-gray-300 text-lg leading-relaxed mb-4" style={{ color: '#d1d5db' }}>
@@ -37,5 +31,6 @@ const GuidePage = () => {
 };
 
 export default GuidePage;
+
 
 
