@@ -24,17 +24,17 @@ const Footer = () => {
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full">
                             <div>
-                                <Text strong className="text-yellow-500 block mb-1">CÔNG TY CỔ PHẦN CÁ CƯỢC ĐUA NGỰA HỢP PHÁP VIỆT NAM</Text>
+                                <Text strong className="text-yellow-500 block mb-1">TỔ CHỨC ĐUA NGỰA KKTA</Text>
                             </div>
                             <div className="text-sm">
-                                <Text className="text-slate-300 block mb-1">Giấy chứng nhận đủ điều kiện kinh doanh đặt cược do Bộ Tài chính cấp.</Text>
-                                <Text className="text-slate-300 block">Tuân thủ Nghị định 06/2017/NĐ-CP.</Text>
+                                <Text className="text-white block mb-1">Giấy chứng nhận đủ điều kiện kinh doanh đặt cược do Bộ Tài chính cấp.</Text>
+                                <Text className="text-white block">Tuân thủ Nghị định 06/2017/NĐ-CP.</Text>
                             </div>
-                            <div className="text-sm">
+                            <div className="text-sm text-white">
                                 <BankOutlined className="mr-2" />
                                 Trường đua ngựa Sóc Sơn, Hà Nội, Việt Nam.
                             </div>
-                            <Text className="text-gray-500 text-xs mt-4 block">
+                            <Text className="text-white text-xs mt-4 block">
                                 © 2026 Horse Racing VN. Mọi quyền được bảo lưu.
                             </Text>
                         </Space>
@@ -46,21 +46,18 @@ const Footer = () => {
                             PHÁP LÝ & QUY ĐỊNH
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
-                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block">
                                 Điều lệ Đua ngựa (Đã được phê duyệt)
                             </Link>
-                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block">
                                 Thể lệ Đặt cược (Đã đăng ký BTC)
                             </Link>
-                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block">
                                 Chính sách Bảo mật & eKYC
                             </Link>
-                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block">
                                 Điều khoản Sử dụng & Miễn trừ
                             </Link>
-                            <div className="mt-2 text-xs text-gray-500 italic">
-                                * Xem chi tiết tại mục Thông báo / Tin tức.
-                            </div>
                         </Space>
                     </Col>
 
@@ -70,25 +67,22 @@ const Footer = () => {
                             HỖ TRỢ KHÁCH HÀNG
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
-                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block">
                                 Hướng dẫn Tân thủ & Nạp/Rút
                             </Link>
-                            <Link to="/home" className="text-slate-300 hover:text-yellow-400 transition-colors block">
+                            <Link to="/home" className="text-white hover:text-yellow-400 transition-colors block">
                                 Câu hỏi thường gặp (FAQ)
                             </Link>
                             
                             <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/10">
-                                <Text className="text-slate-200 block mb-2">
+                                <Text className="text-white block mb-2">
                                     <CustomerServiceOutlined className="mr-2 text-yellow-500" /> Tổng đài CSKH (24/7)
                                 </Text>
-                                <Text strong className="text-lg text-white block mb-2">1900 8888</Text>
-                                <Text className="text-slate-300 block">
-                                    <MailOutlined className="mr-2" /> support@horse-racing.vn
+                                <Text strong className="text-lg text-white block mb-2">+84 971 966 715</Text>
+                                <Text className="text-white block">
+                                    <MailOutlined className="mr-2" /> xuankhang2412@gmail.com
                                 </Text>
                             </div>
-                            <Text className="text-xs text-gray-500 block">
-                                * Mọi giao dịch 100% bằng VNĐ qua ngân hàng.
-                            </Text>
                         </Space>
                     </Col>
 
@@ -96,7 +90,7 @@ const Footer = () => {
                     <Col xs={24} sm={12} lg={6}>
                         <div className="bg-red-950/30 p-6 rounded-xl border border-red-900/50 h-full">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="bg-red-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-black text-lg shadow-[0_0_15px_rgba(220,38,38,0.5)]">
+                                <div className="bg-red-600 text-white w-12 h-10 rounded-full flex items-center justify-center font-black text-lg shadow-[0_0_15px_rgba(220,38,38,0.5)] shrink-0">
                                     21+
                                 </div>
                                 <Title level={5} className="m-0 uppercase text-sm" style={{ color: '#f87171' }}>
@@ -112,10 +106,10 @@ const Footer = () => {
                             <Divider className="border-red-900/50 my-4" />
                             
                             <div className="text-sm">
-                                <Text className="text-slate-300 block mb-1">Hạn mức cược tuân thủ pháp luật:</Text>
+                                <Text className="text-white block mb-1">Hạn mức cược tuân thủ pháp luật:</Text>
                                 <Text strong className="text-yellow-500 block text-base mb-3">Tối đa: 1.000.000 VNĐ / ngày</Text>
                                 
-                                <Text className="text-slate-300 block">Tổng đài tư vấn cờ bạc an toàn:</Text>
+                                <Text className="text-white block">Tổng đài tư vấn cờ bạc an toàn:</Text>
                                 <Text strong className="text-white block">
                                     <PhoneOutlined className="mr-2" /> 1800 9999
                                 </Text>
