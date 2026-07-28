@@ -17,3 +17,55 @@ body {
     background-color: #f3f4f6; /* Màu nền xám nhạt của Tailwind */
     font-family: "Lexend", sans-serif;
 }
+
+/* Định dạng HTML từ ReactQuill (CKEditor) cho các trang public */
+.content-html-container h1, .content-html-container h2, .content-html-container h3, .content-html-container h4 {
+    color: #facc15;
+    font-weight: bold;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+.content-html-container h1 { font-size: 2rem; }
+.content-html-container h2 { font-size: 1.5rem; }
+.content-html-container h3 { font-size: 1.25rem; }
+
+.content-html-container p {
+    margin-bottom: 1rem;
+    color: #d1d5db;
+}
+
+.content-html-container ul {
+    list-style-type: disc;
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+    color: #d1d5db;
+}
+
+.content-html-container ol {
+    list-style-type: decimal;
+    padding-left: 2rem;
+    margin-bottom: 1rem;
+    color: #d1d5db;
+}
+
+.content-html-container li {
+    margin-bottom: 0.5rem;
+}
+
+.content-html-container strong, .content-html-container b {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.content-html-container a {
+    color: #3b82f6;
+    text-decoration: underline;
+}
+
+.content-html-container blockquote {
+    border-left: 4px solid #facc15;
+    padding-left: 1rem;
+    color: #9ca3af;
+    font-style: italic;
+    margin-bottom: 1rem;
+}
