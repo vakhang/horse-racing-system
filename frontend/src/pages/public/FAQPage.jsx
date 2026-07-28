@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Spin } from 'antd';
+import { Typography, Spin, Collapse, Empty } from 'antd';
+import { CaretRightOutlined } from '@ant-design/icons';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
 import api from '../../config/api';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 const FAQPage = () => {
-    const [content, setContent] = useState('');
+    const [faqs, setFaqs] = useState([]);
     const [title, setTitle] = useState('CÂU HỎI THƯỜNG GẶP (FAQ)');
     const [loading, setLoading] = useState(true);
 
@@ -15,8 +16,19 @@ const FAQPage = () => {
         const fetchContent = async () => {
             try {
                 const res = await api.get('/public/content/FAQ');
-                setContent(res.data.content);
-                setContent(res.data.content);
+                const contentData = res.data.content;
+                if (contentData) {
+                    try {
+                        const parsed = JSON.parse(contentData);
+                        if (Array.isArray(parsed)) {
+                            setFaqs(parsed);
+                        } else {
+                            setFaqs([]);
+                        }
+                    } catch (e) {
+                        setFaqs([]);
+                    }
+                }
             } catch (error) {
                 console.error("Failed to load terms", error);
             } finally {
@@ -30,21 +42,44 @@ const FAQPage = () => {
         <div className="min-h-screen bg-[#001529] font-sans flex flex-col">
             <PublicHeader />
 
-            <div className="flex-grow max-w-7xl mx-auto w-full px-6 py-12 pt-32">
-                <div className="bg-white/5 p-8 rounded-2xl border border-white/10">
-                    <div className="text-center mb-12">
-                        <Title level={1} className="text-4xl md:text-5xl font-black tracking-widest uppercase mb-4 inline-block" style={{ color: '#facc15', WebkitTextStroke: '2px #facc15', textShadow: '0 0 15px rgba(250,204,21,0.6)' }}>
+            <div className="flex-grow max-w-4xl mx-auto w-full px-6 py-12 pt-32">
+                <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-2xl">
+                    <div className="text-center mb-10">
+                        <Title level={1} className="text-3xl md:text-4xl font-black tracking-wide uppercase mb-2" style={{ color: '#0047b3' }}>
                             {title}
                         </Title>
+                        <Paragraph className="text-gray-500 text-lg">
+                            Tổng hợp các câu hỏi và giải đáp chi tiết dành cho khách hàng.
+                        </Paragraph>
                     </div>
+                    
                     {loading ? (
                         <div className="flex justify-center p-12"><Spin size="large" /></div>
-                    ) : (
-                        <div 
-                            className="text-gray-300 text-lg leading-relaxed content-html-container" 
-                            style={{ color: '#d1d5db' }}
-                            dangerouslySetInnerHTML={{ __html: (content || 'Nội dung đang được cập nhật...').replace(/&nbsp;/g, ' ') }} 
+                    ) : faqs.length > 0 ? (
+                        <Collapse
+                            accordion
+                            bordered={false}
+                            expandIcon={({ isActive }) => <CaretRightOutlined rotate={isActive ? 90 : 0} style={{ color: '#0047b3', fontSize: '16px', marginTop: '4px' }} />}
+                            className="bg-transparent"
+                            items={faqs.map((faq, index) => ({
+                                key: String(index),
+                                label: (
+                                    <span className="text-lg font-semibold text-gray-800 hover:text-[#0047b3] transition-colors duration-200">
+                                        {faq.question}
+                                    </span>
+                                ),
+                                children: (
+                                    <div className="pl-7 pr-4 py-2 border-l-2 border-blue-200 ml-2">
+                                        <Paragraph className="text-gray-600 text-base leading-relaxed mb-0 whitespace-pre-wrap">
+                                            {faq.answer}
+                                        </Paragraph>
+                                    </div>
+                                ),
+                                className: "mb-4 border border-gray-200 rounded-xl bg-gray-50 shadow-sm overflow-hidden"
+                            }))}
                         />
+                    ) : (
+                        <Empty description={<span className="text-gray-400">Nội dung đang được cập nhật...</span>} />
                     )}
                 </div>
             </div>

@@ -1,12 +1,101 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Select, Button, Typography, message, Spin } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { Card, Select, Button, Typography, message, Spin, Input, Space } from 'antd';
+import { SaveOutlined, PlusOutlined, DeleteOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import api from '../../config/api';
+import 'react-quill-new/dist/quill.snow.css';
+
+// Lazy load ReactQuill to improve initial load time and prevent freezing
+const ReactQuill = lazy(() => import('react-quill-new'));
 
 const { Title } = Typography;
 const { Option } = Select;
+
+const FaqEditor = ({ value, onChange }) => {
+    const [faqs, setFaqs] = useState([]);
+    
+    useEffect(() => {
+        if (!value) {
+            setFaqs([]);
+            return;
+        }
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed)) {
+                setFaqs(parsed);
+            } else {
+                setFaqs([]);
+            }
+        } catch (e) {
+            setFaqs([]);
+        }
+    }, [value]);
+
+    const handleChange = (newFaqs) => {
+        setFaqs(newFaqs);
+        onChange(JSON.stringify(newFaqs));
+    };
+
+    const addFaq = () => {
+        handleChange([...faqs, { question: '', answer: '' }]);
+    };
+
+    const removeFaq = (index) => {
+        const newFaqs = [...faqs];
+        newFaqs.splice(index, 1);
+        handleChange(newFaqs);
+    };
+
+    const updateFaq = (index, field, val) => {
+        const newFaqs = [...faqs];
+        newFaqs[index][field] = val;
+        handleChange(newFaqs);
+    };
+    
+    const moveFaq = (index, direction) => {
+        if (direction === -1 && index === 0) return;
+        if (direction === 1 && index === faqs.length - 1) return;
+        
+        const newFaqs = [...faqs];
+        const temp = newFaqs[index];
+        newFaqs[index] = newFaqs[index + direction];
+        newFaqs[index + direction] = temp;
+        handleChange(newFaqs);
+    };
+
+    return (
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+            {faqs.map((faq, index) => (
+                <Card key={index} className="mb-4 shadow-sm border border-blue-100" styles={{ body: { padding: '16px' } }}>
+                    <div className="flex justify-between items-center mb-3">
+                        <span className="font-bold text-blue-700 uppercase tracking-wide text-xs">Câu hỏi {index + 1}</span>
+                        <Space>
+                            <Button icon={<ArrowUpOutlined />} size="small" onClick={() => moveFaq(index, -1)} disabled={index === 0} />
+                            <Button icon={<ArrowDownOutlined />} size="small" onClick={() => moveFaq(index, 1)} disabled={index === faqs.length - 1} />
+                            <Button danger icon={<DeleteOutlined />} size="small" onClick={() => removeFaq(index)} />
+                        </Space>
+                    </div>
+                    <Input 
+                        placeholder="Nhập câu hỏi (Ví dụ: Thời gian xử lý nạp tiền là bao lâu?)" 
+                        value={faq.question} 
+                        onChange={(e) => updateFaq(index, 'question', e.target.value)} 
+                        className="mb-3 font-semibold text-lg"
+                        size="large"
+                    />
+                    <Input.TextArea 
+                        placeholder="Nhập câu trả lời chi tiết..." 
+                        value={faq.answer} 
+                        onChange={(e) => updateFaq(index, 'answer', e.target.value)} 
+                        rows={4}
+                        className="text-gray-700"
+                    />
+                </Card>
+            ))}
+            <Button type="dashed" block icon={<PlusOutlined />} onClick={addFaq} size="large" className="mt-2 h-14 border-blue-300 text-blue-600 font-semibold hover:bg-blue-50">
+                THÊM CÂU HỎI MỚI
+            </Button>
+        </div>
+    );
+};
 
 const AdminContentPage = () => {
     const [pageId, setPageId] = useState('RACE_RULES');
@@ -60,9 +149,9 @@ const AdminContentPage = () => {
         <div className="p-6">
             <Card className="shadow-md rounded-xl">
                 <Title level={3} className="mb-6">Quản Lý Nội Dung CMS</Title>
-                <div className="mb-4 flex items-center gap-4">
-                    <span className="font-semibold">Chọn trang cần cập nhật:</span>
-                    <Select value={pageId} onChange={setPageId} className="w-64">
+                <div className="mb-6 flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <span className="font-bold text-gray-700">Chọn trang cần cập nhật:</span>
+                    <Select value={pageId} onChange={setPageId} className="w-72" size="large">
                         <Option value="RACE_RULES">Điều lệ Đua ngựa</Option>
                         <Option value="RULES">Thể lệ Đặt cược</Option>
                         <Option value="PRIVACY">Chính sách Bảo mật & eKYC</Option>
@@ -71,26 +160,35 @@ const AdminContentPage = () => {
                         <Option value="FAQ">Câu hỏi thường gặp (FAQ)</Option>
                     </Select>
                 </div>
-                <div className="bg-white">
+                
+                <div className="bg-white mb-6">
                     {loading ? (
                         <div className="flex justify-center p-12"><Spin size="large" /></div>
                     ) : (
-                        <ReactQuill 
-                            theme="snow" 
-                            value={content} 
-                            onChange={setContent} 
-                            style={{ height: '400px', marginBottom: '50px' }} 
-                        />
+                        pageId === 'FAQ' ? (
+                            <FaqEditor value={content} onChange={setContent} />
+                        ) : (
+                            <Suspense fallback={<div className="flex justify-center p-12"><Spin tip="Đang tải trình soạn thảo..." size="large" /></div>}>
+                                <ReactQuill 
+                                    theme="snow" 
+                                    value={content} 
+                                    onChange={setContent} 
+                                    style={{ height: '400px', marginBottom: '50px' }} 
+                                />
+                            </Suspense>
+                        )
                     )}
                 </div>
+                
                 <Button 
                     type="primary" 
                     icon={<SaveOutlined />} 
                     size="large" 
                     onClick={handleSave}
                     loading={saving}
+                    className="w-full h-12 text-lg font-bold mt-2"
                 >
-                    Lưu Thay Đổi
+                    LƯU THAY ĐỔI DỮ LIỆU
                 </Button>
             </Card>
         </div>
