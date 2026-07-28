@@ -6,8 +6,9 @@ import {
     BankOutlined,
     LoginOutlined
 } from '@ant-design/icons';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
+import PublicHeader from '../components/layout/PublicHeader';
 
 const { Title, Text } = Typography;
 
@@ -17,31 +18,7 @@ const CorporateLandingPage = () => {
     return (
         <div className="min-h-screen bg-[#001529] font-sans flex flex-col">
             {/* HEADER / NAVIGATION BAR */}
-            <div className="fixed top-0 left-0 right-0 z-50 bg-[#001529]/95 backdrop-blur-md border-b border-white/10 px-6 lg:px-20 py-4 flex justify-between items-center shadow-md">
-                <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                    <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center font-black text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]">HR</div>
-                    <Text className="text-white font-black text-xl tracking-wider uppercase hidden md:block" style={{ color: 'white' }}>HORSE RACE</Text>
-                </div>
-                <div className="hidden lg:flex gap-8 items-center">
-                    <Link to="/" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">TRANG CHỦ</Link>
-                    <Link to="/about" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">GIỚI THIỆU</Link>
-                    <Link to="/schedule" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">LỊCH ĐUA</Link>
-                    <Link to="/results" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">KẾT QUẢ</Link>
-                    <Link to="/news" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">TIN TỨC</Link>
-                    <Link to="/guide" className="text-gray-300 hover:text-yellow-400 font-semibold transition-colors">HƯỚNG DẪN</Link>
-                </div>
-                <div className="flex items-center gap-1 md:gap-2">
-                    <Button 
-                        type="text" 
-                        icon={<LoginOutlined />}
-                        style={{ color: 'white' }}
-                        className="hover:scale-105 transition-transform hover:!text-yellow-400"
-                        onClick={() => navigate('/login')}
-                    >
-                        <span style={{ fontWeight: 900 }}>ĐĂNG NHẬP</span>
-                    </Button>
-                </div>
-            </div>
+            <PublicHeader />
 
             {/* PHẦN 1: HERO BANNER */}
             <div className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden pt-20">
@@ -83,10 +60,10 @@ const CorporateLandingPage = () => {
                                 Về Chúng Tôi
                             </Title>
                             <Text className="text-white text-lg font-medium leading-relaxed block mb-4 text-justify" style={{ color: 'white' }}>
-                                Chúng tôi tự hào là đơn vị tiên phong được cấp Giấy chứng nhận đủ điều kiện kinh doanh đặt cược đua ngựa tại Việt Nam. Với dự án đầu tư trường đua đạt chuẩn quốc tế cùng tổng vốn đầu tư tối thiểu 1.000 tỷ đồng, chúng tôi mang đến một môi trường giải trí chuyên nghiệp, đóng góp vào sự phát triển kinh tế và hỗ trợ cộng đồng.
+                                Tổ chức Đua ngựa KKAN là một dự án nghiên cứu và phát triển công nghệ (R&D) do nhóm sinh viên Đại học FPT phát triển. Hệ thống của chúng tôi hoạt động dưới dạng Môi trường thử nghiệm khép kín, mô phỏng "Phần mềm dành cho doanh nghiệp kinh doanh đặt cược đua ngựa".
                             </Text>
                             <Text className="text-white text-lg font-medium leading-relaxed block text-justify" style={{ color: 'white' }}>
-                                Hoạt động kinh doanh của chúng tôi tuân thủ nghiêm ngặt Nghị định 06/2017/NĐ-CP, đặt tính khách quan và sự bảo vệ quyền lợi người chơi lên hàng đầu.
+                                Toàn bộ hoạt động đặt cược và dòng tiền trên hệ thống đều sử dụng dữ liệu giả định (Virtual Currency) nhằm mục đích học thuật. Dự án được thiết kế để chứng minh năng lực xử lý hệ thống tài chính phức tạp, đồng thời tuân thủ nghiêm ngặt các tiêu chuẩn kỹ thuật theo Nghị định 06/2017/NĐ-CP.
                             </Text>
                         </Col>
                         <Col xs={24} lg={12}>

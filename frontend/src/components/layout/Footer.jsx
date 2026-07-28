@@ -24,7 +24,9 @@ const Footer = () => {
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full">
                             <div>
-                                <Text strong className="text-yellow-500 block mb-1" style={{ color: '#eab308' }}>TỔ CHỨC ĐUA NGỰA KKTA</Text>
+                                <Title level={4} className="text-yellow-500 font-bold mb-4 uppercase tracking-wider" style={{ color: '#eab308' }}>
+                                    TỔ CHỨC ĐUA NGỰA KKAN
+                                </Title>
                             </div>
                             <div className="text-sm">
                                 <Text className="text-white block mb-1" style={{ color: 'white' }}>Giấy chứng nhận đủ điều kiện kinh doanh đặt cược do Bộ Tài chính cấp.</Text>
