@@ -16,7 +16,7 @@ const RulesPage = () => {
             try {
                 const res = await api.get('/public/content/RULES');
                 setContent(res.data.content);
-                if (res.data.title) setTitle(res.data.title);
+
             } catch (error) {
                 console.error("Failed to load rules", error);
             } finally {

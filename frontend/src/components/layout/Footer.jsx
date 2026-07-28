@@ -50,7 +50,7 @@ const Footer = () => {
                             PHÁP LÝ & QUY ĐỊNH
                         </Title>
                         <Space direction="vertical" size="middle" className="w-full text-sm">
-                            <Link to="/terms" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
+                            <Link to="/race-rules" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>
                                 Điều lệ Đua ngựa
                             </Link>
                             <Link to="/rules" className="text-white hover:text-yellow-400 transition-colors block" style={{ color: 'white' }}>

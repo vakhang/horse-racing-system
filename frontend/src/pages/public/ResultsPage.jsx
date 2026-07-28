@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Table, Tag, Spin, message, Modal, List, Avatar } from 'antd';
+import { Typography, Table, Tag, Spin, message, Modal, List, Avatar, ConfigProvider, theme } from 'antd';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
 import api from '../../config/api';
@@ -121,17 +121,19 @@ const ResultsPage = () => {
                     {loading ? (
                         <div className="flex justify-center p-12"><Spin size="large" /></div>
                     ) : (
-                        <div className="[&_.ant-table]:bg-transparent [&_.ant-table-thead>tr>th]:bg-white/10 [&_.ant-table-thead>tr>th]:text-white [&_.ant-table-thead>tr>th]:border-b-white/10 [&_.ant-table-tbody>tr>td]:border-b-white/10 [&_.ant-table-tbody>tr.ant-table-row:hover>td]:bg-white/5 [&_.ant-pagination-item]:bg-transparent [&_.ant-pagination-item>a]:text-white [&_.ant-pagination-item-active]:border-yellow-500 [&_.ant-pagination-item-active>a]:text-yellow-500 [&_.ant-table-placeholder]:bg-transparent [&_.ant-table-placeholder:hover>td]:bg-transparent [&_.ant-empty-description]:text-gray-400 [&_.ant-table-cell]:text-gray-200">
-                            <Table 
-                                columns={columns} 
-                                dataSource={races} 
-                                rowKey="id"
-                                pagination={{ pageSize: 10 }}
-                                className="bg-transparent"
-                                rowClassName="transition-colors"
-                                locale={{ emptyText: 'Chưa có kết quả thi đấu' }}
-                            />
-                        </div>
+                        <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorBgContainer: '#001529' } }}>
+                            <div className="[&_.ant-table]:bg-transparent [&_.ant-table-thead>tr>th]:bg-white/10 [&_.ant-table-thead>tr>th]:text-white [&_.ant-table-thead>tr>th]:border-b-white/10 [&_.ant-table-tbody>tr>td]:border-b-white/10 [&_.ant-table-tbody>tr.ant-table-row:hover>td]:bg-white/5 [&_.ant-pagination-item]:bg-transparent [&_.ant-pagination-item>a]:text-white [&_.ant-pagination-item-active]:border-yellow-500 [&_.ant-pagination-item-active>a]:text-yellow-500 [&_.ant-table-placeholder]:bg-transparent [&_.ant-table-placeholder:hover>td]:bg-transparent [&_.ant-empty-description]:text-gray-400 [&_.ant-table-cell]:text-gray-200">
+                                <Table 
+                                    columns={columns} 
+                                    dataSource={races} 
+                                    rowKey="id"
+                                    pagination={{ pageSize: 10 }}
+                                    className="bg-transparent"
+                                    rowClassName="transition-colors"
+                                    locale={{ emptyText: 'Chưa có kết quả thi đấu' }}
+                                />
+                            </div>
+                        </ConfigProvider>
                     )}
                 </div>
             </div>

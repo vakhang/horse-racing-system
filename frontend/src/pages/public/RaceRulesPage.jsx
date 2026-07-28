@@ -6,15 +6,15 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
-const TermsPage = () => {
+const RaceRulesPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('ĐIỀU KHOẢN SỬ DỤNG & MIỄN TRỪ');
+    const [title, setTitle] = useState('ĐIỀU LỆ ĐUA NGỰA');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchContent = async () => {
             try {
-                const res = await api.get('/public/content/TERMS');
+                const res = await api.get('/public/content/RACE_RULES');
                 setContent(res.data.content);
                 setContent(res.data.content);
             } catch (error) {
@@ -54,4 +54,4 @@ const TermsPage = () => {
     );
 };
 
-export default TermsPage;
+export default RaceRulesPage;

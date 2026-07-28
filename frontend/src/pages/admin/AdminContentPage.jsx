@@ -9,7 +9,7 @@ const { Title } = Typography;
 const { Option } = Select;
 
 const AdminContentPage = () => {
-    const [pageId, setPageId] = useState('TERMS');
+    const [pageId, setPageId] = useState('RACE_RULES');
     const [content, setContent] = useState('');
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
@@ -34,7 +34,15 @@ const AdminContentPage = () => {
     const handleSave = async () => {
         try {
             setSaving(true);
-            const title = pageId === 'TERMS' ? 'Điều Khoản Sử Dụng' : 'Thể Lệ Đặt Cược';
+            const titleMap = {
+                'RACE_RULES': 'Điều lệ Đua ngựa',
+                'RULES': 'Thể lệ Đặt cược',
+                'PRIVACY': 'Chính sách Bảo mật & eKYC',
+                'TERMS': 'Điều khoản Sử dụng & Miễn trừ',
+                'GUIDE': 'Hướng dẫn Tân thủ & Nạp/Rút',
+                'FAQ': 'Câu hỏi thường gặp (FAQ)'
+            };
+            const title = titleMap[pageId];
             await api.put(`/admin/content/${pageId}`, {
                 title: title,
                 content: content
@@ -55,8 +63,12 @@ const AdminContentPage = () => {
                 <div className="mb-4 flex items-center gap-4">
                     <span className="font-semibold">Chọn trang cần cập nhật:</span>
                     <Select value={pageId} onChange={setPageId} className="w-64">
-                        <Option value="TERMS">Điều Khoản Sử Dụng</Option>
-                        <Option value="RULES">Thể Lệ Đặt Cược</Option>
+                        <Option value="RACE_RULES">Điều lệ Đua ngựa</Option>
+                        <Option value="RULES">Thể lệ Đặt cược</Option>
+                        <Option value="PRIVACY">Chính sách Bảo mật & eKYC</Option>
+                        <Option value="TERMS">Điều khoản Sử dụng & Miễn trừ</Option>
+                        <Option value="GUIDE">Hướng dẫn Tân thủ & Nạp/Rút</Option>
+                        <Option value="FAQ">Câu hỏi thường gặp (FAQ)</Option>
                     </Select>
                 </div>
                 <div className="bg-white">

@@ -15,7 +15,7 @@ const PublicHeader = () => {
             : "text-gray-300 hover:text-yellow-400 font-semibold transition-colors";
     };
 
-    const isSupportActive = ['/guide', '/faq', '/rules', '/terms', '/privacy'].includes(location.pathname);
+    const isSupportActive = ['/guide', '/faq', '/rules', '/race-rules', '/terms', '/privacy'].includes(location.pathname);
     const supportLinkClass = isSupportActive 
         ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1 cursor-pointer"
         : "text-gray-300 hover:text-yellow-400 font-semibold transition-colors cursor-pointer";
@@ -30,8 +30,9 @@ const PublicHeader = () => {
         { key: '1', label: <Link to="/guide" className={getDropdownItemClass('/guide')}>Hướng dẫn Tân thủ & Nạp/Rút</Link> },
         { key: '2', label: <Link to="/faq" className={getDropdownItemClass('/faq')}>Câu hỏi thường gặp (FAQ)</Link> },
         { key: '3', label: <Link to="/rules" className={getDropdownItemClass('/rules')}>Thể lệ Đặt cược</Link> },
-        { key: '4', label: <Link to="/terms" className={getDropdownItemClass('/terms')}>Điều khoản Sử dụng & Miễn trừ</Link> },
-        { key: '5', label: <Link to="/privacy" className={getDropdownItemClass('/privacy')}>Chính sách Bảo mật & eKYC</Link> }
+        { key: '4', label: <Link to="/race-rules" className={getDropdownItemClass('/race-rules')}>Điều lệ Đua ngựa</Link> },
+        { key: '5', label: <Link to="/terms" className={getDropdownItemClass('/terms')}>Điều khoản Sử dụng & Miễn trừ</Link> },
+        { key: '6', label: <Link to="/privacy" className={getDropdownItemClass('/privacy')}>Chính sách Bảo mật & eKYC</Link> }
     ];
 
     return (

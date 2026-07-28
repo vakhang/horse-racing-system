@@ -32,6 +32,7 @@ const NewsPage = lazy(() => import('./pages/public/NewsPage'));
 const GuidePage = lazy(() => import('./pages/public/GuidePage'));
 const TermsPage = lazy(() => import('./pages/public/TermsPage'));
 const RulesPage = lazy(() => import('./pages/public/RulesPage'));
+const RaceRulesPage = lazy(() => import('./pages/public/RaceRulesPage'));
 const PrivacyPage = lazy(() => import('./pages/public/PrivacyPage'));
 const FAQPage = lazy(() => import('./pages/public/FAQPage'));
 
@@ -105,6 +106,7 @@ function App() {
                         <Route path="/guide" element={<GuidePage />} />
                         <Route path="/terms" element={<TermsPage />} />
                         <Route path="/rules" element={<RulesPage />} />
+                        <Route path="/race-rules" element={<RaceRulesPage />} />
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/faq" element={<FAQPage />} />
 

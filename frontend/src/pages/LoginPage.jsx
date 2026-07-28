@@ -105,6 +105,11 @@ const LoginPage = () => {
                         <Link to="/register" className="text-yellow-400 font-bold hover:text-white transition-colors">
                             Đăng Ký Ngay
                         </Link>
+                        <div className="mt-4">
+                            <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm flex items-center justify-center gap-1">
+                                Quay về Trang chủ
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
