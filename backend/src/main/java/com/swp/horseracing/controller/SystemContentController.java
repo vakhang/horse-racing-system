@@ -39,6 +39,7 @@ public class SystemContentController {
         try {
             return ResponseEntity.ok(systemContentService.updateContent(pageId, request));
         } catch (RuntimeException e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
