@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import com.swp.horseracing.repository.UserRepository;
+import com.swp.horseracing.model.User;
+import com.swp.horseracing.model.RoleEnum;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,11 +20,30 @@ import java.util.Map;
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     // Lấy danh sách tất cả Users (Dành cho Admin)
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @GetMapping("/fix/referee3")
+    public ResponseEntity<?> fixReferee3() {
+        List<User> users = userRepository.findAll();
+        StringBuilder sb = new StringBuilder();
+        for (User u : users) {
+            if (u.getUsername() != null && u.getUsername().contains("TRỌNG TÀI 3")) {
+                sb.append("Found User: ").append(u.getEmail()).append(" - Role: ").append(u.getRole()).append("\n");
+                if (u.getRole() != RoleEnum.REFEREE) {
+                    u.setRole(RoleEnum.REFEREE);
+                    userRepository.save(u);
+                    sb.append(" -> UPDATED TO REFEREE\n");
+                }
+            }
+        }
+        if (sb.length() == 0) return ResponseEntity.ok("Not found");
+        return ResponseEntity.ok(sb.toString());
     }
 
     // Lấy thông tin 1 User theo ID
