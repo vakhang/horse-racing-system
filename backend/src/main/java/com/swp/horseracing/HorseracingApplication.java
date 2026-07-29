@@ -6,22 +6,33 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class HorseracingApplication {
 
+	@jakarta.annotation.PostConstruct
+	public void init() {
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
+	}
+
 	public static void main(String[] args) {
 		SpringApplication.run(HorseracingApplication.class, args);
 	}
 
-	@org.springframework.beans.factory.annotation.Autowired
-	private com.swp.horseracing.repository.UserRepository userRepository;
-
-	@org.springframework.beans.factory.annotation.Autowired
-	private com.swp.horseracing.repository.UserAttachmentRepository userAttachmentRepository;
-
 	@org.springframework.context.annotation.Bean
 	public org.springframework.boot.CommandLineRunner initDummyAttachments(
 			com.swp.horseracing.repository.UserRepository userRepo,
-			com.swp.horseracing.repository.UserAttachmentRepository attachmentRepo) {
+			com.swp.horseracing.repository.UserAttachmentRepository attachmentRepo,
+			com.swp.horseracing.repository.TransactionHistoryRepository txRepo) {
 		return args -> {
 			try {
+				// Cập nhật các giao dịch BONUS cũ bị thiếu type và direction
+				java.util.List<com.swp.horseracing.model.TransactionHistory> allTxs = txRepo.findAll();
+				for (com.swp.horseracing.model.TransactionHistory tx : allTxs) {
+					if (tx.getTransactionCode() != null && tx.getTransactionCode().startsWith("BONUS-") && tx.getDirection() == null) {
+						tx.setType(com.swp.horseracing.model.TransactionType.DEPOSIT);
+						tx.setDirection(com.swp.horseracing.model.TransactionDirection.IN);
+						tx.setStatus(com.swp.horseracing.model.TransactionStatus.COMPLETED);
+						txRepo.save(tx);
+					}
+				}
+
 				java.util.List<com.swp.horseracing.model.User> users = userRepo.findAll();
 				String dummyUrl = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
 				
