@@ -48,8 +48,8 @@ const FAQPage = () => {
                         <Title level={1} className="text-3xl md:text-4xl font-black tracking-wide uppercase mb-2 inline-block" style={{ color: '#facc15', WebkitTextStroke: '1px #facc15', textShadow: '0 0 15px rgba(250,204,21,0.6)' }}>
                             {title}
                         </Title>
-                        <Paragraph className="text-gray-400 text-lg">
-                            Tổng hợp các câu hỏi và giải đáp chi tiết dành cho khách hàng.
+                        <Paragraph className="text-white text-lg">
+                            Tổng hợp các câu hỏi và giải đáp chi tiết dành cho khách hàng
                         </Paragraph>
                     </div>
                     
@@ -70,7 +70,7 @@ const FAQPage = () => {
                                 ),
                                 children: (
                                     <div className="pl-7 pr-4 py-2 border-l-2 border-yellow-400/50 ml-2">
-                                        <Paragraph className="text-gray-300 text-base leading-relaxed mb-0 whitespace-pre-wrap">
+                                        <Paragraph className="text-white text-base leading-relaxed mb-0 whitespace-pre-wrap">
                                             {faq.answer}
                                         </Paragraph>
                                     </div>
