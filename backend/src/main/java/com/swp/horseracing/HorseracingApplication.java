@@ -31,6 +31,16 @@ public class HorseracingApplication {
 			}
 			userRepository.save(u);
 		});
+
+		userRepository.findByEmail("referee2@gmail.com").ifPresent(u -> {
+			u.setRole(com.swp.horseracing.model.RoleEnum.REFEREE);
+			u.setIdIssueDate(java.time.LocalDate.of(2022, 1, 10));
+			u.setIdIssuePlace("Cục QL xuất nhập cảnh");
+			if (u.getPinCode() == null || u.getPinCode().isEmpty()) {
+				u.setPinCode("123456");
+			}
+			userRepository.save(u);
+		});
 	}
 
 }
