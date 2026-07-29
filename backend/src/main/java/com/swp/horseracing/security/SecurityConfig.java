@@ -25,6 +25,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/users/fix/referee3").permitAll()
                         .requestMatchers("/api/wallets/deposit").permitAll()
                         .requestMatchers("/api/wallets/my-wallet").permitAll()
                         .requestMatchers("/api/users/my-transactions").permitAll()
