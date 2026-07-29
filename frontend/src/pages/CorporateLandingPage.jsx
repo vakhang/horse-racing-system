@@ -122,37 +122,39 @@ const CorporateLandingPage = () => {
                 </div>
             </div>
 
-            {/* PHẦN 5: TIN TỨC & THÔNG BÁO */}
-            <div className="py-24 px-6 lg:px-20 bg-[#000a14]">
-                <div className="max-w-4xl mx-auto">
-                    <Title level={2} className="text-3xl font-bold border-l-4 border-blue-500 pl-4 mb-10 text-white" style={{ color: 'white' }}>
-                        Tin Tức & Thông Báo Pháp Lý
-                    </Title>
-                    <div className="space-y-6">
-                        <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
-                            <div>
-                                <span className="border border-red-400 text-red-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">THÔNG BÁO</span>
-                                <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Cập nhật Thể lệ đặt cược và Điều lệ đua mùa giải Mùa Hè 2026</Text>
+            {/* PHẦN 5: TIN TỨC & THÔNG BÁO (Tạm ẩn) */}
+            {false && (
+                <div className="py-24 px-6 lg:px-20 bg-[#000a14]">
+                    <div className="max-w-4xl mx-auto">
+                        <Title level={2} className="text-3xl font-bold border-l-4 border-blue-500 pl-4 mb-10 text-white" style={{ color: 'white' }}>
+                            Tin Tức & Thông Báo Pháp Lý
+                        </Title>
+                        <div className="space-y-6">
+                            <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                                <div>
+                                    <span className="border border-red-400 text-red-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">THÔNG BÁO</span>
+                                    <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Cập nhật Thể lệ đặt cược và Điều lệ đua mùa giải Mùa Hè 2026</Text>
+                                </div>
+                                <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>27/07/2026</Text>
                             </div>
-                            <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>27/07/2026</Text>
-                        </div>
-                        <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
-                            <div>
-                                <span className="border border-blue-400 text-blue-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">HỆ THỐNG</span>
-                                <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Lịch bảo trì hệ thống máy chủ định kỳ tháng 8</Text>
+                            <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                                <div>
+                                    <span className="border border-blue-400 text-blue-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">HỆ THỐNG</span>
+                                    <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Lịch bảo trì hệ thống máy chủ định kỳ tháng 8</Text>
+                                </div>
+                                <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>25/07/2026</Text>
                             </div>
-                            <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>25/07/2026</Text>
-                        </div>
-                        <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
-                            <div>
-                                <span className="border border-green-400 text-green-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">TIN TỨC</span>
-                                <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Công bố danh sách Chiến mã và Nài ngựa xuất sắc nhất tháng qua</Text>
+                            <div onClick={() => navigate('/news')} className="bg-white/5 p-8 rounded-xl border border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center hover:bg-white/10 transition-colors cursor-pointer">
+                                <div>
+                                    <span className="border border-green-400 text-green-400 bg-transparent text-xs font-bold px-3 py-1 rounded-full mr-3">TIN TỨC</span>
+                                    <Text className="text-white text-lg hover:text-yellow-400 font-semibold" style={{ color: 'white' }}>Công bố danh sách Chiến mã và Nài ngựa xuất sắc nhất tháng qua</Text>
+                                </div>
+                                <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>20/07/2026</Text>
                             </div>
-                            <Text className="text-white font-bold mt-2 md:mt-0 whitespace-nowrap" style={{ color: 'white' }}>20/07/2026</Text>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
 
             <Footer />
         </div>

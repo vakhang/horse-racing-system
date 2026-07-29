@@ -271,12 +271,12 @@ const RegisterPage = () => {
                                         <div className="text-yellow-500 mb-4 font-bold border-b border-gray-600 pb-2">1. THÔNG TIN TÀI KHOẢN</div>
 
                                         <Form.Item name="username" label={<span className="text-gray-300">Họ và Tên</span>} rules={[{ required: true, message: 'Vui lòng nhập họ và tên thật!' }]}>
-                                            <Input prefix={<UserOutlined className="text-gray-400" />} placeholder="Nhập tên hiển thị của bạn..." className="bg-black/50 border-gray-600 text-white rounded-xl" />
+                                            <Input autoComplete="name" prefix={<UserOutlined className="text-gray-400" />} placeholder="Nhập tên hiển thị của bạn..." className="bg-black/50 border-gray-600 text-white rounded-xl" />
                                         </Form.Item>
 
                                         {/* ĐÃ FIX: Xóa cụm nút OTP, giữ lại Input gọn gàng */}
                                         <Form.Item name="email" label={<span className="text-gray-300">Email</span>} rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email!' }]}>
-                                            <Input prefix={<MailOutlined className="text-gray-400" />} placeholder="khang@gmail.com" className="bg-black/50 border-gray-600 text-white rounded-xl" />
+                                            <Input autoComplete="email" prefix={<MailOutlined className="text-gray-400" />} placeholder="khang@gmail.com" className="bg-black/50 border-gray-600 text-white rounded-xl" />
                                         </Form.Item>
 
                                         <Form.Item name="phoneNumber" label={<span className="text-gray-300">Số điện thoại liên hệ</span>} rules={[{ required: true, message: 'Vui lòng nhập SDT!' }]}>
@@ -287,7 +287,7 @@ const RegisterPage = () => {
                                             { required: true, message: 'Vui lòng nhập mật khẩu!' },
                                             { min: 8, message: 'Mật khẩu phải có ít nhất 8 ký tự!' }
                                         ]}>
-                                            <Input.Password prefix={<LockOutlined className="text-gray-400" />} placeholder="••••••••" className="bg-black/50 border-gray-600 text-white rounded-xl" />
+                                            <Input.Password autoComplete="new-password" prefix={<LockOutlined className="text-gray-400" />} placeholder="••••••••" className="bg-black/50 border-gray-600 text-white rounded-xl" />
                                         </Form.Item>
 
                                         <Form.Item name="confirmPassword" label={<span className="text-gray-300">Xác nhận mật khẩu</span>} dependencies={['password']} hasFeedback rules={[
