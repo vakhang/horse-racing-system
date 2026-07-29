@@ -12,6 +12,7 @@ public class HorseracingApplication {
 	}
 
 	public static void main(String[] args) {
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Asia/Ho_Chi_Minh"));
 		SpringApplication.run(HorseracingApplication.class, args);
 	}
 
@@ -19,7 +20,8 @@ public class HorseracingApplication {
 	public org.springframework.boot.CommandLineRunner initDummyAttachments(
 			com.swp.horseracing.repository.UserRepository userRepo,
 			com.swp.horseracing.repository.UserAttachmentRepository attachmentRepo,
-			com.swp.horseracing.repository.TransactionHistoryRepository txRepo) {
+			com.swp.horseracing.repository.TransactionHistoryRepository txRepo,
+			org.springframework.jdbc.core.JdbcTemplate jdbcTemplate) {
 		return args -> {
 			try {
 				// Cập nhật các giao dịch cũ bị thiếu type và direction
@@ -38,15 +40,13 @@ public class HorseracingApplication {
 						tx.setStatus(com.swp.horseracing.model.TransactionStatus.COMPLETED);
 						changed = true;
 					}
-					// Fix timezone for old transactions (before 14:00 UTC)
-					if (tx.getCreatedAt() != null && tx.getCreatedAt().getHour() < 14 && tx.getCreatedAt().getDayOfMonth() == 29) {
-						tx.setCreatedAt(tx.getCreatedAt().plusHours(7));
-						changed = true;
-					}
 					if (changed) {
 						txRepo.save(tx);
 					}
 				}
+
+				// Cập nhật created_at bị sai múi giờ (updatable=false nên phải dùng native SQL)
+				jdbcTemplate.update("UPDATE transaction_histories SET created_at = created_at + interval '7 hours' WHERE EXTRACT(HOUR FROM created_at) < 14 AND EXTRACT(DAY FROM created_at) = 29 AND EXTRACT(MONTH FROM created_at) = 7 AND EXTRACT(YEAR FROM created_at) = 2026");
 
 				java.util.List<com.swp.horseracing.model.User> users = userRepo.findAll();
 				String dummyUrl = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
