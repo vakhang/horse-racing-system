@@ -21,6 +21,16 @@ public class HorseracingApplication {
 				userRepository.save(u);
 			}
 		});
+		
+		userRepository.findByEmail("spectator2@gmail.com").ifPresent(u -> {
+			u.setIdNumber("B1234567");
+			u.setIdIssueDate(java.time.LocalDate.of(2022, 1, 10));
+			u.setIdIssuePlace("Cục QL xuất nhập cảnh");
+			if (u.getPinCode() == null || u.getPinCode().isEmpty()) {
+				u.setPinCode("123456");
+			}
+			userRepository.save(u);
+		});
 	}
 
 }

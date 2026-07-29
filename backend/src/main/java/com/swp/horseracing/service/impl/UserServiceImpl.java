@@ -49,6 +49,9 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new RuntimeException("Số điện thoại này đã được sử dụng!");
         }
+        if (userRepository.existsByIdNumber(request.getIdNumber())) {
+            throw new RuntimeException("Số CCCD/Hộ chiếu này đã được sử dụng!");
+        }
 
         // Bổ sung chặn phía Backend nếu cố tình bypass Frontend để gửi API không có file
         if (request.getKycFiles() == null || request.getKycFiles().isEmpty()) {
