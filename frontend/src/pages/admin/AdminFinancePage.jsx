@@ -104,9 +104,12 @@ const AdminFinancePage = () => {
     const historyColumns = [
         { title: 'Mã GD', dataIndex: 'transactionCode', render: t => <Text copyable strong>{t}</Text> },
         { title: 'Loại', dataIndex: 'type', render: t => <Tag color="blue">{t}</Tag> },
-        { title: 'In/Out', dataIndex: 'direction', render: d => <Tag color={d === 'IN' ? 'green' : 'red'}>{d}</Tag> },
+        { title: 'In/Out', dataIndex: 'direction', render: d => <Tag color={d === 'IN' ? 'green' : 'red'}>{d === 'IN' ? 'NẠP VÀO' : d === 'OUT' ? 'RÚT RA' : d}</Tag> },
         { title: 'Số tiền', dataIndex: 'amount', render: v => <Text strong>{v ? v.toLocaleString() : 0} đ</Text> },
-        { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'COMPLETED' ? 'green' : (s === 'REJECTED' ? 'red' : 'gold')}>{s}</Tag> },
+        { title: 'Trạng thái', dataIndex: 'status', render: s => {
+            const text = s === 'COMPLETED' ? 'ĐÃ HOÀN TẤT' : s === 'REJECTED' ? 'TỪ CHỐI' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s;
+            return <Tag color={s === 'COMPLETED' ? 'green' : (s === 'REJECTED' ? 'red' : 'gold')}>{text}</Tag>;
+        } },
         { title: 'Ngày giờ', dataIndex: 'createdAt', render: d => d ? new Date(d).toLocaleString() : '' },
     ];
 

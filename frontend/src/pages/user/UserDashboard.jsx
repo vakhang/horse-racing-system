@@ -65,7 +65,8 @@ const UserDashboard = () => {
             key: 'status',
             render: (status) => {
                 let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
-                return <Tag color={color}>{status}</Tag>;
+                const text = status === 'WON' ? 'THẮNG' : status === 'LOST' ? 'THUA' : 'CHỜ XỬ LÝ';
+                return <Tag color={color}>{text}</Tag>;
             }
         },
         {
@@ -78,7 +79,10 @@ const UserDashboard = () => {
 
     const transColumns = [
         { title: 'Mã GD', dataIndex: 'transactionCode', key: 'transactionCode' },
-        { title: 'Loại', dataIndex: 'type', key: 'type', render: (val) => <Tag color="blue">{val}</Tag> },
+        { title: 'Loại', dataIndex: 'type', key: 'type', render: (val) => {
+            const text = val === 'DEPOSIT' ? 'NẠP TIỀN' : val === 'WITHDRAW' ? 'RÚT TIỀN' : val === 'BET' ? 'ĐẶT CƯỢC' : val === 'REWARD' ? 'NHẬN THƯỞNG' : val;
+            return <Tag color="blue">{text}</Tag>;
+        } },
         {
             title: 'Số Tiền',
             key: 'amount',
@@ -97,7 +101,8 @@ const UserDashboard = () => {
             key: 'status',
             render: (status) => {
                 let color = status === 'COMPLETED' ? 'green' : status === 'REJECTED' ? 'red' : 'gold';
-                return <Tag color={color}>{status}</Tag>;
+                const text = status === 'COMPLETED' ? 'ĐÃ HOÀN TẤT' : status === 'REJECTED' ? 'TỪ CHỐI' : 'CHỜ XỬ LÝ';
+                return <Tag color={color}>{text}</Tag>;
             }
         },
         { title: 'Thời Gian', dataIndex: 'createdAt', key: 'createdAt', render: (val) => new Date(val).toLocaleString() },

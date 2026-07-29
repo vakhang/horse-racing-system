@@ -40,9 +40,9 @@ const JockeyInvitationPage = () => {
     };
 
     const statusMap = {
-        PENDING: <Tag color="orange">Đang Chờ</Tag>,
+        PENDING: <Tag color="orange">CHỜ XỬ LÝ</Tag>,
         ACCEPTED: <Tag color="green">Đã Nhận Lệnh</Tag>,
-        REJECTED: <Tag color="red">Đã Từ Chối</Tag>,
+        REJECTED: <Tag color="red">TỪ CHỐI</Tag>,
         CANCELED: <Tag color="default">Đã Hủy</Tag>
     };
 

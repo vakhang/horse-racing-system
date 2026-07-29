@@ -67,7 +67,8 @@ const HomePage = () => {
             title: 'Trạng Thái', dataIndex: 'status', key: 'status',
             render: (status) => {
                 let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
-                return <Tag color={color} className="font-bold">{status}</Tag>;
+                const text = status === 'WON' ? 'THẮNG' : status === 'LOST' ? 'THUA' : 'CHỜ XỬ LÝ';
+                return <Tag color={color} className="font-bold">{text}</Tag>;
             }
         },
         { title: 'Thưởng', dataIndex: 'rewardAmount', key: 'rewardAmount', render: (val) => <span className="text-green-600 font-bold">+{Number(val || 0).toLocaleString()} đ</span> }
@@ -90,7 +91,8 @@ const HomePage = () => {
                 if (val === 'SALARY') return <Tag color="cyan" className="font-bold">LƯƠNG CỨNG</Tag>;
                 if (val === 'WITHDRAW') return <Tag color="orange" className="font-bold">RÚT TIỀN VỀ NGÂN HÀNG</Tag>;
                 if (val === 'DEPOSIT') return <Tag color="blue" className="font-bold">NẠP TIỀN</Tag>;
-                return <Tag color="default">{val}</Tag>;
+                const text = val === 'BET' ? 'ĐẶT CƯỢC' : val;
+                return <Tag color="default">{text}</Tag>;
             }
         },
         {
@@ -107,8 +109,8 @@ const HomePage = () => {
         {
             title: 'Trạng Thái', dataIndex: 'status', key: 'status',
             render: (status) => {
-                if (status === 'PENDING') return <Tag color="warning" className="font-bold px-3 py-1">ĐANG XỬ LÝ</Tag>;
-                if (status === 'COMPLETED') return <Tag color="success" className="font-bold px-3 py-1">THÀNH CÔNG</Tag>;
+                if (status === 'PENDING') return <Tag color="warning" className="font-bold px-3 py-1">CHỜ XỬ LÝ</Tag>;
+                if (status === 'COMPLETED') return <Tag color="success" className="font-bold px-3 py-1">ĐÃ HOÀN TẤT</Tag>;
                 if (status === 'REJECTED') return <Tag color="error" className="font-bold px-3 py-1">TỪ CHỐI</Tag>;
                 return <Tag>{status}</Tag>;
             }

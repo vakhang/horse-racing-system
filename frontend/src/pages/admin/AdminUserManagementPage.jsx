@@ -147,7 +147,10 @@ const AdminUserManagementPage = () => {
         { title: 'Tài khoản', render: (_, r) => (<><Text strong>{r.username}</Text><br /><Text type="secondary">{r.email}</Text></>) },
         { title: 'Ngày sinh', dataIndex: 'dob' },
         { title: 'Trạng Thái Nộp CCCD', render: (_, r) => <RenderFilesStatus urls={r.kycDocumentUrls} /> },
-        { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+        { title: 'Trạng thái', dataIndex: 'status', render: s => {
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+        } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
                 <Space direction="vertical">
@@ -169,7 +172,10 @@ const AdminUserManagementPage = () => {
                     <div><Text className="text-xs text-gray-500">Sổ Tiêm Phòng/Khám Bệnh:</Text> <RenderFilesStatus urls={r.healthDocumentUrls} /></div>
                 </div>
             )},
-        { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+        { title: 'Trạng thái', dataIndex: 'status', render: s => {
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+        } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
                 <Space direction="vertical">
@@ -192,7 +198,10 @@ const AdminUserManagementPage = () => {
                     <div><Text className="text-xs text-gray-500">Sức Khỏe:</Text> <RenderFilesStatus urls={r.healthDocumentUrls} /></div>
                 </div>
             )},
-        { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+        { title: 'Trạng thái', dataIndex: 'status', render: s => {
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+        } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
                 <Space direction="vertical">
@@ -213,7 +222,10 @@ const AdminUserManagementPage = () => {
                     <div><Text className="text-xs text-gray-500">Chứng Chỉ Chuyên Môn:</Text> <RenderFilesStatus urls={r.certDocumentUrls} /></div>
                 </div>
             )},
-        { title: 'Trạng thái', dataIndex: 'status', render: s => <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{s}</Tag> },
+        { title: 'Trạng thái', dataIndex: 'status', render: s => {
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+        } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
                 <Space direction="vertical">

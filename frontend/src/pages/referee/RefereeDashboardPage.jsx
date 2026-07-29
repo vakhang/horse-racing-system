@@ -164,7 +164,7 @@ const RefereeDashboardPage = () => {
         { title: 'Tên Giải', dataIndex: 'tournamentName', key: 'tournamentName' },
         { title: 'Chặng Đua', dataIndex: 'name', key: 'name', render: t => <Text strong className="text-blue-700">{t}</Text> },
         { title: 'Giờ Lên Lịch', dataIndex: 'raceTime', render: v => dayjs(v).format('HH:mm DD/MM/YYYY') },
-        { title: 'Trạng Thái', dataIndex: 'status', render: s => <Tag color={statusMap[s]} className="font-bold">{s === 'RUNNING' ? 'LIVE (Đang đua)' : s}</Tag> },
+        { title: 'Trạng Thái', dataIndex: 'status', render: s => { const text = s === 'RUNNING' ? 'LIVE (Đang đua)' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'FINISHED' ? 'ĐÃ KẾT THÚC' : s === 'CANCELED' ? 'ĐÃ HỦY' : s; return <Tag color={statusMap[s]} className="font-bold">{text}</Tag>; } },
         {
             title: 'Nghiệp Vụ',
             key: 'action',
@@ -239,9 +239,9 @@ const RefereeDashboardPage = () => {
                         {formatTime(time)}
                     </div>
                     <Space size="large">
-                        <Button type="primary" size="large" icon={<PlayCircleOutlined />} className="bg-green-600 w-32 font-bold" onClick={startTimer}>START</Button>
-                        <Button size="large" icon={<PauseCircleOutlined />} className="w-32 bg-gray-600 text-white font-bold border-none hover:bg-gray-500" onClick={pauseTimer}>PAUSE</Button>
-                        <Button size="large" icon={<ReloadOutlined />} className="w-32 font-bold" onClick={resetTimer}>RESET</Button>
+                        <Button type="primary" size="large" icon={<PlayCircleOutlined />} className="bg-green-600 w-32 font-bold" onClick={startTimer}>BẮT ĐẦU</Button>
+                        <Button size="large" icon={<PauseCircleOutlined />} className="w-32 bg-gray-600 text-white font-bold border-none hover:bg-gray-500" onClick={pauseTimer}>TẠM DỪNG</Button>
+                        <Button size="large" icon={<ReloadOutlined />} className="w-32 font-bold" onClick={resetTimer}>ĐẶT LẠI</Button>
                     </Space>
                 </div>
 

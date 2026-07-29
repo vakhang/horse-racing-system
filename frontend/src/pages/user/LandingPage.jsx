@@ -36,7 +36,7 @@ const LandingPage = () => {
     const statusMap = {
         UPCOMING: { color: 'cyan', text: 'SẮP DIỄN RA' },
         ONGOING: { color: 'red', text: 'ĐANG THI ĐẤU (HOT)' },
-        COMPLETED: { color: 'default', text: 'ĐÃ KẾT THÚC' }
+        COMPLETED: { color: 'default', text: 'ĐÃ HOÀN TẤT' }
     };
 
     return (

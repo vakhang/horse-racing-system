@@ -180,7 +180,7 @@ const WalletPage = () => {
                     </Col>
                 </Row>
                 <Form.Item name="accountName" label={<Text strong>Tên Người Thụ Hưởng (In hoa, không dấu)</Text>} rules={[{ required: true, message: 'Nhập tên chủ tài khoản!' }]}>
-                    <Input placeholder="NGUYEN VAN A" className="uppercase" />
+                    <Input placeholder="NGUYỄN VĂN A" className="uppercase" />
                 </Form.Item>
 
                 <Form.Item
@@ -293,7 +293,7 @@ const WalletPage = () => {
                                     <Text type="secondary" className="text-xs font-bold mb-1 block">NỘI DUNG CHUYỂN KHOẢN</Text>
                                     <Space>
                                         <Tag color="volcano" className="font-mono font-bold text-lg px-3 py-1">{paymentData.note}</Tag>
-                                        <Button size="small" type="primary" icon={<CopyOutlined />} onClick={() => handleCopyText(paymentData.note)}>Copy</Button>
+                                        <Button size="small" type="primary" icon={<CopyOutlined />} onClick={() => handleCopyText(paymentData.note)}>Sao chép</Button>
                                     </Space>
                                 </div>
                             </div>

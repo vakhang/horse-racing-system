@@ -125,7 +125,7 @@ const OwnerHorseManagementPage = () => {
                 return <Progress percent={stamina} size="small" status={stamina < 50 ? 'exception' : 'active'} format={p => `${p}%`} />;
             }},
         { title: 'Sổ Khám Bệnh', render: (_, r) => <RenderFilesStatus urls={r.vetRecordUrls} /> },
-        { title: 'Trạng Thái', dataIndex: 'status', render: s => s === 'APPROVED' ? <Tag color="green">Đã Duyệt</Tag> : (s === 'REJECTED' ? <Tag color="red">Từ Chối</Tag> : <Tag color="orange">Chờ Duyệt</Tag>) },
+        { title: 'Trạng Thái', dataIndex: 'status', render: s => s === 'APPROVED' ? <Tag color="green">ĐÃ DUYỆT</Tag> : (s === 'REJECTED' ? <Tag color="red">TỪ CHỐI</Tag> : <Tag color="orange">CHỜ XỬ LÝ</Tag>) },
         {
             title: 'Thao Tác', align: 'right', render: (_, record) => (
                 <Space>
