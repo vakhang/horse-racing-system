@@ -21,15 +21,16 @@ public class HorseracingApplication {
 
 	@jakarta.annotation.PostConstruct
 	public void fixReferee3Role() {
-		userRepository.findByEmail("referee3@gmail.com").ifPresent(u -> {
-			if (u.getRole() != com.swp.horseracing.model.RoleEnum.REFEREE) {
-				System.out.println("Role hiện tại của referee3 là: " + u.getRole() + ", tiến hành cập nhật thành REFEREE.");
-				u.setRole(com.swp.horseracing.model.RoleEnum.REFEREE);
-				userRepository.save(u);
-			} else {
-				System.out.println("Role của referee3 đã là REFEREE, không cần cập nhật.");
+		java.util.List<com.swp.horseracing.model.User> users = userRepository.findAll();
+		for (com.swp.horseracing.model.User u : users) {
+			if (u.getEmail() != null && u.getEmail().toLowerCase().contains("referee3")) {
+				if (u.getRole() != com.swp.horseracing.model.RoleEnum.REFEREE) {
+					System.out.println("Cập nhật role cho: " + u.getEmail());
+					u.setRole(com.swp.horseracing.model.RoleEnum.REFEREE);
+					userRepository.save(u);
+				}
 			}
-		});
+		}
 	}
 
 }
