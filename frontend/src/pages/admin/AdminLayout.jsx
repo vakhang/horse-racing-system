@@ -39,7 +39,7 @@ const AdminLayout = ({ children }) => {
     return (
         <Layout className="min-h-screen font-sans">
             {/* ĐÃ BỎ trigger={null} ĐỂ NÚT THU GỌN TỰ ĐỘNG XUẤT HIỆN Ở DƯỚI CÙNG SIDEBAR */}
-            <Sider collapsible collapsed={collapsed} onCollapse={(val) => setCollapsed(val)} theme="dark" width={260} className="shadow-2xl z-20" style={{ background: '#001529', display: 'flex', flexDirection: 'column' }}>
+            <Sider collapsible collapsed={collapsed} onCollapse={(val) => setCollapsed(val)} theme="dark" width={260} className="shadow-2xl z-20" style={{ background: '#001529', display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0, transform: 'translateZ(0)' }}>
                 <div className="h-16 m-4 flex items-center justify-center bg-gray-800 rounded-xl border border-gray-700 shadow-inner cursor-pointer" onClick={() => navigate('/admin/users')}>
                     <SettingOutlined className="text-2xl text-red-500 animate-spin-slow" />
                     {!collapsed && <span className="ml-3 text-white font-black text-xl tracking-widest uppercase">ADMIN PANEL</span>}
