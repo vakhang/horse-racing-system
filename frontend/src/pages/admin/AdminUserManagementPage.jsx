@@ -106,15 +106,7 @@ const AdminUserManagementPage = () => {
     };
 
     const isFullDocs = (u) => {
-        if (u.role === 'JOCKEY') {
-            return u.kycDocumentUrls?.length > 0 && u.certDocumentUrls?.length > 0 && u.healthDocumentUrls?.length > 0 && u.weight && u.height;
-        }
-        if (u.role === 'REFEREE') {
-            return u.kycDocumentUrls?.length > 0 && u.certDocumentUrls?.length > 0;
-        }
-        if (u.role === 'OWNER') {
-            return u.kycDocumentUrls?.length > 0 && u.certDocumentUrls?.length > 0 && u.healthDocumentUrls?.length > 0;
-        }
+        // Mọi chức vụ chỉ cần CCCD/Hộ chiếu để được duyệt
         return u.kycDocumentUrls?.length > 0;
     };
 
@@ -146,7 +138,7 @@ const AdminUserManagementPage = () => {
     const spectatorColumns = [
         { title: 'Tài khoản', render: (_, r) => (<><Text strong>{r.username}</Text><br /><Text type="secondary">{r.email}</Text></>) },
         { title: 'Ngày sinh', dataIndex: 'dob' },
-        { title: 'Trạng Thái Nộp CCCD', render: (_, r) => <RenderFilesStatus urls={r.kycDocumentUrls} /> },
+        { title: 'Trạng Thái Nộp CCCD/Hộ chiếu', render: (_, r) => <RenderFilesStatus urls={r.kycDocumentUrls} /> },
         { title: 'Trạng thái', dataIndex: 'status', render: s => {
             const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
             return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
@@ -168,8 +160,6 @@ const AdminUserManagementPage = () => {
         { title: 'Hồ Sơ Giấy Tờ', render: (_, r) => (
                 <div className="flex flex-col gap-1">
                     <div><Text className="text-xs text-gray-500">CCCD/Hộ chiếu:</Text> <RenderFilesStatus urls={r.kycDocumentUrls} /></div>
-                    <div><Text className="text-xs text-gray-500">Ảnh & Giấy CN Nguồn Gốc:</Text> <RenderFilesStatus urls={r.certDocumentUrls} /></div>
-                    <div><Text className="text-xs text-gray-500">Sổ Tiêm Phòng/Khám Bệnh:</Text> <RenderFilesStatus urls={r.healthDocumentUrls} /></div>
                 </div>
             )},
         { title: 'Trạng thái', dataIndex: 'status', render: s => {
@@ -193,7 +183,7 @@ const AdminUserManagementPage = () => {
         { title: 'Thể Chất', render: (_, r) => (<><Text>Nặng: {r.weight ? `${r.weight}kg` : <Tag color="red">Thiếu</Tag>}</Text><br/><Text>Cao: {r.height ? `${r.height}cm` : <Tag color="red">Thiếu</Tag>}</Text></>) },
         { title: 'Hồ Sơ Giấy Tờ', render: (_, r) => (
                 <div className="flex flex-col gap-1">
-                    <div><Text className="text-xs text-gray-500">CCCD:</Text> <RenderFilesStatus urls={r.kycDocumentUrls} /></div>
+                    <div><Text className="text-xs text-gray-500">CCCD/Hộ chiếu:</Text> <RenderFilesStatus urls={r.kycDocumentUrls} /></div>
                     <div><Text className="text-xs text-gray-500">Bằng Cấp:</Text> <RenderFilesStatus urls={r.certDocumentUrls} /></div>
                     <div><Text className="text-xs text-gray-500">Sức Khỏe:</Text> <RenderFilesStatus urls={r.healthDocumentUrls} /></div>
                 </div>
@@ -218,7 +208,7 @@ const AdminUserManagementPage = () => {
         { title: 'Trọng Tài', render: (_, r) => (<><Text strong>{r.username}</Text><br /><Text type="secondary">{r.email}</Text></>) },
         { title: 'Hồ Sơ Giấy Tờ', render: (_, r) => (
                 <div className="flex flex-col gap-1">
-                    <div><Text className="text-xs text-gray-500">CCCD / Hộ Chiếu:</Text> <RenderFilesStatus urls={r.kycDocumentUrls} /></div>
+                    <div><Text className="text-xs text-gray-500">CCCD/Hộ chiếu:</Text> <RenderFilesStatus urls={r.kycDocumentUrls} /></div>
                     <div><Text className="text-xs text-gray-500">Chứng Chỉ Chuyên Môn:</Text> <RenderFilesStatus urls={r.certDocumentUrls} /></div>
                 </div>
             )},

@@ -4,6 +4,7 @@ import com.swp.horseracing.dto.*;
 import com.swp.horseracing.model.*;
 import com.swp.horseracing.repository.BetRepository;
 import com.swp.horseracing.repository.TransactionHistoryRepository;
+import com.swp.horseracing.repository.UserAttachmentRepository;
 import com.swp.horseracing.repository.UserRepository;
 import com.swp.horseracing.repository.WalletRepository;
 import com.swp.horseracing.security.JwtUtils;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserAttachmentRepository userAttachmentRepository;
     private final WalletRepository walletRepository;
     private final BetRepository betRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
@@ -120,6 +122,14 @@ public class UserServiceImpl implements UserService {
 
         User savedUser = userRepository.save(newUser);
 
+        // Lưu explicitly các file KYC
+        if (!savedUser.getAttachments().isEmpty()) {
+            for (UserAttachment att : savedUser.getAttachments()) {
+                att.setUser(savedUser);
+            }
+            userAttachmentRepository.saveAll(savedUser.getAttachments());
+        }
+
         // Khởi tạo ví với 0 đồng cho TẤT CẢ các role lúc mới đăng ký
         Wallet wallet = Wallet.builder()
                 .user(savedUser)
@@ -156,6 +166,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream()
                 .map(this::mapToResponseDTO)
@@ -163,6 +174,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponseDTO getUserById(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy User với ID: " + id));
