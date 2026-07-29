@@ -28,23 +28,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @GetMapping("/fix/referee3")
-    public ResponseEntity<?> fixReferee3() {
-        List<User> users = userRepository.findAll();
-        StringBuilder sb = new StringBuilder();
-        for (User u : users) {
-            if (u.getUsername() != null && u.getUsername().contains("TRỌNG TÀI 3")) {
-                sb.append("Found User: ").append(u.getEmail()).append(" - Role: ").append(u.getRole()).append("\n");
-                if (u.getRole() != RoleEnum.REFEREE) {
-                    u.setRole(RoleEnum.REFEREE);
-                    userRepository.save(u);
-                    sb.append(" -> UPDATED TO REFEREE\n");
-                }
-            }
-        }
-        if (sb.length() == 0) return ResponseEntity.ok("Not found");
-        return ResponseEntity.ok(sb.toString());
-    }
+
 
     // Lấy thông tin 1 User theo ID
     @GetMapping("/{id}")
