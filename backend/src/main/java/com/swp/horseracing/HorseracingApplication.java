@@ -39,6 +39,23 @@ public class HorseracingApplication {
 			u.setPinCode("890123");
 			userRepository.save(u);
 		});
+
+		userRepository.findById(10).ifPresent(u -> {
+			u.setRole(com.swp.horseracing.model.RoleEnum.REFEREE);
+			u.setIdNumber("001082007890");
+			userRepository.save(u);
+		});
+		userRepository.findById(14).ifPresent(u -> {
+			u.setRole(com.swp.horseracing.model.RoleEnum.JOCKEY);
+			userRepository.save(u);
+		});
+		userRepository.findById(4).ifPresent(u -> { u.setIdNumber("012098001234"); userRepository.save(u); });
+		userRepository.findById(7).ifPresent(u -> { u.setIdNumber("079085009012"); userRepository.save(u); });
+		userRepository.findById(9).ifPresent(u -> { u.setIdNumber("048206003456"); userRepository.save(u); });
+		userRepository.findById(12).ifPresent(u -> { u.setIdNumber("024203001122"); userRepository.save(u); });
+		userRepository.findById(13).ifPresent(u -> { u.setIdNumber("060099004455"); userRepository.save(u); });
+		userRepository.findById(15).ifPresent(u -> { u.setIdNumber("080205008899"); userRepository.save(u); });
+		userRepository.findById(16).ifPresent(u -> { u.setIdNumber("091207003344"); userRepository.save(u); });
 	}
 
 }
