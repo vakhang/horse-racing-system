@@ -28,7 +28,7 @@ const AdminLayout = ({ children }) => {
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        window.location.href = '/login';
     };
 
     const profileMenuItems = [

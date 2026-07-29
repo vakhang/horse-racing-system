@@ -117,7 +117,7 @@ const Header = () => {
     const handleLogout = () => {
         if (logout) logout();
         localStorage.clear();
-        navigate('/login');
+        window.location.href = '/login';
     };
 
     const profileMenuItems = [
