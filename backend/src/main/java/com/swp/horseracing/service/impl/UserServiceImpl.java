@@ -80,6 +80,10 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Vui lòng cung cấp ngày sinh!");
         }
 
+        if (request.getPinCode() == null || !request.getPinCode().matches("\\d{6}")) {
+            throw new RuntimeException("BẮT BUỘC: Bạn phải thiết lập mã PIN 6 số!");
+        }
+
         User newUser = User.builder()
                 .username(request.getUsername())
                 .password(request.getPassword())

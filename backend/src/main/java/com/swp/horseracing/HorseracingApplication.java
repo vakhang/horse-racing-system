@@ -10,4 +10,17 @@ public class HorseracingApplication {
 		SpringApplication.run(HorseracingApplication.class, args);
 	}
 
+	@org.springframework.beans.factory.annotation.Autowired
+	private com.swp.horseracing.repository.UserRepository userRepository;
+
+	@jakarta.annotation.PostConstruct
+	public void fixPinCode() {
+		userRepository.findByEmail("spectator1@gmail.com").ifPresent(u -> {
+			if (u.getPinCode() == null || u.getPinCode().isEmpty()) {
+				u.setPinCode("123456");
+				userRepository.save(u);
+			}
+		});
+	}
+
 }
