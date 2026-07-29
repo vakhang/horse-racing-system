@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ConfigProvider, theme, Spin } from 'antd';
 import { useAuth } from './context/AuthContext';
 
@@ -46,6 +46,15 @@ const AdminHorseApprovalPage = lazy(() => import('./pages/admin/AdminHorseApprov
 const OwnerRaceRegistrationPage = lazy(() => import('./pages/owner/OwnerRaceRegistrationPage'));
 const OwnerHorseManagementPage = lazy(() => import('./pages/owner/OwnerHorseManagementPage'));
 
+// 0. COMPONENT CUỘN LÊN ĐẦU TRANG
+const ScrollToTop = () => {
+    const { pathname } = useLocation();
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [pathname]);
+    return null;
+};
+
 // 1. COMPONENT BẢO VỆ ROUTE CHUNG
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
@@ -91,6 +100,7 @@ function App() {
             }}
         >
             <Router>
+                <ScrollToTop />
                 <Suspense fallback={<div className="flex h-screen items-center justify-center"><Spin size="large"/></div>}>
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
