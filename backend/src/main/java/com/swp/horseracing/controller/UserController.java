@@ -52,13 +52,25 @@ public class UserController {
 
     // API CHUYÊN BIỆT CHO ADMIN DUYỆT/KHÓA TÀI KHOẢN (Chỉ nhận JSON)
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateUserStatus(@PathVariable Integer id, @RequestBody Map<String, String> body) {
-        try {
-            UserStatus status = UserStatus.valueOf(body.get("status"));
-            return ResponseEntity.ok(userService.updateUserStatus(id, status));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+    public ResponseEntity<UserResponseDTO> updateUserStatus(
+            @PathVariable Integer id,
+            @RequestBody Map<String, String> body) {
+        String newStatusStr = body.get("status");
+        if (newStatusStr == null) {
+            return ResponseEntity.badRequest().build();
         }
+        UserStatus newStatus = UserStatus.valueOf(newStatusStr.toUpperCase());
+        return ResponseEntity.ok(userService.updateUserStatus(id, newStatus));
+    }
+
+    // API ĐỂ LƯU LÝ DO TỪ CHỐI/KHÓA
+    @PostMapping("/{id}/notify")
+    public ResponseEntity<?> sendNotification(@PathVariable Integer id, @RequestBody Map<String, String> body) {
+        String message = body.get("message");
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setBanReason(message);
+        userRepository.save(user);
+        return ResponseEntity.ok("Success");
     }
 
     // Xóa User

@@ -59,6 +59,9 @@ public class User {
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
+    @Column(name = "ban_reason", columnDefinition = "TEXT")
+    private String banReason;
+
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 

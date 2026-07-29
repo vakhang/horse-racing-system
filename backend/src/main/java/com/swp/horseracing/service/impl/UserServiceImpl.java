@@ -153,10 +153,12 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Tài khoản của bạn đang chờ Admin duyệt KYC. Vui lòng quay lại sau!");
         }
         if (user.getStatus() == UserStatus.REJECTED) {
-            throw new RuntimeException("Tài liệu KYC của bạn đã bị từ chối. Không thể đăng nhập!");
+            String reason = user.getBanReason() != null ? user.getBanReason() : "Tài liệu KYC của bạn đã bị từ chối. Không thể đăng nhập!";
+            throw new RuntimeException("REJECTED:" + reason);
         }
         if (user.getStatus() == UserStatus.BANNED) {
-            throw new RuntimeException("Tài khoản của bạn đã bị khóa bởi Quản trị viên!");
+            String reason = user.getBanReason() != null ? user.getBanReason() : "Tài khoản của bạn đã bị Quản trị viên (Admin) khóa do nghi ngờ vi phạm quy định của hệ thống hoặc có hành vi gian lận trong quá trình tham gia.";
+            throw new RuntimeException("BANNED:" + reason);
         }
 
         String token = jwtUtils.generateToken(user.getId(), user.getRole().name());

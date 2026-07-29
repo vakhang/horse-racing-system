@@ -56,7 +56,7 @@ const AdminUserManagementPage = () => {
         setIsNotifyModalVisible(true);
     };
 
-    const handleSendNotification = () => {
+    const handleSendNotification = async () => {
         let messageContent = '';
         if (notifyType === 'AUTO') {
             messageContent = `Kính gửi ${notifyUser?.username}, tài khoản của bạn hiện đang thiếu một số thông tin/giấy tờ quan trọng. Vui lòng cập nhật bổ sung hồ sơ để Ban Tổ Chức tiến hành phê duyệt sớm nhất.`;
@@ -68,21 +68,13 @@ const AdminUserManagementPage = () => {
             return message.warning('Vui lòng nhập nội dung thông báo!');
         }
 
-        const storageKey = `user_notifications_${notifyUser.id}`;
-        const existingNotifs = JSON.parse(localStorage.getItem(storageKey) || '[]');
-
-        const newNotif = {
-            id: Date.now(),
-            title: '⚠️ Nhắc nhở từ Ban Tổ Chức',
-            desc: messageContent,
-            color: 'red',
-            date: new Date().toISOString()
-        };
-
-        localStorage.setItem(storageKey, JSON.stringify([newNotif, ...existingNotifs]));
-
-        message.success(`Đã gửi thông báo In-app thành công tới: ${notifyUser.username}`);
-        setIsNotifyModalVisible(false);
+        try {
+            await api.post(`/users/${notifyUser.id}/notify`, { message: messageContent });
+            message.success(`Đã gửi thông báo thành công tới: ${notifyUser.username}`);
+            setIsNotifyModalVisible(false);
+        } catch (error) {
+            message.error(error.response?.data?.error || error.response?.data || 'Lỗi khi gửi thông báo!');
+        }
     };
 
     const getActionItems = (record) => {

@@ -11,6 +11,7 @@ const { Title, Text } = Typography;
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [isBanModalVisible, setIsBanModalVisible] = useState(false);
+    const [banReason, setBanReason] = useState("");
     const navigate = useNavigate();
     const { login } = useAuth();
 
@@ -32,7 +33,11 @@ const LoginPage = () => {
         } catch (error) {
             const errorMsg = error.response?.data?.error || error.response?.data || '';
 
-            if (errorMsg.includes('bị khóa')) {
+            if (errorMsg.includes('BANNED:')) {
+                setBanReason(errorMsg.replace('BANNED:', ''));
+                setIsBanModalVisible(true);
+            } else if (errorMsg.includes('REJECTED:')) {
+                setBanReason(errorMsg.replace('REJECTED:', ''));
                 setIsBanModalVisible(true);
             } else {
                 message.error(errorMsg || 'Đăng nhập thất bại!');
@@ -113,9 +118,9 @@ const LoginPage = () => {
                     </div>
                 </div>
 
-                {/* MODAL THÔNG BÁO BANNED TÀI KHOẢN CAO CẤP */}
+                {/* MODAL THÔNG BÁO BANNED / REJECTED TÀI KHOẢN */}
                 <Modal
-                    title={<span className="text-xl font-black text-red-500 uppercase">❌ Tài Khoản Bị Khóa</span>}
+                    title={<span className="text-xl font-black text-red-500 uppercase">❌ TRUY CẬP BỊ TỪ CHỐI</span>}
                     open={isBanModalVisible}
                     onCancel={() => setIsBanModalVisible(false)}
                     footer={[
@@ -128,9 +133,9 @@ const LoginPage = () => {
                 >
                     <div className="text-base text-gray-300 space-y-4 my-6">
                         <div className="bg-red-900/40 p-4 rounded-xl border border-red-500/50 text-red-200">
-                            Tài khoản của bạn đã bị <b className="text-red-400">Quản trị viên (Admin) khóa</b> do nghi ngờ vi phạm quy định của hệ thống hoặc có hành vi gian lận trong quá trình tham gia.
+                            {banReason || "Tài khoản của bạn đã bị Quản trị viên (Admin) khóa do nghi ngờ vi phạm quy định của hệ thống hoặc có hành vi gian lận trong quá trình tham gia."}
                         </div>
-                        <p>Nếu bạn cho rằng đây là sự nhầm lẫn, vui lòng liên hệ ngay với Ban Quản Trị qua các kênh dưới đây để được hỗ trợ mở lại tài khoản:</p>
+                        <p>Nếu bạn cho rằng đây là sự nhầm lẫn hoặc muốn được hướng dẫn thêm, vui lòng liên hệ ngay với Ban Quản Trị qua các kênh dưới đây để được hỗ trợ:</p>
 
                         <div className="bg-white/10 p-5 rounded-xl border border-white/20 shadow-inner space-y-4">
                             <div className="flex items-center gap-3">
