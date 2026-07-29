@@ -23,7 +23,7 @@ const AdminLayout = ({ children }) => {
         { key: '/admin/horses', icon: <FileSearchOutlined />, label: 'Duyệt Chiến Mã' },
         { key: '/admin/tournaments', icon: <TrophyOutlined />, label: 'Giải Đấu & Chặng Đua' },
         { key: '/admin/news', icon: <NotificationOutlined />, label: 'Đăng Thông Báo' },
-        { key: '/admin/content', icon: <EditOutlined />, label: 'Quản Lý Nội Dung CMS' },
+        { key: '/admin/content', icon: <EditOutlined />, label: 'Quản Lý Nội Dung' },
     ];
 
     const handleLogout = () => {

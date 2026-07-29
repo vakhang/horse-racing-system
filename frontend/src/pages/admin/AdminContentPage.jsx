@@ -150,7 +150,7 @@ const AdminContentPage = () => {
     return (
         <div className="p-6">
             <Card className="shadow-md rounded-xl">
-                <Title level={3} className="mb-6">Quản Lý Nội Dung CMS</Title>
+                <Title level={3} className="mb-6">Quản Lý Nội Dung</Title>
                 <div className="mb-6 flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <span className="font-bold text-gray-700">Chọn trang cần cập nhật:</span>
                     <Select value={pageId} onChange={setPageId} className="w-72" size="large">
