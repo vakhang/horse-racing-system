@@ -21,39 +21,39 @@ public class HorseracingApplication {
 			com.swp.horseracing.repository.UserRepository userRepo,
 			com.swp.horseracing.repository.UserAttachmentRepository attachmentRepo) {
 		return args -> {
-			// Run in a small block, fetch eagerly or just catch exceptions if any to not break startup
 			try {
 				java.util.List<com.swp.horseracing.model.User> users = userRepo.findAll();
 				String dummyUrl = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
+				
+				java.util.List<com.swp.horseracing.model.UserAttachment> toDelete = new java.util.ArrayList<>();
+				java.util.List<com.swp.horseracing.model.UserAttachment> newAtts = new java.util.ArrayList<>();
+
 				for (com.swp.horseracing.model.User u : users) {
-					// To avoid lazy init exception without @Transactional, we can check if they exist by querying the attachmentRepo directly!
 					java.util.List<com.swp.horseracing.model.UserAttachment> attachments = attachmentRepo.findByUserId(u.getId());
 					
-					boolean hasIdCard = attachments.stream().anyMatch(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.ID_CARD);
-					boolean hasCert = attachments.stream().anyMatch(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.JOCKEY_CERT);
-					boolean hasHealth = attachments.stream().anyMatch(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.HEALTH_CHECK);
+					boolean hasIdCard = false;
+					
+					for (com.swp.horseracing.model.UserAttachment a : attachments) {
+						if (a.getDocType() == com.swp.horseracing.model.UserDocType.ID_CARD) {
+							hasIdCard = true;
+						} else if ((a.getDocType() == com.swp.horseracing.model.UserDocType.JOCKEY_CERT || 
+									a.getDocType() == com.swp.horseracing.model.UserDocType.HEALTH_CHECK) && 
+								   dummyUrl.equals(a.getFileUrl())) {
+							// Xóa các chứng chỉ ảo đã lỡ tạo để user có thể tự test upload
+							toDelete.add(a);
+						}
+					}
 
-					java.util.List<com.swp.horseracing.model.UserAttachment> newAtts = new java.util.ArrayList<>();
 					if (!hasIdCard) {
 						newAtts.add(com.swp.horseracing.model.UserAttachment.builder().user(u).docType(com.swp.horseracing.model.UserDocType.ID_CARD).fileUrl(dummyUrl).build());
 					}
+				}
 
-					if (u.getRole() == com.swp.horseracing.model.RoleEnum.JOCKEY) {
-						if (!hasCert) {
-							newAtts.add(com.swp.horseracing.model.UserAttachment.builder().user(u).docType(com.swp.horseracing.model.UserDocType.JOCKEY_CERT).fileUrl(dummyUrl).build());
-						}
-						if (!hasHealth) {
-							newAtts.add(com.swp.horseracing.model.UserAttachment.builder().user(u).docType(com.swp.horseracing.model.UserDocType.HEALTH_CHECK).fileUrl(dummyUrl).build());
-						}
-					} else if (u.getRole() == com.swp.horseracing.model.RoleEnum.REFEREE) {
-						if (!hasCert) {
-							newAtts.add(com.swp.horseracing.model.UserAttachment.builder().user(u).docType(com.swp.horseracing.model.UserDocType.JOCKEY_CERT).fileUrl(dummyUrl).build());
-						}
-					}
-
-					if (!newAtts.isEmpty()) {
-						attachmentRepo.saveAll(newAtts);
-					}
+				if (!toDelete.isEmpty()) {
+					attachmentRepo.deleteAll(toDelete);
+				}
+				if (!newAtts.isEmpty()) {
+					attachmentRepo.saveAll(newAtts);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
