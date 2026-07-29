@@ -20,26 +20,16 @@ public class HorseracingApplication {
 	private com.swp.horseracing.repository.TransactionHistoryRepository transactionHistoryRepository;
 
 	@jakarta.annotation.PostConstruct
-	public void cleanupTestAccounts() {
-		String[] emailsToDelete = {
-			"spectator3@gmail.com",
-			"owner3@gmail.com",
-			"referee3@gmail.com",
-			"jockey4@gmail.com"
-		};
-
-		for (String email : emailsToDelete) {
-			userRepository.findByEmail(email).ifPresent(u -> {
-				walletRepository.findByUserId(u.getId()).ifPresent(wallet -> {
-					java.util.List<com.swp.horseracing.model.TransactionHistory> txs = transactionHistoryRepository.findByWallet_UserIdOrderByCreatedAtDesc(u.getId());
-					if (!txs.isEmpty()) {
-						transactionHistoryRepository.deleteAll(txs);
-					}
-					walletRepository.delete(wallet);
-				});
-				userRepository.delete(u);
-			});
-		}
+	public void fixReferee3Role() {
+		userRepository.findByEmail("referee3@gmail.com").ifPresent(u -> {
+			if (u.getRole() != com.swp.horseracing.model.RoleEnum.REFEREE) {
+				System.out.println("Role hiện tại của referee3 là: " + u.getRole() + ", tiến hành cập nhật thành REFEREE.");
+				u.setRole(com.swp.horseracing.model.RoleEnum.REFEREE);
+				userRepository.save(u);
+			} else {
+				System.out.println("Role của referee3 đã là REFEREE, không cần cập nhật.");
+			}
+		});
 	}
 
 }
