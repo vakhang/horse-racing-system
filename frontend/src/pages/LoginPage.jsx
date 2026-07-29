@@ -73,7 +73,7 @@ const LoginPage = () => {
                             <Input
                                 prefix={<MailOutlined className="text-gray-400" />}
                                 placeholder="Nhập Email hoặc Số điện thoại..."
-                                autoComplete="off"
+                                autoComplete="username"
                                 className="bg-black/60 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl px-4 py-3"
                             />
                         </Form.Item>

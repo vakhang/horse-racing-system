@@ -46,7 +46,7 @@ const RegisterPage = () => {
         setLoading(true);
         const formData = new FormData();
 
-        formData.append('username', values.username);
+        formData.append('username', values.fullName);
         formData.append('password', values.password);
         formData.append('email', values.email);
         formData.append('role', values.role);
@@ -270,13 +270,13 @@ const RegisterPage = () => {
                                     <Col span={12}>
                                         <div className="text-yellow-500 mb-4 font-bold border-b border-gray-600 pb-2">1. THÔNG TIN TÀI KHOẢN</div>
 
-                                        <Form.Item name="username" label={<span className="text-gray-300">Họ và Tên</span>} rules={[{ required: true, message: 'Vui lòng nhập họ và tên thật!' }]}>
+                                        <Form.Item name="fullName" label={<span className="text-gray-300">Họ và Tên</span>} rules={[{ required: true, message: 'Vui lòng nhập họ và tên thật!' }]}>
                                             <Input autoComplete="name" prefix={<UserOutlined className="text-gray-400" />} placeholder="Nhập tên hiển thị của bạn..." className="bg-black/50 border-gray-600 text-white rounded-xl" />
                                         </Form.Item>
 
                                         {/* ĐÃ FIX: Xóa cụm nút OTP, giữ lại Input gọn gàng */}
                                         <Form.Item name="email" label={<span className="text-gray-300">Email</span>} rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email!' }]}>
-                                            <Input autoComplete="email" prefix={<MailOutlined className="text-gray-400" />} placeholder="khang@gmail.com" className="bg-black/50 border-gray-600 text-white rounded-xl" />
+                                            <Input type="email" autoComplete="email" prefix={<MailOutlined className="text-gray-400" />} placeholder="khang@gmail.com" className="bg-black/50 border-gray-600 text-white rounded-xl" />
                                         </Form.Item>
 
                                         <Form.Item name="phoneNumber" label={<span className="text-gray-300">Số điện thoại liên hệ</span>} rules={[{ required: true, message: 'Vui lòng nhập SDT!' }]}>
