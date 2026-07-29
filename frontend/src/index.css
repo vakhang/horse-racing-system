@@ -114,3 +114,10 @@ body {
     font-style: italic;
     margin-bottom: 1rem;
 }
+
+/* Ép cứng nền tối cho Sidebar Admin để tránh lỗi hiển thị khối trắng (Lag) */
+.ant-layout-sider,
+.ant-layout-sider-children,
+.ant-layout-sider-trigger {
+    background-color: #001529 !important;
+}
