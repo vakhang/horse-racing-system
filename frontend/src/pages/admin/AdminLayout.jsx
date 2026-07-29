@@ -39,12 +39,12 @@ const AdminLayout = ({ children }) => {
     return (
         <Layout className="min-h-screen font-sans">
             {/* ĐÃ BỎ trigger={null} ĐỂ NÚT THU GỌN TỰ ĐỘNG XUẤT HIỆN Ở DƯỚI CÙNG SIDEBAR */}
-            <Sider collapsible collapsed={collapsed} onCollapse={(val) => setCollapsed(val)} theme="dark" width={260} className="shadow-2xl z-20" style={{ background: '#001529' }}>
+            <Sider collapsible collapsed={collapsed} onCollapse={(val) => setCollapsed(val)} theme="dark" width={260} className="shadow-2xl z-20" style={{ background: '#001529', display: 'flex', flexDirection: 'column' }}>
                 <div className="h-16 m-4 flex items-center justify-center bg-gray-800 rounded-xl border border-gray-700 shadow-inner cursor-pointer" onClick={() => navigate('/admin/users')}>
                     <SettingOutlined className="text-2xl text-red-500 animate-spin-slow" />
                     {!collapsed && <span className="ml-3 text-white font-black text-xl tracking-widest uppercase">ADMIN PANEL</span>}
                 </div>
-                <Menu theme="dark" mode="inline" selectedKeys={[location.pathname]} items={menuItems} onClick={({ key }) => navigate(key)} className="text-base font-medium mt-4" />
+                <Menu theme="dark" mode="inline" selectedKeys={[location.pathname]} items={menuItems} onClick={({ key }) => navigate(key)} className="text-base font-medium mt-4" style={{ flex: 1, backgroundColor: '#001529' }} />
             </Sider>
 
             <Layout className="bg-gray-200">

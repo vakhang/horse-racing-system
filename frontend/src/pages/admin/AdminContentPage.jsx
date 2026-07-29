@@ -79,9 +79,10 @@ const FaqEditor = ({ value, onChange }) => {
                         value={faq.question} 
                         onChange={(e) => updateFaq(index, 'question', e.target.value)} 
                         className="mb-3 font-semibold text-lg"
-                        style={{ marginBottom: '12px' }}
+                        style={{ marginBottom: '0px' }}
                         size="large"
                     />
+                    <div style={{ height: '16px' }} />
                     <Input.TextArea 
                         placeholder="Nhập câu trả lời chi tiết..." 
                         value={faq.answer} 
