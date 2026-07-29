@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserAttachmentRepository extends JpaRepository<UserAttachment, Integer> {
+    java.util.List<UserAttachment> findByUserId(Integer userId);
 }
