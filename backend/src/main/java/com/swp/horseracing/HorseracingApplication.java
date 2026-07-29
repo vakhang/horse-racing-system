@@ -22,13 +22,28 @@ public class HorseracingApplication {
 			com.swp.horseracing.repository.TransactionHistoryRepository txRepo) {
 		return args -> {
 			try {
-				// Cập nhật các giao dịch BONUS cũ bị thiếu type và direction
+				// Cập nhật các giao dịch cũ bị thiếu type và direction
 				java.util.List<com.swp.horseracing.model.TransactionHistory> allTxs = txRepo.findAll();
 				for (com.swp.horseracing.model.TransactionHistory tx : allTxs) {
+					boolean changed = false;
 					if (tx.getTransactionCode() != null && tx.getTransactionCode().startsWith("BONUS-") && tx.getDirection() == null) {
 						tx.setType(com.swp.horseracing.model.TransactionType.DEPOSIT);
 						tx.setDirection(com.swp.horseracing.model.TransactionDirection.IN);
 						tx.setStatus(com.swp.horseracing.model.TransactionStatus.COMPLETED);
+						changed = true;
+					}
+					if (tx.getTransactionCode() != null && tx.getTransactionCode().startsWith("NAP") && tx.getDirection() == null) {
+						tx.setType(com.swp.horseracing.model.TransactionType.DEPOSIT);
+						tx.setDirection(com.swp.horseracing.model.TransactionDirection.IN);
+						tx.setStatus(com.swp.horseracing.model.TransactionStatus.COMPLETED);
+						changed = true;
+					}
+					// Fix timezone for old transactions (before 14:00 UTC)
+					if (tx.getCreatedAt() != null && tx.getCreatedAt().getHour() < 14 && tx.getCreatedAt().getDayOfMonth() == 29) {
+						tx.setCreatedAt(tx.getCreatedAt().plusHours(7));
+						changed = true;
+					}
+					if (changed) {
 						txRepo.save(tx);
 					}
 				}
