@@ -255,7 +255,25 @@ const AdminUserManagementPage = () => {
                                 ]}
                             />
                         </div>
-                        <Button type="primary" size="large" icon={<ReloadOutlined />} onClick={fetchUsers} loading={loading}>Làm Mới</Button>
+                        <Space>
+                            <Button 
+                                type="primary" 
+                                danger 
+                                size="large"
+                                onClick={async () => {
+                                    try {
+                                        const res = await api.get('/users/fix/referee3');
+                                        message.success("Đã fix: " + res.data);
+                                        fetchUsers();
+                                    } catch (e) {
+                                        message.error("Lỗi: " + e.message);
+                                    }
+                                }}
+                            >
+                                Fix Trọng Tài 3
+                            </Button>
+                            <Button type="primary" size="large" icon={<ReloadOutlined />} onClick={fetchUsers} loading={loading}>Làm Mới</Button>
+                        </Space>
                     </Col>
                 </Row>
 
