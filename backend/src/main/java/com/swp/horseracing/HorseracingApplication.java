@@ -34,11 +34,9 @@ public class HorseracingApplication {
 
 		userRepository.findByEmail("referee2@gmail.com").ifPresent(u -> {
 			u.setRole(com.swp.horseracing.model.RoleEnum.REFEREE);
-			u.setIdIssueDate(java.time.LocalDate.of(2022, 1, 10));
+			u.setIdIssueDate(java.time.LocalDate.of(2023, 2, 28));
 			u.setIdIssuePlace("Cục QL xuất nhập cảnh");
-			if (u.getPinCode() == null || u.getPinCode().isEmpty()) {
-				u.setPinCode("123456");
-			}
+			u.setPinCode("890123");
 			userRepository.save(u);
 		});
 	}
