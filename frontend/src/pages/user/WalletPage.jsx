@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Form, Input, Row, Col, Space, Divider, Result, Tag, Tooltip } from 'antd';
+import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Form, Input, Row, Col, Space, Divider, Result, Tag, Tooltip, Select } from 'antd';
 import { WalletOutlined, BankOutlined, ExportOutlined, ArrowLeftOutlined, CopyOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
@@ -21,6 +21,16 @@ const WalletPage = () => {
     const [submittingProof, setSubmittingProof] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [form] = Form.useForm();
+    const [banks, setBanks] = useState([]);
+
+    useEffect(() => {
+        fetch('https://api.vietqr.io/v2/banks')
+            .then(res => res.json())
+            .then(data => {
+                if (data.code === '00') setBanks(data.data);
+            })
+            .catch(err => console.error("Error fetching banks:", err));
+    }, []);
 
     const fetchWalletData = async () => {
         if (!userId) return;
@@ -169,8 +179,24 @@ const WalletPage = () => {
             <Form form={withdrawForm} layout="vertical" onFinish={handleWithdraw} size="large">
                 <Row gutter={16}>
                     <Col xs={24} md={12}>
-                        <Form.Item name="bankName" label={<Text strong>Tên Ngân Hàng (VD: Vietcombank, MB...)</Text>} rules={[{ required: true, message: 'Nhập tên ngân hàng!' }]}>
-                            <Input placeholder="Nhập tên ngân hàng" />
+                        <Form.Item name="bankName" label={<Text strong>Tên Ngân Hàng</Text>} rules={[{ required: true, message: 'Vui lòng chọn ngân hàng!' }]}>
+                            <Select
+                                showSearch
+                                placeholder="🔍 Tìm ngân hàng (VD: Vietcombank, MB...)"
+                                optionFilterProp="searchKey"
+                                filterOption={(input, option) => (option?.searchKey ?? '').toLowerCase().includes(input.toLowerCase())}
+                                options={banks.map(bank => ({
+                                    value: bank.shortName,
+                                    searchKey: `${bank.shortName} ${bank.name} ${bank.code}`,
+                                    label: (
+                                        <div className="flex items-center gap-2">
+                                            <img src={bank.logo} alt={bank.shortName} className="w-6 h-6 object-contain" />
+                                            <span><span className="font-bold">{bank.shortName}</span> - {bank.name}</span>
+                                        </div>
+                                    )
+                                }))}
+                                className="text-left"
+                            />
                         </Form.Item>
                     </Col>
                     <Col xs={24} md={12}>
