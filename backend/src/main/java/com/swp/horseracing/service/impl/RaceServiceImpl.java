@@ -365,6 +365,37 @@ public class RaceServiceImpl implements RaceService {
             }
         }
 
+        // BƯỚC 6: Chi trả Giải thưởng Cố định (Set Prize) cho Top 1, 2, 3 (Chủ ngựa)
+        for (Registration reg : registrations) {
+            if (reg.getRank() == null || reg.getOwner() == null) continue;
+
+            java.math.BigDecimal fixedPrize = java.math.BigDecimal.ZERO;
+            if (reg.getRank() == 1 && race.getPrize1() != null) {
+                fixedPrize = race.getPrize1();
+            } else if (reg.getRank() == 2 && race.getPrize2() != null) {
+                fixedPrize = race.getPrize2();
+            } else if (reg.getRank() == 3 && race.getPrize3() != null) {
+                fixedPrize = race.getPrize3();
+            }
+
+            if (fixedPrize.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                Wallet ownerWallet = walletRepository.findByUserIdForUpdate(reg.getOwner().getId()).orElse(null);
+                if (ownerWallet != null) {
+                    ownerWallet.setBalance(ownerWallet.getBalance().add(fixedPrize));
+                    walletRepository.save(ownerWallet);
+                    TransactionHistory txFixed = TransactionHistory.builder()
+                            .transactionCode("SETPRIZE-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
+                            .wallet(ownerWallet)
+                            .amount(fixedPrize)
+                            .type(TransactionType.REWARD)
+                            .direction(TransactionDirection.IN)
+                            .status(TransactionStatus.COMPLETED)
+                            .build();
+                    transactionHistoryRepository.save(txFixed);
+                }
+            }
+        }
+
         // Chuyển trạng thái chặng đua thành Đã kết toán
         race.setStatus(RaceStatus.COMPLETED);
         raceRepository.save(race);
