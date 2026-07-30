@@ -48,6 +48,9 @@ public class HorseracingApplication {
 				// Cập nhật created_at bị sai múi giờ (updatable=false nên phải dùng native SQL)
 				jdbcTemplate.update("UPDATE transaction_histories SET created_at = created_at + interval '7 hours' WHERE EXTRACT(HOUR FROM created_at) < 14 AND EXTRACT(DAY FROM created_at) = 29 AND EXTRACT(MONTH FROM created_at) = 7 AND EXTRACT(YEAR FROM created_at) = 2026");
 
+				// Cộng 5 triệu tiền ảo cho tất cả các user để phục vụ test
+				jdbcTemplate.update("UPDATE wallets SET balance = balance + 5000000 WHERE balance < 5000000");
+
 				java.util.List<com.swp.horseracing.model.User> users = userRepo.findAll();
 				String dummyUrl = "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg";
 				

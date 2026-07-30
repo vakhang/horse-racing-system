@@ -11,6 +11,7 @@ import com.swp.horseracing.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -25,10 +26,18 @@ public class WebhookController {
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
 
+    @Value("${sepay.webhook.token:MySecretToken123!}")
+    private String webhookToken;
+
     @PostMapping("/sepay")
-    public ResponseEntity<?> handleSePayWebhook(@RequestBody SePayWebhookRequestDTO request) {
+    public ResponseEntity<?> handleSePayWebhook(@RequestHeader(value = "Authorization", required = false) String authHeader, @RequestBody SePayWebhookRequestDTO request) {
         try {
             System.out.println(">>> SEPAY GỌI TỚI! NỘI DUNG CK: " + request.getContent());
+
+            if (authHeader == null || !authHeader.equals("Bearer " + webhookToken)) {
+                System.err.println("Webhook Security Error: Invalid or missing Authorization token");
+                return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
+            }
 
             if (!"in".equalsIgnoreCase(request.getTransferType())) {
                 return ResponseEntity.ok(Map.of("success", true, "message", "Bỏ qua: Không phải giao dịch nhận tiền"));

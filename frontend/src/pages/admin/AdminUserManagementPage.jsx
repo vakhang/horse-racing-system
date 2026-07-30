@@ -83,23 +83,27 @@ const AdminUserManagementPage = () => {
             items.push({ key: 'APPROVED', icon: <CheckCircleOutlined className="text-green-500" />, label: 'Duyệt Hồ Sơ' });
             items.push({ key: 'REJECTED', danger: true, icon: <CloseCircleOutlined />, label: 'Từ Chối KYC' });
         } else {
-            if (record.status === 'APPROVED' || record.status === 'RED_FLAG') {
+            if (record.status === 'APPROVED') {
                 items.push({ key: 'BANNED', danger: true, icon: <LockOutlined />, label: 'Khóa Tài Khoản (Ban)' });
-                if (record.status === 'APPROVED') {
-                    items.push({ key: 'RED_FLAG', danger: true, icon: <CloseCircleOutlined />, label: 'Cảnh Báo (Red Flag)' });
-                } else {
-                    items.push({ key: 'APPROVED', icon: <CheckCircleOutlined className="text-green-500" />, label: 'Gỡ Cảnh Báo' });
-                }
-            } else {
-                items.push({ key: 'APPROVED', icon: <UnlockOutlined className="text-green-500" />, label: 'Mở Khóa (Unban / Hủy Tự Cấm)' });
+            } else if (record.status === 'BANNED' || record.status === 'REJECTED') {
+                items.push({ key: 'APPROVED', icon: <UnlockOutlined className="text-green-500" />, label: 'Mở Khóa / Hủy Từ Chối' });
             }
         }
         return items;
     };
 
     const isFullDocs = (u) => {
-        // Mọi chức vụ chỉ cần CCCD/Hộ chiếu để được duyệt
-        return u.kycDocumentUrls?.length > 0;
+        if (!u.kycDocumentUrls || u.kycDocumentUrls.length === 0) return false;
+        if (u.role === 'SPECTATOR' || u.role === 'HORSE_OWNER') return true;
+        if (u.role === 'REFEREE') {
+            return u.certDocumentUrls && u.certDocumentUrls.length > 0;
+        }
+        if (u.role === 'JOCKEY') {
+            return u.certDocumentUrls && u.certDocumentUrls.length > 0 &&
+                   u.healthDocumentUrls && u.healthDocumentUrls.length > 0 &&
+                   u.weight && u.height;
+        }
+        return false;
     };
 
     const getFilteredUsers = (role) => {
@@ -111,12 +115,10 @@ const AdminUserManagementPage = () => {
             list = list.filter(u => u.status === 'PENDING');
         } else if (filterStatus === 'BANNED') {
             list = list.filter(u => u.status === 'BANNED');
-        } else if (filterStatus === 'RED_FLAG') {
-            list = list.filter(u => u.status === 'RED_FLAG');
-        } else if (filterStatus === 'SELF_EXCLUSION') {
-            list = list.filter(u => u.status === 'SELF_EXCLUSION');
+        } else if (filterStatus === 'REJECTED') {
+            list = list.filter(u => u.status === 'REJECTED');
         } else if (filterStatus === 'FULL_DOCS') {
-            list = list.filter(u => u.status === 'APPROVED' && isFullDocs(u));
+            list = list.filter(u => isFullDocs(u));
         } else if (filterStatus === 'MISSING_DOCS') {
             list = list.filter(u => !isFullDocs(u));
         }
@@ -132,8 +134,8 @@ const AdminUserManagementPage = () => {
         { title: 'Ngày sinh', dataIndex: 'dob' },
         { title: 'Trạng Thái Nộp CCCD/Hộ chiếu', render: (_, r) => <RenderFilesStatus urls={r.kycDocumentUrls} /> },
         { title: 'Trạng thái', dataIndex: 'status', render: s => {
-            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
-            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' || s === 'REJECTED' ? 'red' : 'orange')}>{text}</Tag>;
         } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
@@ -155,8 +157,8 @@ const AdminUserManagementPage = () => {
                 </div>
             )},
         { title: 'Trạng thái', dataIndex: 'status', render: s => {
-            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
-            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' || s === 'REJECTED' ? 'red' : 'orange')}>{text}</Tag>;
         } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
@@ -181,8 +183,8 @@ const AdminUserManagementPage = () => {
                 </div>
             )},
         { title: 'Trạng thái', dataIndex: 'status', render: s => {
-            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
-            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' || s === 'REJECTED' ? 'red' : 'orange')}>{text}</Tag>;
         } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
@@ -205,8 +207,8 @@ const AdminUserManagementPage = () => {
                 </div>
             )},
         { title: 'Trạng thái', dataIndex: 'status', render: s => {
-            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'RED_FLAG' ? 'BỊ CẢNH BÁO' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
-            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' ? 'red' : 'orange')}>{text}</Tag>;
+            const text = s === 'APPROVED' ? 'ĐÃ DUYỆT' : s === 'BANNED' ? 'ĐÃ BỊ KHÓA' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'REJECTED' ? 'TỪ CHỐI' : s;
+            return <Tag color={s === 'APPROVED' ? 'green' : (s === 'BANNED' || s === 'REJECTED' ? 'red' : 'orange')}>{text}</Tag>;
         } },
         {
             title: 'Hành Động', align: 'center', render: (_, r) => (
@@ -239,10 +241,9 @@ const AdminUserManagementPage = () => {
                                     { value: 'ALL', label: 'Tất cả trạng thái' },
                                     { value: 'PENDING', label: `⏳ Chưa duyệt (${pendingCount})` },
                                     { value: 'APPROVED', label: '🟢 Đang hoạt động' },
-                                    { value: 'RED_FLAG', label: '🚩 Cảnh báo (Red Flag)' },
                                     { value: 'FULL_DOCS', label: '✅ Đã nộp (Đủ hồ sơ)' },
                                     { value: 'MISSING_DOCS', label: '⚠️ Thiếu hồ sơ' },
-                                    { value: 'SELF_EXCLUSION', label: '🛑 Tự nguyện cấm' },
+                                    { value: 'REJECTED', label: '❌ Từ chối' },
                                     { value: 'BANNED', label: '🔴 Bị khóa (Banned)' },
                                 ]}
                             />
