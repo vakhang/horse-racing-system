@@ -20,7 +20,7 @@ public class UserAttachment {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "doc_type", length = 50)
     private UserDocType docType;
 
     @Column(name = "file_url", columnDefinition = "TEXT")
