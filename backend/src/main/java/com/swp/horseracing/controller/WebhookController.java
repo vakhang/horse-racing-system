@@ -34,8 +34,8 @@ public class WebhookController {
         try {
             System.out.println(">>> SEPAY GỌI TỚI! NỘI DUNG CK: " + request.getContent());
 
-            if (authHeader == null || !authHeader.equals("Bearer " + webhookToken)) {
-                System.err.println("Webhook Security Error: Invalid or missing Authorization token");
+            if (authHeader == null || (!authHeader.equals("Bearer " + webhookToken) && !authHeader.equals("Apikey " + webhookToken))) {
+                System.err.println("Webhook Security Error: Invalid or missing Authorization token. Received: " + authHeader);
                 return ResponseEntity.status(401).body(Map.of("success", false, "message", "Unauthorized"));
             }
 
