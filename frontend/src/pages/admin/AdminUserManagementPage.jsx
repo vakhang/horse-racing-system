@@ -94,7 +94,7 @@ const AdminUserManagementPage = () => {
 
     const isFullDocs = (u) => {
         if (!u.kycDocumentUrls || u.kycDocumentUrls.length === 0) return false;
-        if (u.role === 'SPECTATOR' || u.role === 'HORSE_OWNER') return true;
+        if (u.role === 'SPECTATOR' || u.role === 'OWNER') return true;
         if (u.role === 'REFEREE') {
             return u.certDocumentUrls && u.certDocumentUrls.length > 0;
         }
@@ -118,9 +118,9 @@ const AdminUserManagementPage = () => {
         } else if (filterStatus === 'REJECTED') {
             list = list.filter(u => u.status === 'REJECTED');
         } else if (filterStatus === 'FULL_DOCS') {
-            list = list.filter(u => isFullDocs(u));
+            list = list.filter(u => (u.status === 'APPROVED' || u.status === 'PENDING') && isFullDocs(u));
         } else if (filterStatus === 'MISSING_DOCS') {
-            list = list.filter(u => !isFullDocs(u));
+            list = list.filter(u => (u.status === 'APPROVED' || u.status === 'PENDING') && !isFullDocs(u));
         }
 
         return list;
@@ -244,7 +244,7 @@ const AdminUserManagementPage = () => {
                                     { value: 'FULL_DOCS', label: '✅ Đã nộp (Đủ hồ sơ)' },
                                     { value: 'MISSING_DOCS', label: '⚠️ Thiếu hồ sơ' },
                                     { value: 'REJECTED', label: '❌ Từ chối' },
-                                    { value: 'BANNED', label: '🔴 Bị khóa (Banned)' },
+                                    { value: 'BANNED', label: '🔴 Bị khóa' },
                                 ]}
                             />
                         </div>
