@@ -15,7 +15,7 @@ public interface BetRepository extends JpaRepository<Bet, Integer> {
     List<Bet> findByRaceId(Integer raceId);
 
     // Tính tổng tiền cược của một con ngựa (Registration) trong một chặng đua cụ thể
-    @Query("SELECT COALESCE(SUM(b.amount), 0) FROM Bet b WHERE b.race.id = :raceId AND b.registration.id = :regId")
+    @Query("SELECT SUM(b.amount) FROM Bet b WHERE b.race.id = :raceId AND b.registration.id = :regId")
     BigDecimal sumAmountByRaceIdAndRegistrationId(@Param("raceId") Integer raceId, @Param("regId") Integer regId);
 
     // Truy xuất lịch sử cược của User
@@ -23,7 +23,7 @@ public interface BetRepository extends JpaRepository<Bet, Integer> {
     List<Bet> findBySpectatorIdOrderByCreatedAtDesc(Integer spectatorId);
 
     // Tính tổng tiền cược trong ngày của khán giả
-    @Query("SELECT COALESCE(SUM(b.amount), 0) FROM Bet b WHERE b.spectator.id = :spectatorId AND b.createdAt >= :startDate AND b.createdAt <= :endDate")
+    @Query("SELECT SUM(b.amount) FROM Bet b WHERE b.spectator.id = :spectatorId AND b.createdAt >= :startDate AND b.createdAt <= :endDate")
     BigDecimal sumDailyBetAmountBySpectatorId(
         @Param("spectatorId") Integer spectatorId, 
         @Param("startDate") java.time.LocalDateTime startDate, 

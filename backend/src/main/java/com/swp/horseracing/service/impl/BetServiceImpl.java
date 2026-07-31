@@ -48,6 +48,9 @@ public class BetServiceImpl implements BetService {
         java.time.LocalDateTime startOfDay = java.time.LocalDateTime.now().with(java.time.LocalTime.MIN);
         java.time.LocalDateTime endOfDay = java.time.LocalDateTime.now().with(java.time.LocalTime.MAX);
         BigDecimal dailyTotal = betRepository.sumDailyBetAmountBySpectatorId(spectator.getId(), startOfDay, endOfDay);
+        if (dailyTotal == null) {
+            dailyTotal = BigDecimal.ZERO;
+        }
         
         if (dailyTotal.add(request.getAmount()).compareTo(new BigDecimal("1000000")) > 0) {
             throw new RuntimeException("Bạn đã vượt quá hạn mức cược tối đa 1,000,000 VNĐ/ngày!");
