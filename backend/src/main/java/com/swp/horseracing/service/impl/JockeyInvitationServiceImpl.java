@@ -51,6 +51,19 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
             throw new RuntimeException("Lời mời này đã được xử lý trước đó!");
         }
 
+        // RÀNG BUỘC PHÁP LÝ (Nghị định 06/2017/NĐ-CP): Nài ngựa phải có đủ hồ sơ sức khỏe và chứng chỉ
+        User jockey = invitation.getJockey();
+        if (jockey.getWeight() == null || jockey.getWeight() <= 0 || jockey.getHeight() == null || jockey.getHeight() <= 0) {
+            throw new RuntimeException("Bạn chưa cập nhật Chiều cao và Cân nặng trong hồ sơ. Vui lòng bổ sung để nhận lời mời đua!");
+        }
+
+        boolean hasJockeyCert = jockey.getAttachments().stream().anyMatch(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.JOCKEY_CERT);
+        boolean hasHealthCheck = jockey.getAttachments().stream().anyMatch(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.HEALTH_CHECK);
+
+        if (!hasJockeyCert || !hasHealthCheck) {
+            throw new RuntimeException("Bạn chưa bổ sung đủ Bằng cấp hoặc Giấy khám sức khỏe. Vui lòng cập nhật hồ sơ để nhận lời mời đua!");
+        }
+
         // RÀNG BUỘC: Kiểm tra trùng giờ (Overlapping) bằng công thức (startA < endB) AND (startB < endA)
         Registration currentReg = invitation.getRegistration();
         java.time.LocalDateTime startB = currentReg.getRace().getRaceTime();

@@ -217,9 +217,11 @@ public class UserServiceImpl implements UserService {
         if (request.getCertFiles() != null) {
             for (MultipartFile file : request.getCertFiles()) {
                 String url = fileStorageService.storeFile(file, folder);
-                if (url != null)
+                if (url != null) {
+                    UserDocType docType = user.getRole() == RoleEnum.REFEREE ? UserDocType.REFEREE_CERT : UserDocType.JOCKEY_CERT;
                     user.getAttachments().add(
-                            UserAttachment.builder().user(user).docType(UserDocType.JOCKEY_CERT).fileUrl(url).build());
+                            UserAttachment.builder().user(user).docType(docType).fileUrl(url).build());
+                }
             }
         }
         if (request.getHealthFiles() != null) {
@@ -303,7 +305,7 @@ public class UserServiceImpl implements UserService {
             for (UserAttachment a : user.getAttachments()) {
                 if (a.getDocType() == UserDocType.ID_CARD)
                     kycUrls.add(a.getFileUrl());
-                if (a.getDocType() == UserDocType.JOCKEY_CERT)
+                if (a.getDocType() == UserDocType.JOCKEY_CERT || a.getDocType() == UserDocType.REFEREE_CERT)
                     certUrls.add(a.getFileUrl());
                 if (a.getDocType() == UserDocType.HEALTH_CHECK)
                     healthUrls.add(a.getFileUrl());
