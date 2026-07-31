@@ -40,7 +40,8 @@ const AdminHorseApprovalPage = () => {
             formData.append('status', newStatus);
 
             await api.put(`/horses/${horseId}`, formData);
-            message.success(`Đã chuyển trạng thái chiến mã thành ${newStatus}!`);
+            const msg = newStatus === 'APPROVED' ? 'Đã duyệt chiến mã thành công' : 'Đã từ chối duyệt chiến mã';
+            message.success(msg);
             await fetchHorses();
         } catch (error) {
             message.error('Có lỗi xảy ra khi xử lý!');
@@ -79,19 +80,9 @@ const AdminHorseApprovalPage = () => {
             title: 'Mã Nhận Dạng',
             key: 'microchipCode',
             render: (_, record) => (
-                <div className="flex flex-col gap-1">
-                    <Text strong className={record.microchipCode ? "text-green-600" : "text-red-500"}>
-                        {record.microchipCode || 'CHƯA CÓ'}
-                    </Text>
-                    {activeTab === 'APPROVED' && (
-                        <Button size="small" disabled={loading} onClick={() => {
-                            const code = prompt('Nhập mã số Microchip/ID:');
-                            if (code) handleUpdateHorse(record.id, { microchipCode: code });
-                        }}>
-                            Cập nhật ID
-                        </Button>
-                    )}
-                </div>
+                <Text strong className={record.microchipCode ? "text-green-600" : "text-red-500"}>
+                    {record.microchipCode || 'CHƯA CÓ'}
+                </Text>
             )
         },
         {
@@ -125,31 +116,7 @@ const AdminHorseApprovalPage = () => {
                 </div>
             ),
         },
-        {
-            title: 'Sức Khỏe Định Kỳ',
-            key: 'health',
-            render: (_, record) => {
-                const lastCheck = record.lastHealthCheck ? new Date(record.lastHealthCheck) : null;
-                const isOverdue = !lastCheck || (Date.now() - lastCheck.getTime()) > (3 * 30 * 24 * 60 * 60 * 1000);
-                
-                return (
-                    <div className="flex flex-col gap-1">
-                        <Text className={isOverdue ? "text-red-500 font-bold" : "text-green-600"}>
-                            {lastCheck ? lastCheck.toLocaleDateString() : 'Chưa khám'}
-                        </Text>
-                        {isOverdue && <Tag color="red" className="m-0 mt-1">⚠️ Quá hạn 3 tháng</Tag>}
-                        
-                        {activeTab === 'APPROVED' && (
-                            <Button size="small" disabled={loading} onClick={() => {
-                                handleUpdateHorse(record.id, { lastHealthCheck: new Date().toISOString() });
-                            }}>
-                                Cập nhật Doping/Khám
-                            </Button>
-                        )}
-                    </div>
-                );
-            }
-        },
+
         {
             title: 'Hành Động ⚡',
             key: 'action',

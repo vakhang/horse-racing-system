@@ -20,7 +20,7 @@ const AdminLayout = ({ children }) => {
     const menuItems = [
         { key: '/admin/users', icon: <TeamOutlined />, label: 'Quản Lý Tài Khoản' },
         { key: '/admin/finance', icon: <DollarOutlined />, label: 'Kế Toán & Dòng Tiền' },
-        { key: '/admin/horses', icon: <FileSearchOutlined />, label: 'Duyệt Chiến Mã' },
+        { key: '/admin/horses', icon: <FileSearchOutlined />, label: 'Quản Lý Chiến Mã' },
         { key: '/admin/tournaments', icon: <TrophyOutlined />, label: 'Giải Đấu & Chặng Đua' },
         { key: '/admin/news', icon: <NotificationOutlined />, label: 'Đăng Thông Báo' },
         { key: '/admin/content', icon: <EditOutlined />, label: 'Quản Lý Nội Dung' },

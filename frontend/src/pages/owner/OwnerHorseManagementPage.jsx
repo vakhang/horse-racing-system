@@ -7,9 +7,21 @@ import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
-const RenderFilesStatus = ({ urls }) => {
-    if (!urls || urls.length === 0) return <Tag color="red" className="m-0">Chưa nộp</Tag>;
-    return <Tag color="green">Đã nộp ({urls.length} tệp)</Tag>;
+const RenderFilesStatus = ({ horse }) => {
+    const hasRealImage = horse?.realImageUrls?.length > 0;
+    const hasCert = horse?.certDocumentUrls?.length > 0;
+    const hasVet = horse?.vetRecordUrls?.length > 0;
+    
+    if (hasRealImage && hasCert && hasVet) {
+        return (
+            <Space direction="vertical" size="small">
+                <Text type="success" className="text-xs">✔️ Ảnh Thực Tế ({horse.realImageUrls.length})</Text>
+                <Text type="success" className="text-xs">✔️ Giấy Chứng Nhận ({horse.certDocumentUrls.length})</Text>
+                <Text type="success" className="text-xs">✔️ Sổ Khám SK ({horse.vetRecordUrls.length})</Text>
+            </Space>
+        );
+    }
+    return <Tag color="red" className="m-0">Chưa đủ hồ sơ</Tag>;
 };
 
 const OwnerHorseManagementPage = () => {
@@ -23,6 +35,7 @@ const OwnerHorseManagementPage = () => {
     const [isHistoryVisible, setIsHistoryVisible] = useState(false);
     const [selectedHorseHistory, setSelectedHorseHistory] = useState(null);
     const [editingHorseId, setEditingHorseId] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -44,6 +57,7 @@ const OwnerHorseManagementPage = () => {
     };
 
     const handleSaveHorse = async (values) => {
+        setIsSubmitting(true);
         try {
             const formData = new FormData();
             formData.append('ownerId', currentOwnerId);
@@ -51,6 +65,7 @@ const OwnerHorseManagementPage = () => {
             formData.append('age', values.age);
             formData.append('breed', values.breed);
             formData.append('color', values.color);
+            formData.append('microchipCode', values.microchipCode);
 
             if (values.realImageFiles && values.realImageFiles.length > 0) {
                 values.realImageFiles.forEach(f => formData.append('realImageFiles', f.originFileObj));
@@ -73,6 +88,7 @@ const OwnerHorseManagementPage = () => {
             form.resetFields();
             fetchMyHorses();
         } catch (error) { message.error('Có lỗi xảy ra khi lưu thông tin!'); }
+        finally { setIsSubmitting(false); }
     };
 
     const handleDelete = async (horseId) => {
@@ -124,7 +140,7 @@ const OwnerHorseManagementPage = () => {
                 }
                 return <Progress percent={stamina} size="small" status={stamina < 50 ? 'exception' : 'active'} format={p => `${p}%`} />;
             }},
-        { title: 'Sổ Khám Bệnh', render: (_, r) => <RenderFilesStatus urls={r.vetRecordUrls} /> },
+        { title: 'Hồ sơ', render: (_, r) => <RenderFilesStatus horse={r} /> },
         { title: 'Trạng Thái', dataIndex: 'status', render: s => s === 'APPROVED' ? <Tag color="green">ĐÃ DUYỆT</Tag> : (s === 'REJECTED' ? <Tag color="red">TỪ CHỐI</Tag> : <Tag color="orange">CHỜ XỬ LÝ</Tag>) },
         {
             title: 'Thao Tác', align: 'right', render: (_, record) => (
@@ -161,6 +177,7 @@ const OwnerHorseManagementPage = () => {
 
             <Modal title={<span className="text-xl">{editingHorseId ? 'Cập Nhật Hồ Sơ' : 'Khai Báo Chiến Mã Mới'}</span>} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null} centered>
                 <Form form={form} layout="vertical" onFinish={handleSaveHorse} className="mt-4">
+                    <Form.Item name="microchipCode" label={<Text strong>Mã Nhận Dạng (Microchip ID)</Text>} rules={[{ required: true, message: 'Vui lòng nhập mã Microchip!' }]}><Input size="large" placeholder="Ví dụ: VNM-123456" /></Form.Item>
                     <Form.Item name="name" label={<Text strong>Tên Ngựa</Text>} rules={[{ required: true, message: 'Vui lòng nhập tên chiến mã!' }]}><Input size="large" /></Form.Item>
                     <Row gutter={16}>
                         <Col span={12}><Form.Item name="age" label={<Text strong>Tuổi</Text>} rules={[{ required: true, message: 'Vui lòng nhập tuổi ngựa!' }]}><InputNumber className="w-full" size="large" /></Form.Item></Col>
@@ -184,7 +201,7 @@ const OwnerHorseManagementPage = () => {
                         </Form.Item>
                     </div>
 
-                    <Button type="primary" htmlType="submit" size="large" block className="mt-4 bg-blue-600 hover:bg-blue-700">
+                    <Button type="primary" htmlType="submit" size="large" block loading={isSubmitting} disabled={isSubmitting} className="mt-4 bg-blue-600 hover:bg-blue-700">
                         {editingHorseId ? 'LƯU CẬP NHẬT' : 'GỬI HỒ SƠ DUYỆT CHIẾN MÃ'}
                     </Button>
                 </Form>

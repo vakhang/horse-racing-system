@@ -31,6 +31,15 @@ public class HorseServiceImpl implements HorseService {
     @Override
     @Transactional
     public HorseResponseDTO createHorse(HorseRequestDTO request) {
+        if (request.getMicrochipCode() == null || request.getMicrochipCode().trim().isEmpty()) {
+            throw new RuntimeException("Bắt buộc phải nhập mã Microchip!");
+        }
+        if (request.getCertFiles() == null || request.getCertFiles().isEmpty() ||
+            request.getRealImageFiles() == null || request.getRealImageFiles().isEmpty() ||
+            request.getVetRecordFiles() == null || request.getVetRecordFiles().isEmpty()) {
+            throw new RuntimeException("Bắt buộc phải tải lên đầy đủ 3 loại hồ sơ (Ảnh thực tế, Giấy chứng nhận, Sổ khám bệnh)!");
+        }
+
         User owner = userRepository.findById(request.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Chủ ngựa với ID: " + request.getOwnerId()));
 
