@@ -27,7 +27,7 @@ const SchedulePage = () => {
             const res = await api.get('/races');
             // Filter only scheduled or future races
             const futureRaces = res.data.filter(race => 
-                race.status === 'SCHEDULED' || race.status === 'REGISTRATION_OPEN' || race.status === 'REGISTRATION_CLOSED'
+                race.status === 'PENDING' || race.status === 'RUNNING'
             );
             setRaces(futureRaces);
         } catch (error) {
@@ -78,10 +78,9 @@ const SchedulePage = () => {
             dataIndex: 'status',
             key: 'status',
             render: status => {
-                let color = 'blue';
-                if (status === 'SCHEDULED') color = 'cyan';
-                if (status === 'REGISTRATION_OPEN') color = 'green';
-                return <Tag color={color}>{status}</Tag>;
+                if (status === 'PENDING') return <Tag color="orange">Sắp diễn ra</Tag>;
+                if (status === 'RUNNING') return <Tag color="red">Đang đua</Tag>;
+                return <Tag>{status}</Tag>;
             }
         },
         {
