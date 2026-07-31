@@ -207,6 +207,9 @@ public class RaceServiceImpl implements RaceService {
 
         for (Registration reg : registrations) {
             java.math.BigDecimal totalBetOnHorse = betRepository.sumAmountByRaceIdAndRegistrationId(raceId, reg.getId());
+            if (totalBetOnHorse == null) {
+                totalBetOnHorse = java.math.BigDecimal.ZERO;
+            }
             java.math.BigDecimal calculatedOdds = java.math.BigDecimal.ZERO;
 
             if (totalBetOnHorse.compareTo(java.math.BigDecimal.ZERO) > 0) {
