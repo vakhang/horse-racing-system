@@ -77,11 +77,7 @@ const AdminTournamentPage = () => {
             setIsTourModalVisible(false);
             fetchTournaments();
         } catch (e) {
-            let errorMsg = 'Có lỗi xảy ra!';
-            if (e.response?.data?.error) errorMsg = e.response.data.error;
-            else if (e.response?.data?.message) errorMsg = e.response.data.message;
-            else if (typeof e.response?.data === 'string') errorMsg = e.response.data;
-            message.error(errorMsg);
+            message.error(extractError(e));
         }
     };
 
@@ -93,6 +89,15 @@ const AdminTournamentPage = () => {
         } catch (e) {
             message.error("Không thể xóa do giải đấu này đã phát sinh dữ liệu (Chặng đua/Vé cược)!");
         }
+    };
+
+    const extractError = (e) => {
+        if (e.response?.data) {
+            if (e.response.data.error) return e.response.data.error;
+            if (e.response.data.message) return e.response.data.message;
+            if (typeof e.response.data === 'string') return e.response.data;
+        }
+        return e.message || 'Có lỗi xảy ra!';
     };
 
     const handleSaveRace = async (values) => {
@@ -119,8 +124,7 @@ const AdminTournamentPage = () => {
             setIsRaceModalVisible(false);
             await fetchRacesForTournament(selectedTourId);
         } catch (e) {
-            const errorMsg = e.response?.data?.error || e.response?.data?.message || 'Có lỗi xảy ra!';
-            message.error(errorMsg);
+            message.error(extractError(e));
         }
     };
 
@@ -131,7 +135,7 @@ const AdminTournamentPage = () => {
             message.success('Đã hủy chặng đua! Hệ thống đang tiến hành hoàn trả tiền cho khán giả.');
             await fetchRacesForTournament(race.tournamentId);
         } catch (e) {
-            message.error('Lỗi khi hủy chặng đua!');
+            message.error(extractError(e));
         }
     };
 
@@ -156,7 +160,7 @@ const AdminTournamentPage = () => {
             await api.post(`/races/${raceId}/payout`);
             message.success('Đã trả thưởng thành công cho khán giả!');
         } catch (e) {
-            message.error(e.response?.data || 'Lỗi khi trả thưởng!');
+            message.error(extractError(e));
         }
     };
 
@@ -185,7 +189,7 @@ const AdminTournamentPage = () => {
             const response = await api.get(`/registrations`, { params: { raceId: selectedRaceForWithdraw.id } });
             setRaceRegistrations(response.data);
         } catch (e) {
-            message.error("Lỗi xử lý rút lui!");
+            message.error(extractError(e));
         }
     };
 
