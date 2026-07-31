@@ -64,18 +64,31 @@ const Header = () => {
 
         const generateNotifications = async () => {
             let notifs = [];
+            let currentUser = user;
 
-            if (user?.status === 'APPROVED') {
+            // Fetch real-time user data to get latest banReason and status
+            if (user?.id && token) {
+                try {
+                    const userRes = await api.get(`/users/${user.id}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    currentUser = userRes.data;
+                } catch (err) {
+                    console.error("Lỗi lấy thông tin user real-time:", err);
+                }
+            }
+
+            if (currentUser?.status === 'APPROVED') {
                 notifs.push({ title: 'Tài khoản đã xác minh', desc: 'Bạn có thể sử dụng toàn bộ tính năng hệ thống.', color: 'green' });
-            } else if (user?.status === 'PENDING') {
+            } else if (currentUser?.status === 'PENDING') {
                 notifs.push({ title: 'Chờ duyệt KYC', desc: 'Vui lòng đợi Admin kiểm tra hồ sơ của bạn.', color: 'orange' });
-            } else if (user?.status === 'BANNED' || user?.status === 'REJECTED') {
-                notifs.push({ title: 'Tài khoản có vấn đề', desc: user.banReason || 'Vui lòng liên hệ Admin.', color: 'red' });
+            } else if (currentUser?.status === 'BANNED' || currentUser?.status === 'REJECTED') {
+                notifs.push({ title: 'Tài khoản có vấn đề', desc: currentUser.banReason || 'Vui lòng liên hệ Admin.', color: 'red' });
             }
 
             // Hiển thị Nhắc Nhở cá nhân từ Admin (được lưu trong banReason) cho cả user đã APPROVED hoặc PENDING
-            if (user?.banReason && user.status !== 'BANNED' && user.status !== 'REJECTED') {
-                notifs.push({ title: '⚠️ Lời Nhắc Từ Admin', desc: user.banReason, color: 'red' });
+            if (currentUser?.banReason && currentUser.status !== 'BANNED' && currentUser.status !== 'REJECTED') {
+                notifs.push({ title: '⚠️ Lời Nhắc Từ Admin', desc: currentUser.banReason, color: 'red' });
             }
 
             // Lấy thông báo từ Database
