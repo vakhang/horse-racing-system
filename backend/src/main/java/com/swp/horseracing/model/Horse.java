@@ -33,7 +33,7 @@ public class Horse {
     private java.util.List<HorseAttachment> attachments = new java.util.ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", length = 50)
     private HorseStatus status;
 
     // --- CÁC TRƯỜNG MỚI ĐỂ ADMIN QUẢN LÝ ---

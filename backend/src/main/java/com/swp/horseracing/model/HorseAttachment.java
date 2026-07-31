@@ -20,7 +20,7 @@ public class HorseAttachment {
     private Horse horse;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "doc_type", length = 50)
     private HorseDocType docType;
 
     @Column(name = "file_url", columnDefinition = "TEXT")
