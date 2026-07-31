@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import com.swp.horseracing.repository.UserRepository;
 import com.swp.horseracing.model.User;
-import com.swp.horseracing.model.RoleEnum;
 
 @RestController
 @RequestMapping("/api/users")
