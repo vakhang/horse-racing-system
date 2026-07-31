@@ -139,6 +139,16 @@ const AdminTournamentPage = () => {
         }
     };
 
+    const handleForceTransition = async (race, targetStatus) => {
+        try {
+            await api.post(`/races/${race.id}/transition`, { status: targetStatus });
+            message.success('Đã ép chuyển trạng thái thành công!');
+            await fetchRacesForTournament(race.tournamentId);
+        } catch (e) {
+            message.error(extractError(e));
+        }
+    };
+
     const openEditRaceModal = (record) => {
         setEditingRaceId(record.id);
         setSelectedTourId(record.tournamentId);
@@ -214,10 +224,13 @@ const AdminTournamentPage = () => {
                 title: 'Trạng Thái',
                 dataIndex: 'status',
                 render: s => {
-                    if (s === 'PENDING') return <Tag color="orange">Chờ diễn ra</Tag>;
-                    if (s === 'RUNNING') return <Tag color="red">Đang đua (Live)</Tag>;
-                    if (s === 'FINISHED') return <Tag color="green">Đã kết thúc</Tag>;
-                    if (s === 'CANCELED') return <Tag color="default">Đã hủy</Tag>;
+                    if (s === 'REGISTRATION') return <Tag color="orange">ĐĂNG KÝ THI ĐẤU</Tag>;
+                    if (s === 'BETTING') return <Tag color="blue">NHẬN ĐẶT CƯỢC</Tag>;
+                    if (s === 'LOCK_SESSION') return <Tag color="gray">KHÓA NHẬN CƯỢC</Tag>;
+                    if (s === 'RUNNING') return <Tag color="red">ĐANG THI ĐẤU</Tag>;
+                    if (s === 'RESULT_CONFIRMED') return <Tag color="purple">ĐÃ CÓ KẾT QUẢ</Tag>;
+                    if (s === 'COMPLETED') return <Tag color="green">ĐÃ HOÀN TẤT</Tag>;
+                    if (s === 'CANCELED') return <Tag color="default">ĐÃ HỦY CHẶNG</Tag>;
                     return <Tag>{s}</Tag>;
                 }
             },
@@ -226,14 +239,24 @@ const AdminTournamentPage = () => {
                 align: 'right',
                 render: (_, record) => (
                     <Space>
-                        <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>Loại Ngựa</Button>
-                        <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openEditRaceModal(record)}>Thiết Lập</Button>
-                        {record.status === 'FINISHED' && (
-                            <Popconfirm title="Thực hiện trả thưởng cho khán giả?" onConfirm={() => handlePayout(record.id)}>
-                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold">Bắt đầu Trả Thưởng</Button>
+                        {record.status === 'REGISTRATION' && (
+                            <Popconfirm title="Chốt danh sách ngựa thi đấu và mở cổng nhận cược?" onConfirm={() => handleForceTransition(record, 'BETTING')}>
+                                <Button size="small" type="primary" style={{ backgroundColor: '#1890ff', fontWeight: 'bold' }}>🔓 CHỐT DANH SÁCH & MỞ CƯỢC</Button>
                             </Popconfirm>
                         )}
-                        {record.status === 'PENDING' && (
+                        {record.status === 'BETTING' && (
+                            <Popconfirm title="Khóa cổng cược ngay lập tức?" onConfirm={() => handleForceTransition(record, 'LOCK_SESSION')}>
+                                <Button size="small" type="primary" style={{ backgroundColor: '#595959', fontWeight: 'bold' }}>🔒 KHÓA CỔNG NHẬN CƯỢC</Button>
+                            </Popconfirm>
+                        )}
+                        <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>Loại Ngựa</Button>
+                        <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openEditRaceModal(record)}>Thiết Lập</Button>
+                        {record.status === 'RESULT_CONFIRMED' && (
+                            <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={() => { handlePayout(record.id); handleForceTransition(record, 'COMPLETED'); }}>
+                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
+                            </Popconfirm>
+                        )}
+                        {(record.status === 'REGISTRATION' || record.status === 'BETTING' || record.status === 'LOCK_SESSION') && (
                             <Popconfirm
                                 title={<span className="font-bold text-red-600">Xác nhận hủy chặng đua?</span>}
                                 description="Tiền cược sẽ tự động được hoàn lại toàn bộ cho khán giả."
@@ -404,12 +427,16 @@ const AdminTournamentPage = () => {
                     <Row gutter={16}>
                         <Col span={12}>
                             {editingRaceId && (
-                                <Form.Item name="status" label={<Text strong>Trạng Thái</Text>} initialValue="PENDING">
+                                <Form.Item name="status" label={<Text strong>Trạng Thái</Text>} initialValue="REGISTRATION">
                                     <Select size="large">
-                                        <Option value="PENDING"><Badge status="warning" /> Chờ diễn ra (PENDING)</Option>
-                                        <Option value="RUNNING"><Badge status="processing" /> Đang đua (RUNNING)</Option>
-                                        <Option value="FINISHED"><Badge status="success" /> Đã kết thúc (FINISHED)</Option>
-                                        <Option value="CANCELED"><Badge status="default" /> Đã hủy (CANCELED)</Option>
+                                        <Option value="REGISTRATION"><Badge status="warning" /> ĐĂNG KÝ THI ĐẤU</Option>
+                                        <Option value="BETTING"><Badge status="processing" /> NHẬN ĐẶT CƯỢC</Option>
+                                        <Option value="LOCK_SESSION"><Badge status="default" /> KHÓA NHẬN CƯỢC</Option>
+                                        <Option value="RUNNING"><Badge status="error" /> ĐANG THI ĐẤU</Option>
+                                        <Option value="FINISHED"><Badge status="success" /> CHỜ KẾT QUẢ</Option>
+                                        <Option value="RESULT_CONFIRMED"><Badge status="success" /> ĐÃ CÓ KẾT QUẢ</Option>
+                                        <Option value="COMPLETED"><Badge status="success" /> ĐÃ HOÀN TẤT</Option>
+                                        <Option value="CANCELED"><Badge status="default" /> ĐÃ HỦY CHẶNG</Option>
                                     </Select>
                                 </Form.Item>
                             )}

@@ -182,7 +182,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         List<Race> races = raceRepository.findByTournamentId(tournament.getId());
         for (Race race : races) {
-            if (race.getStatus() == RaceStatus.PENDING) {
+            if (race.getStatus() == RaceStatus.REGISTRATION || race.getStatus() == RaceStatus.BETTING || race.getStatus() == RaceStatus.LOCK_SESSION) {
                 // Tịnh tiến đồng bộ giờ xuất phát của tất cả các chặng đua bên trong
                 race.setRaceTime(race.getRaceTime().plusHours(hoursDelay));
                 raceRepository.save(race);

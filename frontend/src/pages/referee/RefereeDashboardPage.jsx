@@ -142,7 +142,16 @@ const RefereeDashboardPage = () => {
         } catch (error) { message.error(error.response?.data?.message || 'Có lỗi khi lập biên bản!'); }
     };
 
-    const statusMap = { PENDING: 'orange', RUNNING: 'red', FINISHED: 'green', CANCELED: 'default' };
+    const statusMap = { 
+        REGISTRATION: 'orange', 
+        BETTING: 'blue', 
+        LOCK_SESSION: 'gray', 
+        RUNNING: 'red', 
+        FINISHED: 'cyan',
+        RESULT_CONFIRMED: 'purple',
+        COMPLETED: 'green',
+        CANCELED: 'default' 
+    };
 
     const expandedRowRender = (race) => {
         return (
@@ -164,28 +173,41 @@ const RefereeDashboardPage = () => {
         { title: 'Tên Giải', dataIndex: 'tournamentName', key: 'tournamentName' },
         { title: 'Chặng Đua', dataIndex: 'name', key: 'name', render: t => <Text strong className="text-blue-700">{t}</Text> },
         { title: 'Giờ Lên Lịch', dataIndex: 'raceTime', render: v => dayjs(v).format('HH:mm DD/MM/YYYY') },
-        { title: 'Trạng Thái', dataIndex: 'status', render: s => { const text = s === 'RUNNING' ? 'LIVE (Đang đua)' : s === 'PENDING' ? 'CHỜ XỬ LÝ' : s === 'FINISHED' ? 'ĐÃ KẾT THÚC' : s === 'CANCELED' ? 'ĐÃ HỦY' : s; return <Tag color={statusMap[s]} className="font-bold">{text}</Tag>; } },
+        { 
+            title: 'Trạng Thái', 
+            dataIndex: 'status', 
+            render: s => { 
+                const text = s === 'REGISTRATION' ? 'ĐĂNG KÝ THI ĐẤU' : 
+                             s === 'BETTING' ? 'NHẬN ĐẶT CƯỢC' : 
+                             s === 'LOCK_SESSION' ? 'KHÓA NHẬN CƯỢC' : 
+                             s === 'RUNNING' ? 'ĐANG THI ĐẤU' : 
+                             s === 'FINISHED' ? 'CHỜ KẾT QUẢ' : 
+                             s === 'RESULT_CONFIRMED' ? 'ĐÃ CÓ KẾT QUẢ' :
+                             s === 'COMPLETED' ? 'ĐÃ HOÀN TẤT' :
+                             s === 'CANCELED' ? 'ĐÃ HỦY CHẶNG' : s; 
+                return <Tag color={statusMap[s]} className="font-bold">{text}</Tag>; 
+            } 
+        },
         {
             title: 'Nghiệp Vụ',
             key: 'action',
             align: 'right',
             render: (_, record) => {
-                if (record.status === 'FINISHED') return <Text type="success" className="font-bold"><SafetyCertificateOutlined /> Đã Ký Duyệt & Phát Thưởng</Text>;
+                if (record.status === 'COMPLETED') return <Text type="success" className="font-bold"><SafetyCertificateOutlined /> Đã Phát Thưởng</Text>;
                 if (record.status === 'CANCELED') return <Text type="secondary">Chặng Bị Hủy</Text>;
 
+                const isReadyToStart = record.status === 'LOCK_SESSION';
                 const isRunning = record.status === 'RUNNING';
-                const isPending = record.status === 'PENDING';
+                const isFinished = record.status === 'FINISHED';
 
                 return (
                     <Space>
-                        {isPending && (
-                            <Popconfirm
-                                title="Phát lệnh bắt đầu cuộc đua?"
-                                description="Tỷ lệ cược của khán giả sẽ bị chốt lại ngay lập tức."
-                                onConfirm={() => handleStartRace(record)}
-                                okText="Bắt đầu" cancelText="Hủy"
-                            >
-                                <Button type="primary" className="bg-green-600 font-bold" icon={<PlayCircleOutlined />}>Bắt Đầu Đua</Button>
+                        {isReadyToStart && (
+                            <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record.id)}>BẮT ĐẦU ĐUA</Button>
+                        )}
+                        {isFinished && (
+                            <Popconfirm title="Xác nhận kết quả cuối cùng?" onConfirm={() => handleConfirmResult(record.id)}>
+                                <Button size="small" type="primary" className="bg-purple-600 border-none font-bold">KÝ XÁC NHẬN KẾT QUẢ</Button>
                             </Popconfirm>
                         )}
                         <Button danger icon={<WarningOutlined />} onClick={() => openReportModal(record)} disabled={!isRunning}>

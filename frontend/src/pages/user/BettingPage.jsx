@@ -53,8 +53,8 @@ const BettingPage = () => {
         setLoadingRaces(true);
         try {
             const response = await api.get('/races');
-            // Chỉ hiển thị các chặng đua CHƯA BẮT ĐẦU (PENDING) cho Spectator cược
-            const availableRaces = response.data.filter(race => race.status === 'PENDING');
+            // Chỉ hiển thị các chặng đua đang mở cược (BETTING) cho Spectator cược
+            const availableRaces = response.data.filter(race => race.status === 'BETTING');
             setRaces(availableRaces);
         } catch (error) {
             message.error('Không thể tải danh sách chặng đua!');
@@ -262,7 +262,7 @@ const BettingPage = () => {
                                 loading={submittingBet}
                                 icon={<DollarOutlined />}
                             >
-                                CHỐT KÈO
+                                CHỐT VÉ CƯỢC
                             </Button>
                         </div>
                     </div>

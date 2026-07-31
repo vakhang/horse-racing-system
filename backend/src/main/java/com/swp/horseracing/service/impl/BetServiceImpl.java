@@ -31,8 +31,8 @@ public class BetServiceImpl implements BetService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
 
         // RÀO CẢN: Chỉ được cược khi chặng đua chưa bắt đầu (PENDING)
-        if (race.getStatus() != RaceStatus.PENDING) {
-            throw new RuntimeException("Chỉ có thể đặt cược vào chặng đua chưa bắt đầu!");
+        if (race.getStatus() != RaceStatus.BETTING) {
+            throw new RuntimeException("Chặng đua hiện không trong trạng thái nhận cược!");
         }
 
         // RÀO CẢN 1: Khóa cược 1 phút trước giờ xuất phát và chỉ mở trước 12 giờ

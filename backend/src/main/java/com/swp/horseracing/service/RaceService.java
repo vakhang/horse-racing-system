@@ -10,6 +10,8 @@ public interface RaceService {
     List<RaceResponseDTO> getAllRaces();
     List<RaceResponseDTO> getRacesByTournamentId(Integer tournamentId);
     RaceResponseDTO getRaceById(Integer id);
+    void cancelRace(Integer id);
+    RaceResponseDTO forceTransition(Integer id, String targetStatus);
     RaceResponseDTO updateRace(Integer id, RaceRequestDTO request);
     void deleteRace(Integer id);
 

@@ -87,7 +87,7 @@ public class RaceServiceImpl implements RaceService {
                 .tournament(tournament)
                 .name(request.getName())
                 .raceTime(request.getRaceTime())
-                .status(request.getStatus() != null ? request.getStatus() : RaceStatus.PENDING)
+                .status(request.getStatus() != null ? request.getStatus() : RaceStatus.REGISTRATION)
                 .referee(referee)
                 .prize1(request.getPrize1())
                 .prize2(request.getPrize2())
@@ -248,7 +248,7 @@ public class RaceServiceImpl implements RaceService {
                 .tournamentName(race.getTournament() != null ? race.getTournament().getName() : null)
                 .name(race.getName())
                 .raceTime(race.getRaceTime())
-                .status(race.getStatus() != null ? race.getStatus() : com.swp.horseracing.model.RaceStatus.PENDING)
+                .status(race.getStatus() != null ? race.getStatus() : com.swp.horseracing.model.RaceStatus.REGISTRATION)
                 .refereeId(race.getReferee() != null ? race.getReferee().getId() : null)
                 .refereeUsername(race.getReferee() != null ? race.getReferee().getUsername() : null)
                 .prize1(race.getPrize1())
@@ -294,6 +294,27 @@ public class RaceServiceImpl implements RaceService {
         }
 
         return oddsList;
+    }
+
+    @Override
+    @Transactional
+    public void cancelRace(Integer id) {
+        Race race = raceRepository.findById(id).orElseThrow(() -> new RuntimeException("Race not found"));
+        race.setStatus(RaceStatus.CANCELED);
+        raceRepository.save(race);
+    }
+
+    @Override
+    @Transactional
+    public RaceResponseDTO forceTransition(Integer id, String targetStatus) {
+        Race race = raceRepository.findById(id).orElseThrow(() -> new RuntimeException("Race not found"));
+        try {
+            RaceStatus newStatus = RaceStatus.valueOf(targetStatus);
+            race.setStatus(newStatus);
+            return mapToResponseDTO(raceRepository.save(race));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Trạng thái không hợp lệ!");
+        }
     }
 
     @Override

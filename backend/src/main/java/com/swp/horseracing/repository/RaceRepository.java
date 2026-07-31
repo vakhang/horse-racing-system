@@ -15,4 +15,5 @@ public interface RaceRepository extends JpaRepository<Race, Integer> {
     List<Race> findAllWithDetails();
 
     List<Race> findByRefereeId(Integer refereeId);
+    List<Race> findByStatus(com.swp.horseracing.model.RaceStatus status);
 }

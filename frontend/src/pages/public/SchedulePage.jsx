@@ -25,10 +25,16 @@ const SchedulePage = () => {
     const fetchScheduledRaces = async () => {
         try {
             const res = await api.get('/races');
-            // Filter only scheduled or future races
-            const futureRaces = res.data.filter(race => 
-                race.status === 'PENDING' || race.status === 'RUNNING'
-            );
+            const now = new Date();
+            const futureRaces = res.data.filter(race => {
+                const raceDate = new Date(race.raceTime);
+                return (
+                    race.status === 'REGISTRATION' || 
+                    race.status === 'BETTING' || 
+                    race.status === 'LOCK_SESSION' || 
+                    race.status === 'RUNNING'
+                ) && raceDate >= now;
+            });
             setRaces(futureRaces);
         } catch (error) {
             console.error("Failed to fetch races", error);
@@ -78,8 +84,10 @@ const SchedulePage = () => {
             dataIndex: 'status',
             key: 'status',
             render: status => {
-                if (status === 'PENDING') return <Tag color="orange">Sắp diễn ra</Tag>;
-                if (status === 'RUNNING') return <Tag color="red">Đang đua</Tag>;
+                if (status === 'REGISTRATION') return <Tag color="orange">ĐĂNG KÝ THI ĐẤU</Tag>;
+                if (status === 'BETTING') return <Tag color="blue">NHẬN ĐẶT CƯỢC</Tag>;
+                if (status === 'LOCK_SESSION') return <Tag color="gray">KHÓA NHẬN CƯỢC</Tag>;
+                if (status === 'RUNNING') return <Tag color="red" className="animate-pulse">ĐANG THI ĐẤU</Tag>;
                 return <Tag>{status}</Tag>;
             }
         },

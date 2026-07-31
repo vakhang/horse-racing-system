@@ -45,6 +45,10 @@ public class RegistrationServiceImpl implements RegistrationService {
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy Nài ngựa ID: " + request.getJockeyId()));
         }
 
+        if (race.getStatus() != RaceStatus.REGISTRATION) {
+            throw new RuntimeException("Chặng đua này không trong trạng thái ĐĂNG KÝ. Không thể đăng ký thêm chiến mã!");
+        }
+
         // BỨC TƯỜNG LỬA CHẶN NGỰA BỆNH HOẶC CHƯA ĐƯỢC DUYỆT (TC_OWN_004)
         if (horse.getStatus() != HorseStatus.APPROVED) {
             throw new RuntimeException("Ngựa chưa được duyệt hoặc đã bị từ chối! Không thể đăng ký đua.");

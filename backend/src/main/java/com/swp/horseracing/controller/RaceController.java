@@ -1,6 +1,7 @@
 package com.swp.horseracing.controller;
 
 import com.swp.horseracing.dto.RaceRequestDTO;
+import com.swp.horseracing.dto.RaceResponseDTO;
 import com.swp.horseracing.service.RaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -51,13 +52,14 @@ public class RaceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRace(@PathVariable Integer id) {
-        try {
-            raceService.deleteRace(id);
-            return ResponseEntity.ok("Xóa Chặng đua thành công!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<Void> deleteRace(@PathVariable Integer id) {
+        raceService.deleteRace(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/transition")
+    public ResponseEntity<RaceResponseDTO> forceTransition(@PathVariable Integer id, @RequestBody java.util.Map<String, String> body) {
+        return ResponseEntity.ok(raceService.forceTransition(id, body.get("status")));
     }
 
     @GetMapping("/{id}/live-odds")

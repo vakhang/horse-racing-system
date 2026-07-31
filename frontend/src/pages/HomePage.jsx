@@ -66,8 +66,8 @@ const HomePage = () => {
         {
             title: 'Trạng Thái', dataIndex: 'status', key: 'status',
             render: (status) => {
-                let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
-                const text = status === 'WON' ? 'THẮNG' : status === 'LOST' ? 'Đã thua' : 'CHỜ XỬ LÝ';
+                let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : status === 'REFUNDED' || status === 'REFUND' ? 'gold' : 'orange';
+                const text = status === 'WON' ? 'THẮNG CƯỢC' : status === 'LOST' ? 'THUA CƯỢC' : status === 'REFUNDED' || status === 'REFUND' ? 'ĐÃ HOÀN TIỀN' : 'CHỜ KẾT QUẢ';
                 return <Tag color={color} className="font-bold">{text}</Tag>;
             }
         },
@@ -76,8 +76,17 @@ const HomePage = () => {
 
     const rewardColumns = [
         { title: 'Tên Chặng Đua', dataIndex: 'raceName', key: 'raceName', render: (val) => <span className="font-bold text-blue-700 text-base">{val}</span> },
-        { title: 'Chiến Mã Điều Khiển', dataIndex: 'horseName', key: 'horseName', render: (val) => <Tag color="geekblue" className="font-medium text-sm px-3 py-1">{val}</Tag> },
-        { title: 'Thứ Hạng Về Đích', dataIndex: 'rank', key: 'rank', align: 'center', render: (val) => val === 1 ? <Tag color="gold" className="font-bold text-sm px-3 py-1">TOP 1 🏆</Tag> : <Tag color="silver" className="font-bold px-3 py-1">TOP {val}</Tag> },
+        { title: 'Chiến Mã Điều Khiển', dataIndex: 'horseName', key: 'horseName', render: (val, record) => (
+            <Space>
+                <Tag color="geekblue" className="font-medium text-sm px-3 py-1">{val}</Tag>
+                {record.status === 'WITHDRAWN' && <Tag color="gold" className="font-bold">RÚT LUI TRƯỚC TRẬN</Tag>}
+                {record.status === 'DISQUALIFIED' && <Tag color="red" className="font-bold">BỊ TRUẤT QUYỀN - Lý do: {record.reason || 'Vi phạm kỷ luật'}</Tag>}
+            </Space>
+        ) },
+        { title: 'Thứ Hạng Về Đích', dataIndex: 'rank', key: 'rank', align: 'center', render: (val, record) => {
+            if (record.status === 'WITHDRAWN' || record.status === 'DISQUALIFIED') return <span className="text-gray-400 font-bold">-</span>;
+            return val === 1 ? <Tag color="gold" className="font-bold text-sm px-3 py-1">TOP 1 🏆</Tag> : <Tag color="silver" className="font-bold px-3 py-1">TOP {val}</Tag>;
+        } },
         { title: 'Tiền Công / Thưởng', dataIndex: 'reward', key: 'reward', render: (val) => <span className="text-green-600 font-bold text-lg">+{Number(val || 0).toLocaleString()} VNĐ</span> },
         { title: 'Thời Gian Ghi Nhận', dataIndex: 'date', key: 'date', render: (val) => dayjs(val).format('HH:mm - DD/MM/YYYY') },
     ];
@@ -109,9 +118,15 @@ const HomePage = () => {
         {
             title: 'Trạng Thái', dataIndex: 'status', key: 'status',
             render: (status) => {
-                if (status === 'PENDING') return <Tag color="warning" className="font-bold px-3 py-1">CHỜ XỬ LÝ</Tag>;
-                if (status === 'COMPLETED') return <Tag color="success" className="font-bold px-3 py-1">ĐÃ HOÀN TẤT</Tag>;
+                if (status === 'REGISTRATION') return <Tag color="orange" className="font-bold px-3 py-1">ĐĂNG KÝ THI ĐẤU</Tag>;
+                if (status === 'BETTING') return <Tag color="blue" className="font-bold px-3 py-1">NHẬN ĐẶT CƯỢC</Tag>;
+                if (status === 'LOCK_SESSION') return <Tag color="default" className="font-bold px-3 py-1">KHÓA NHẬN CƯỢC</Tag>;
+                if (status === 'RUNNING') return <Tag color="red" className="animate-pulse font-bold px-3 py-1">ĐANG THI ĐẤU</Tag>;
+                if (status === 'FINISHED') return <Tag color="cyan" className="font-bold px-3 py-1">CHỜ KẾT QUẢ</Tag>;
+                if (status === 'RESULT_CONFIRMED') return <Tag color="purple" className="font-bold px-3 py-1">ĐÃ CÓ KẾT QUẢ</Tag>;
+                if (status === 'COMPLETED') return <Tag color="green" className="font-bold px-3 py-1">HOÀN TẤT - ĐÃ TRẢ THƯỞNG</Tag>;
                 if (status === 'REJECTED') return <Tag color="error" className="font-bold px-3 py-1">TỪ CHỐI</Tag>;
+                if (status === 'CANCELED') return <Tag color="default" className="font-bold px-3 py-1">ĐÃ HỦY CHẶNG</Tag>;
                 return <Tag>{status}</Tag>;
             }
         },

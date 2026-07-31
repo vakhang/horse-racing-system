@@ -31,7 +31,8 @@ const OwnerRaceRegistrationPage = () => {
         setLoading(true);
         try {
             const response = await api.get('/races');
-            setRaces(response.data.filter(race => race.status === 'PENDING'));
+            // Chỉ lấy các chặng đua đang trong trạng thái ĐĂNG KÝ
+            setRaces(response.data.filter(race => race.status === 'REGISTRATION'));
         } catch (error) { message.error('Không thể tải danh sách chặng đua!'); }
         finally { setLoading(false); }
     };
