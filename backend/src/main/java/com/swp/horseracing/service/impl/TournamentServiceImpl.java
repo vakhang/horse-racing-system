@@ -226,7 +226,7 @@ public class TournamentServiceImpl implements TournamentService {
                 .name(tournament.getName())
                 .startDate(tournament.getStartDate())
                 .endDate(tournament.getEndDate())
-                .status(tournament.getStatus())
+                .status(tournament.getStatus() != null ? tournament.getStatus() : com.swp.horseracing.model.TournamentStatus.UPCOMING)
                 .build();
     }
 }

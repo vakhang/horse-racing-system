@@ -179,7 +179,7 @@ public class RaceServiceImpl implements RaceService {
                 .tournamentName(race.getTournament() != null ? race.getTournament().getName() : null)
                 .name(race.getName())
                 .raceTime(race.getRaceTime())
-                .status(race.getStatus())
+                .status(race.getStatus() != null ? race.getStatus() : com.swp.horseracing.model.RaceStatus.PENDING)
                 .refereeId(race.getReferee() != null ? race.getReferee().getId() : null)
                 .refereeUsername(race.getReferee() != null ? race.getReferee().getUsername() : null)
                 .prize1(race.getPrize1())
