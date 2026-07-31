@@ -390,6 +390,9 @@ const AdminTournamentPage = () => {
                             >
                                 <DatePicker showTime format="YYYY-MM-DD HH:mm" disabledDate={disabledDate} size="large" className="w-full" />
                             </Form.Item>
+                            <Text type="secondary" className="text-xs text-blue-500 italic block mt-1">
+                                💡 Gợi ý: Mỗi chặng đua nên cách chặng đua trước đó ít nhất 30 phút tính từ lúc chặng trước kết thúc (tương đương 60 phút từ giờ xuất phát của chặng trước) để đảm bảo thời gian dọn dẹp mặt sân và chuẩn bị ngựa.
+                            </Text>
                         </Col>
                     </Row>
 

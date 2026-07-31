@@ -67,7 +67,7 @@ const HomePage = () => {
             title: 'Trạng Thái', dataIndex: 'status', key: 'status',
             render: (status) => {
                 let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
-                const text = status === 'WON' ? 'THẮNG' : status === 'LOST' ? 'THUA' : 'CHỜ XỬ LÝ';
+                const text = status === 'WON' ? 'THẮNG' : status === 'LOST' ? 'Đã thua' : 'CHỜ XỬ LÝ';
                 return <Tag color={color} className="font-bold">{text}</Tag>;
             }
         },

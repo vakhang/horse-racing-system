@@ -5,5 +5,6 @@ public enum RegistrationStatus {
     PENDING_APPROVAL,
     APPROVED_BY_ADMIN,
     REJECTED_BY_ADMIN,
-    WITHDRAWN
+    WITHDRAWN,
+    DISQUALIFIED
 }

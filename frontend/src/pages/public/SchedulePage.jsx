@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Table, Tag, Spin, message, Modal, List, Avatar, ConfigProvider, theme } from 'antd';
+import { Typography, Table, Tag, Spin, message, Modal, List, Avatar, ConfigProvider, theme, Space, Tooltip, Badge } from 'antd';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
 import api from '../../config/api';
@@ -146,7 +146,16 @@ const SchedulePage = () => {
                             <List.Item>
                                 <List.Item.Meta
                                     avatar={<Avatar src={item.horseImageUrl || 'https://joeschmoe.io/api/v1/random'} />}
-                                    title={<Text strong>Ngựa: {item.horseName}</Text>}
+                                    title={
+                                        <Space>
+                                            <Text strong>Ngựa: {item.horseName}</Text>
+                                            {item.status === 'DISQUALIFIED' && (
+                                                <Tooltip title={`Lý do: ${item.note || 'Vi phạm nội quy'}`}>
+                                                    <Badge color="red" text="TRUẤT QUYỀN" className="font-bold text-red-600" />
+                                                </Tooltip>
+                                            )}
+                                        </Space>
+                                    }
                                     description={<Text type="secondary">Nài ngựa: {item.jockeyUsername || 'Chưa có'}</Text>}
                                 />
                             </List.Item>

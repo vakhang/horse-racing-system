@@ -35,9 +35,15 @@ public class BetServiceImpl implements BetService {
             throw new RuntimeException("Chỉ có thể đặt cược vào chặng đua chưa bắt đầu!");
         }
 
-        // RÀO CẢN 1: Khóa cược 1 phút trước giờ xuất phát
-        if (race.getRaceTime() != null && java.time.LocalDateTime.now().plusMinutes(1).isAfter(race.getRaceTime())) {
-            throw new RuntimeException("Hệ thống đã khóa nhận cược cho chặng đua này!");
+        // RÀO CẢN 1: Khóa cược 1 phút trước giờ xuất phát và chỉ mở trước 12 giờ
+        if (race.getRaceTime() != null) {
+            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            if (now.plusMinutes(1).isAfter(race.getRaceTime())) {
+                throw new RuntimeException("Hệ thống đã khóa nhận cược cho chặng đua này!");
+            }
+            if (now.plusHours(12).isBefore(race.getRaceTime())) {
+                throw new RuntimeException("Cổng cược chỉ mở 12 giờ trước khi cuộc đua bắt đầu!");
+            }
         }
 
         // RÀO CẢN 2: Giới hạn số tiền cược

@@ -13,4 +13,6 @@ public interface RaceRepository extends JpaRepository<Race, Integer> {
 
     @org.springframework.data.jpa.repository.Query("SELECT r FROM Race r JOIN FETCH r.tournament LEFT JOIN FETCH r.referee")
     List<Race> findAllWithDetails();
+
+    List<Race> findByRefereeId(Integer refereeId);
 }

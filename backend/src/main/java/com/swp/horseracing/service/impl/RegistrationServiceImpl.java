@@ -22,11 +22,12 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final HorseRepository horseRepository;
     private final UserRepository userRepository;
 
-    // Bổ sung các repo này để hoàn tiền cược khi Ngựa Rút lui
+    // Bổ sung các repo này để hoàn tiền cược khi Ngựa Rút lui và Phạt
     private final BetRepository betRepository;
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final AuditLogRepository auditLogRepository;
+    private final RefereeReportRepository refereeReportRepository;
 
     @Override
     @Transactional
@@ -111,6 +112,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         if (request.getStatus() != null && request.getStatus() != reg.getStatus()) {
             if (request.getStatus() == RegistrationStatus.WITHDRAWN) {
                 withdrawHorseLogic(reg, request.getReason());
+                reg.setNote(request.getReason());
+            } else if (request.getStatus() == RegistrationStatus.DISQUALIFIED) {
+                disqualifyHorseLogic(reg, request.getReason());
+                reg.setNote(request.getReason());
             }
             reg.setStatus(request.getStatus());
         }
@@ -167,6 +172,47 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .reason(reason != null ? reason : "Ngựa rút lui khỏi chặng đua do sự cố")
                 .affectedBetsCount(affectedCount)
                 .totalRefundAmount(totalRefund)
+                .build();
+        auditLogRepository.save(log);
+    }
+
+    // NGHIỆP VỤ PHẠT TRUẤT QUYỀN (Không hoàn tiền, vé cược -> LOST)
+    private void disqualifyHorseLogic(Registration reg, String reason) {
+        List<Bet> bets = betRepository.findByRaceId(reg.getRace().getId());
+        int affectedCount = 0;
+
+        for (Bet bet : bets) {
+            // Đổi vé cược thành LOST
+            if (bet.getRegistration().getId().equals(reg.getId()) && bet.getStatus() == BetStatus.PENDING) {
+                bet.setStatus(BetStatus.LOST);
+                betRepository.save(bet);
+                affectedCount++;
+            }
+        }
+        
+        // Ghi Biên bản Trọng tài (RefereeReport)
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = null;
+        if (auth != null && auth.getName() != null) {
+            currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+        }
+        if (currentUser != null) {
+            RefereeReport report = RefereeReport.builder()
+                    .race(reg.getRace())
+                    .registration(reg)
+                    .referee(currentUser)
+                    .violationDetails(reason != null ? reason : "Bị truất quyền thi đấu")
+                    .build();
+            refereeReportRepository.save(report);
+        }
+
+        // Ghi Sổ Nhật Ký (Audit Log)
+        AuditLog log = AuditLog.builder()
+                .action("DISQUALIFY_HORSE")
+                .performedBy(currentUser != null ? currentUser.getUsername() : "SYSTEM")
+                .reason(reason != null ? reason : "Truất quyền thi đấu")
+                .affectedBetsCount(affectedCount)
+                .totalRefundAmount(BigDecimal.ZERO)
                 .build();
         auditLogRepository.save(log);
     }

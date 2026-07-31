@@ -15,7 +15,7 @@ public interface BetRepository extends JpaRepository<Bet, Integer> {
     List<Bet> findByRaceId(Integer raceId);
 
     // Tính tổng tiền cược của một con ngựa (Registration) trong một chặng đua cụ thể
-    @Query("SELECT SUM(b.amount) FROM Bet b WHERE b.race.id = :raceId AND b.registration.id = :regId")
+    @Query("SELECT SUM(b.amount) FROM Bet b WHERE b.race.id = :raceId AND b.registration.id = :regId AND b.status NOT IN (com.swp.horseracing.model.BetStatus.CANCELED, com.swp.horseracing.model.BetStatus.REFUNDED)")
     BigDecimal sumAmountByRaceIdAndRegistrationId(@Param("raceId") Integer raceId, @Param("regId") Integer regId);
 
     // Truy xuất lịch sử cược của User
@@ -23,7 +23,7 @@ public interface BetRepository extends JpaRepository<Bet, Integer> {
     List<Bet> findBySpectatorIdOrderByCreatedAtDesc(Integer spectatorId);
 
     // Tính tổng tiền cược trong ngày của khán giả
-    @Query("SELECT SUM(b.amount) FROM Bet b WHERE b.spectator.id = :spectatorId AND b.createdAt >= :startDate AND b.createdAt <= :endDate")
+    @Query("SELECT SUM(b.amount) FROM Bet b WHERE b.spectator.id = :spectatorId AND b.createdAt >= :startDate AND b.createdAt <= :endDate AND b.status NOT IN (com.swp.horseracing.model.BetStatus.CANCELED, com.swp.horseracing.model.BetStatus.REFUNDED)")
     BigDecimal sumDailyBetAmountBySpectatorId(
         @Param("spectatorId") Integer spectatorId, 
         @Param("startDate") java.time.LocalDateTime startDate, 

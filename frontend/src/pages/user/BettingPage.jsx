@@ -14,6 +14,17 @@ const BettingPage = () => {
     const [races, setRaces] = useState([]);
     const [loadingRaces, setLoadingRaces] = useState(true);
 
+    if (user?.role === 'OWNER' || user?.role === 'JOCKEY' || user?.role === 'REFEREE') {
+        return (
+            <div className="p-10 max-w-4xl mx-auto">
+                <Card className="text-center shadow-xl border-red-200">
+                    <Title level={2} className="text-red-600">Truy Cập Bị Từ Chối</Title>
+                    <Text className="text-lg">Tài khoản của bạn ({user.role}) KHÔNG được phép truy cập vào khu vực cá cược để đảm bảo tính minh bạch của giải đấu!</Text>
+                </Card>
+            </div>
+        );
+    }
+
     // State cho Modal Đặt Cược
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRace, setSelectedRace] = useState(null);

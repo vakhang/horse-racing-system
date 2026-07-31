@@ -20,6 +20,7 @@ public class RefereeServiceImpl implements RefereeService {
     private final UserRepository userRepository;
     private final RegistrationRepository registrationRepository;
     private final HorseRepository horseRepository;
+    private final BetRepository betRepository;
 
     @Override
     @Transactional
@@ -65,6 +66,19 @@ public class RefereeServiceImpl implements RefereeService {
         Registration registration = registrationRepository.findById(request.getRegistrationId())
                 .orElseThrow(() -> new RuntimeException("Registration not found"));
 
+        // TRUẤT QUYỀN
+        registration.setStatus(RegistrationStatus.DISQUALIFIED);
+        registrationRepository.save(registration);
+
+        // TÌM TẤT CẢ VÉ CƯỢC CỦA NGỰA BỊ TRUẤT QUYỀN VÀ CHUYỂN THÀNH LOST
+        List<Bet> bets = betRepository.findByRaceId(race.getId());
+        for (Bet bet : bets) {
+            if (bet.getRegistration().getId().equals(registration.getId()) && bet.getStatus() == BetStatus.PENDING) {
+                bet.setStatus(BetStatus.LOST);
+                betRepository.save(bet);
+            }
+        }
+
         RefereeReport report = RefereeReport.builder()
                 .race(race)
                 .referee(referee)
@@ -74,6 +88,6 @@ public class RefereeServiceImpl implements RefereeService {
 
         refereeReportRepository.save(report);
 
-        return "Lập biên bản vi phạm thành công!";
+        return "Lập biên bản và truất quyền thi đấu thành công!";
     }
 }

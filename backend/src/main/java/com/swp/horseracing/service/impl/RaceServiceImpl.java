@@ -35,6 +35,35 @@ public class RaceServiceImpl implements RaceService {
     private final AuditLogRepository auditLogRepository;
     private final PrizeConfigRepository prizeConfigRepository;
 
+    private void validateRaceTimeConstraints(java.time.LocalDateTime newRaceTime, Integer tournamentId, Integer currentRaceId) {
+        if (newRaceTime == null) return;
+        
+        int estimatedDuration = 30; // phút
+        java.time.LocalDateTime estimatedEndTime = newRaceTime.plusMinutes(estimatedDuration);
+        
+        if (estimatedEndTime.toLocalTime().isAfter(java.time.LocalTime.of(22, 59, 59)) && estimatedEndTime.toLocalTime().isBefore(java.time.LocalTime.of(23, 59, 59))) {
+            throw new RuntimeException("Các cuộc đua trong ngày phải kết thúc trước 23:00!");
+        }
+
+        java.util.List<Race> existingRaces = raceRepository.findByTournamentId(tournamentId);
+        for (Race r : existingRaces) {
+            if (currentRaceId != null && r.getId().equals(currentRaceId)) continue;
+            
+            if (r.getRaceTime() == null) continue;
+            
+            java.time.LocalDateTime startA = r.getRaceTime();
+            java.time.LocalDateTime endA = startA.plusMinutes(r.getEstimatedDuration() != null ? r.getEstimatedDuration() : 30);
+            
+            java.time.LocalDateTime startB = newRaceTime;
+            java.time.LocalDateTime endB = startB.plusMinutes(estimatedDuration);
+            
+            // Công thức chặn trùng hoặc quá sát giờ (cách nhau ít nhất 30 phút)
+            if (startA.isBefore(endB.plusMinutes(30)) && startB.isBefore(endA.plusMinutes(30))) {
+                throw new RuntimeException("Các chặng đua phải cách nhau ít nhất 30 phút (tính từ lúc kết thúc) để bảo trì đường chạy!");
+            }
+        }
+    }
+
     @Override
     @Transactional
     public RaceResponseDTO createRace(RaceRequestDTO request) {
@@ -46,6 +75,8 @@ public class RaceServiceImpl implements RaceService {
             referee = userRepository.findById(request.getRefereeId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy Trọng tài!"));
         }
+
+        validateRaceTimeConstraints(request.getRaceTime(), request.getTournamentId(), null);
 
         Race race = Race.builder()
                 .tournament(tournament)
@@ -96,7 +127,10 @@ public class RaceServiceImpl implements RaceService {
         }
 
         if (request.getName() != null) race.setName(request.getName());
-        if (request.getRaceTime() != null) race.setRaceTime(request.getRaceTime());
+        if (request.getRaceTime() != null) {
+            validateRaceTimeConstraints(request.getRaceTime(), race.getTournament().getId(), race.getId());
+            race.setRaceTime(request.getRaceTime());
+        }
 
         if (request.getRefereeId() != null) {
             User referee = userRepository.findById(request.getRefereeId())
@@ -111,6 +145,31 @@ public class RaceServiceImpl implements RaceService {
 
         // Cập nhật trạng thái
         if (request.getStatus() != null && request.getStatus() != race.getStatus()) {
+            org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_REFEREE"))) {
+                // Lỗi BOLA: Chỉ trọng tài được phân công mới được đổi trạng thái chặng đua
+                User currentUser = userRepository.findByUsername(auth.getName())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy user đăng nhập!"));
+                if (race.getReferee() == null || !race.getReferee().getId().equals(currentUser.getId())) {
+                    throw new RuntimeException("Bạn không có quyền thao tác trên chặng đua này!");
+                }
+                
+                // Ràng buộc hoàn thành chặng cũ: Không được bắt đầu chặng mới nếu có chặng cũ chưa xong
+                if (request.getStatus() == RaceStatus.RUNNING) {
+                    java.util.List<Race> refereeRaces = raceRepository.findByRefereeId(currentUser.getId());
+                    for (Race r : refereeRaces) {
+                        if (!r.getId().equals(race.getId()) 
+                                && r.getRaceTime() != null 
+                                && race.getRaceTime() != null 
+                                && r.getRaceTime().isBefore(race.getRaceTime())) {
+                            if (r.getStatus() != RaceStatus.RESULT_CONFIRMED && r.getStatus() != RaceStatus.CANCELED) {
+                                throw new RuntimeException("Bạn phải ký xác nhận chặng đua trước đó (" + r.getName() + ") trước khi bắt đầu chặng mới!");
+                            }
+                        }
+                    }
+                }
+            }
+
             if (request.getStatus() == RaceStatus.CANCELED) {
                 cancelRaceLogic(race, "Hủy chặng đua thông qua API trực tiếp");
             }
