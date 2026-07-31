@@ -69,6 +69,13 @@ const Header = () => {
                 notifs.push({ title: 'Tài khoản đã xác minh', desc: 'Bạn có thể sử dụng toàn bộ tính năng hệ thống.', color: 'green' });
             } else if (user?.status === 'PENDING') {
                 notifs.push({ title: 'Chờ duyệt KYC', desc: 'Vui lòng đợi Admin kiểm tra hồ sơ của bạn.', color: 'orange' });
+            } else if (user?.status === 'BANNED' || user?.status === 'REJECTED') {
+                notifs.push({ title: 'Tài khoản có vấn đề', desc: user.banReason || 'Vui lòng liên hệ Admin.', color: 'red' });
+            }
+
+            // Hiển thị Nhắc Nhở cá nhân từ Admin (được lưu trong banReason) cho cả user đã APPROVED hoặc PENDING
+            if (user?.banReason && user.status !== 'BANNED' && user.status !== 'REJECTED') {
+                notifs.push({ title: '⚠️ Lời Nhắc Từ Admin', desc: user.banReason, color: 'red' });
             }
 
             // Lấy thông báo từ Database
