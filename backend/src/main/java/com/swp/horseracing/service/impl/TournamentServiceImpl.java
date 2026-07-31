@@ -69,19 +69,24 @@ public class TournamentServiceImpl implements TournamentService {
 
         if (request.getName() != null) tournament.setName(request.getName());
 
-        // BỨC TƯỜNG LỬA CHẶN ADMIN SET STATUS BẰNG TAY (Chỉ cho phép chọn CANCELED hoặc POSTPONED)
+        // BỨC TƯỜNG LỬA CHẶN ADMIN SET STATUS BẰNG TAY (Chỉ cho phép chọn CANCELED, POSTPONED hoặc UPCOMING để khôi phục)
         if (request.getStatus() != null && request.getStatus() != tournament.getStatus()) {
             TournamentStatus newStatus = request.getStatus();
 
-            if (newStatus == TournamentStatus.UPCOMING || newStatus == TournamentStatus.ONGOING || newStatus == TournamentStatus.COMPLETED) {
+            if (newStatus == TournamentStatus.ONGOING || newStatus == TournamentStatus.COMPLETED) {
                 throw new RuntimeException("Nghiêm cấm can thiệp! Admin không được phép tự chuyển trạng thái sang: " + newStatus.name() + ". Hệ thống máy đếm ngược sẽ tự động đồng bộ thời gian chuẩn.");
             }
 
             if (newStatus == TournamentStatus.CANCELED) {
+                tournament.setReason(request.getReason());
                 cancelTournamentLogic(tournament, request.getReason());
             } else if (newStatus == TournamentStatus.POSTPONED) {
+                tournament.setReason(request.getReason());
                 postponeTournamentLogic(tournament, request.getStartDate(), request.getEndDate(), request.getReason());
+            } else if (newStatus == TournamentStatus.UPCOMING) {
+                tournament.setReason(null);
             }
+            tournament.setStatus(newStatus);
         } else {
             // Nếu không có can thiệp ngoại lệ, cập nhật thời gian bình thường
             if (request.getStartDate() != null) tournament.setStartDate(request.getStartDate());
@@ -221,12 +226,29 @@ public class TournamentServiceImpl implements TournamentService {
     }
 
     private TournamentResponseDTO mapToResponseDTO(Tournament tournament) {
+        TournamentStatus currentStatus = tournament.getStatus();
+        if (currentStatus != TournamentStatus.CANCELED && currentStatus != TournamentStatus.POSTPONED) {
+            LocalDateTime now = LocalDateTime.now();
+            if (tournament.getStartDate() != null && tournament.getEndDate() != null) {
+                if (now.isBefore(tournament.getStartDate())) {
+                    currentStatus = TournamentStatus.UPCOMING;
+                } else if (now.isAfter(tournament.getEndDate())) {
+                    currentStatus = TournamentStatus.COMPLETED;
+                } else {
+                    currentStatus = TournamentStatus.ONGOING;
+                }
+            } else {
+                currentStatus = TournamentStatus.UPCOMING;
+            }
+        }
+
         return TournamentResponseDTO.builder()
                 .id(tournament.getId())
                 .name(tournament.getName())
                 .startDate(tournament.getStartDate())
                 .endDate(tournament.getEndDate())
-                .status(tournament.getStatus() != null ? tournament.getStatus() : com.swp.horseracing.model.TournamentStatus.UPCOMING)
+                .status(currentStatus)
+                .reason(tournament.getReason())
                 .build();
     }
 }

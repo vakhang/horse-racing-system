@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
-import { Typography, Carousel, Card, Row, Col, Button, Tag, Spin } from 'antd';
+import { Typography, Carousel, Card, Row, Col, Button, Tag, Spin, Select } from 'antd';
 import { FireOutlined, TrophyOutlined, GiftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
@@ -15,6 +15,7 @@ const LandingPage = () => {
     const { user } = useAuth();
     const [tournaments, setTournaments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('ALL');
 
     const banners = [
         "https://vinhomesvuyenhaiphong.com/uploads/024267aa-4d55-4979-8254-99201ce68083.jpeg",
@@ -26,7 +27,7 @@ const LandingPage = () => {
         const fetchTournaments = async () => {
             try {
                 const response = await api.get('/tournaments');
-                setTournaments(response.data.slice(0, 4));
+                setTournaments(response.data);
             } catch (error) { console.error("Lỗi tải giải đấu:", error); }
             finally { setLoading(false); }
         };
@@ -35,9 +36,15 @@ const LandingPage = () => {
 
     const statusMap = {
         UPCOMING: { color: 'cyan', text: 'SẮP DIỄN RA' },
-        ONGOING: { color: 'red', text: 'ĐANG THI ĐẤU (HOT)' },
-        COMPLETED: { color: 'default', text: 'ĐÃ HOÀN TẤT' }
+        ONGOING: { color: 'green', text: 'ĐANG DIỄN RA' },
+        COMPLETED: { color: 'default', text: 'ĐÃ KẾT THÚC' },
+        POSTPONED: { color: 'warning', text: 'ĐÃ DỜI LỊCH' },
+        CANCELED: { color: 'error', text: 'ĐÃ HỦY' }
     };
+
+    const sortOrder = { ONGOING: 1, UPCOMING: 2, COMPLETED: 3, POSTPONED: 4, CANCELED: 5 };
+    const sortedTournaments = [...tournaments].sort((a, b) => (sortOrder[a.status] || 99) - (sortOrder[b.status] || 99));
+    const filteredTournaments = filter === 'ALL' ? sortedTournaments : sortedTournaments.filter(t => t.status === filter);
 
     return (
         <div className="max-w-6xl mx-auto pb-10">
@@ -78,22 +85,45 @@ const LandingPage = () => {
             </div>
 
             <div className="mb-10">
-                <Title level={3} className="border-l-4 border-blue-500 pl-3 mb-6"><TrophyOutlined className="text-blue-500 mr-2"/> LỊCH GIẢI ĐẤU</Title>
+                <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+                    <Title level={3} className="border-l-4 border-blue-500 pl-3 m-0"><TrophyOutlined className="text-blue-500 mr-2"/> LỊCH GIẢI ĐẤU</Title>
+                    <Select value={filter} onChange={setFilter} className="w-full md:w-64 mt-4 md:mt-0" size="large">
+                        <Select.Option value="ALL">Tất Cả Trạng Thái</Select.Option>
+                        <Select.Option value="ONGOING">Đang Diễn Ra</Select.Option>
+                        <Select.Option value="UPCOMING">Sắp Diễn Ra</Select.Option>
+                        <Select.Option value="COMPLETED">Đã Kết Thúc</Select.Option>
+                        <Select.Option value="POSTPONED">Đã Dời Lịch</Select.Option>
+                        <Select.Option value="CANCELED">Đã Hủy</Select.Option>
+                    </Select>
+                </div>
                 <Spin spinning={loading}>
                     <Row gutter={[24, 24]}>
-                        {tournaments.length > 0 ? tournaments.map(tour => (
+                        {filteredTournaments.length > 0 ? filteredTournaments.map(tour => (
                             <Col xs={24} md={12} key={tour.id}>
-                                <Card className="shadow-md hover:shadow-xl transition-shadow bg-gradient-to-br from-[#001529] to-blue-900 text-white rounded-xl border-none">
+                                <Card className="shadow-md hover:shadow-xl transition-shadow bg-gradient-to-br from-[#001529] to-blue-900 text-white rounded-xl border-none h-full flex flex-col">
                                     <Tag color={statusMap[tour.status]?.color || 'default'} className="mb-2 font-bold">{statusMap[tour.status]?.text || tour.status}</Tag>
                                     <Title level={4} className="text-white mb-1">{tour.name}</Title>
-                                    <Text className="text-blue-200 block mb-4">Thời gian: {dayjs(tour.startDate).format('DD/MM/YYYY')} - {dayjs(tour.endDate).format('DD/MM/YYYY')}</Text>
-                                    <Button ghost onClick={() => navigate(user?.role === 'OWNER' ? '/owner/races' : user?.role === 'REFEREE' ? '/referee/dashboard' : '/betting')}>
-                                        {user?.role === 'OWNER' ? 'Đăng ký ngay' : user?.role === 'REFEREE' ? 'Giám sát giải' : 'Khám phá ngay'}
-                                    </Button>
+                                    <Text className="text-blue-200 block mb-2">Thời gian: {dayjs(tour.startDate).format('DD/MM/YYYY')} - {dayjs(tour.endDate).format('DD/MM/YYYY')}</Text>
+                                    {(tour.status === 'CANCELED' || tour.status === 'POSTPONED') && tour.reason && (
+                                        <div className="bg-white/10 p-3 rounded-lg mb-4 mt-2 border border-white/20">
+                                            <Text className="text-white block italic text-sm"><strong className="text-yellow-400">Lý do:</strong> {tour.reason}</Text>
+                                        </div>
+                                    )}
+                                    <div className="mt-auto pt-4">
+                                        {(tour.status !== 'CANCELED' && tour.status !== 'POSTPONED' && tour.status !== 'COMPLETED') ? (
+                                            <Button type="primary" size="large" className="bg-gradient-to-r from-yellow-500 to-yellow-400 border-none text-black font-bold px-6" onClick={() => navigate(user?.role === 'OWNER' ? '/owner/races' : user?.role === 'REFEREE' ? '/referee/dashboard' : '/betting')}>
+                                                {user?.role === 'OWNER' ? 'Đăng ký ngay' : user?.role === 'REFEREE' ? 'Giám sát giải' : 'Khám phá ngay'}
+                                            </Button>
+                                        ) : (
+                                            <Button disabled size="large" className="font-bold px-6 bg-gray-500 text-gray-300 border-none">
+                                                {tour.status === 'COMPLETED' ? 'Đã Kết Thúc' : 'Không Thể Đăng Ký'}
+                                            </Button>
+                                        )}
+                                    </div>
                                 </Card>
                             </Col>
                         )) : (
-                            <Col span={24}><Text className="text-gray-500">Hiện chưa có giải đấu nào.</Text></Col>
+                            <Col span={24}><Text className="text-gray-500">Hiện chưa có giải đấu nào phù hợp với bộ lọc.</Text></Col>
                         )}
                     </Row>
                 </Spin>

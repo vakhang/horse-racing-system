@@ -84,7 +84,7 @@ const SchedulePage = () => {
             }
         },
         {
-            title: 'Đội hình',
+            title: 'Danh sách tham gia',
             key: 'action',
             render: (_, record) => (
                 <a 

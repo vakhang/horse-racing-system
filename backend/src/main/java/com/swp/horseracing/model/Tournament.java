@@ -25,6 +25,9 @@ public class Tournament {
     private LocalDateTime endDate;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Column(name = "status", length = 50)
     private TournamentStatus status;
+
+    @Column(name = "reason", columnDefinition = "TEXT")
+    private String reason;
 }

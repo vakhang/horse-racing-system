@@ -77,7 +77,10 @@ const AdminTournamentPage = () => {
             setIsTourModalVisible(false);
             fetchTournaments();
         } catch (e) {
-            const errorMsg = e.response?.data?.error || e.response?.data?.message || 'Có lỗi xảy ra!';
+            let errorMsg = 'Có lỗi xảy ra!';
+            if (e.response?.data?.error) errorMsg = e.response.data.error;
+            else if (e.response?.data?.message) errorMsg = e.response.data.message;
+            else if (typeof e.response?.data === 'string') errorMsg = e.response.data;
             message.error(errorMsg);
         }
     };
@@ -152,7 +155,7 @@ const AdminTournamentPage = () => {
         try {
             await api.post(`/races/${raceId}/payout`);
             message.success('Đã trả thưởng thành công cho khán giả!');
-        } catch(e) {
+        } catch (e) {
             message.error(e.response?.data || 'Lỗi khi trả thưởng!');
         }
     };
@@ -164,7 +167,7 @@ const AdminTournamentPage = () => {
             const response = await api.get(`/registrations`, { params: { raceId: race.id } });
             setRaceRegistrations(response.data);
             setIsWithdrawModalVisible(true);
-        } catch(e) {
+        } catch (e) {
             message.error("Lỗi lấy danh sách ngựa!");
         }
     };
@@ -181,7 +184,7 @@ const AdminTournamentPage = () => {
             message.success("Đã loại ngựa và tự động hoàn trả (Refund) tiền cược cho khán giả!");
             const response = await api.get(`/registrations`, { params: { raceId: selectedRaceForWithdraw.id } });
             setRaceRegistrations(response.data);
-        } catch(e) {
+        } catch (e) {
             message.error("Lỗi xử lý rút lui!");
         }
     };
@@ -200,7 +203,7 @@ const AdminTournamentPage = () => {
                 title: 'Trọng Tài Phụ Trách',
                 key: 'referee',
                 render: (_, r) => {
-                    return r.refereeUsername ? <Tag color="blue" className="font-bold"><UserOutlined/> {r.refereeUsername}</Tag> : <Text type="secondary" italic>Chưa phân công</Text>;
+                    return r.refereeUsername ? <Tag color="blue" className="font-bold"><UserOutlined /> {r.refereeUsername}</Tag> : <Text type="secondary" italic>Chưa phân công</Text>;
                 }
             },
             {
@@ -257,7 +260,7 @@ const AdminTournamentPage = () => {
             <Card className="shadow-xl rounded-2xl border-none">
                 <Row justify="space-between" className="mb-6">
                     <Col>
-                        <Title level={2}><TrophyOutlined className="text-yellow-500"/> Quản Lý Giải Đấu & Chặng Đua</Title>
+                        <Title level={2}><TrophyOutlined className="text-yellow-500" /> Quản Lý Giải Đấu & Chặng Đua</Title>
                         <Text type="secondary">Tạo giải, lên lịch chặng, phân công trọng tài và treo thưởng.</Text>
                     </Col>
                     <Col><Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => { setEditingTourId(null); tourForm.resetFields(); setIsTourModalVisible(true); }}>Tạo Giải Đấu Mới</Button></Col>
@@ -266,17 +269,22 @@ const AdminTournamentPage = () => {
                     { title: 'ID', dataIndex: 'id' },
                     { title: 'Tên Giải Đấu', dataIndex: 'name', render: t => <Text strong className="text-blue-700 text-lg">{t}</Text> },
                     { title: 'Thời Gian Tổ Chức', render: (_, r) => `${dayjs(r.startDate).format('DD/MM/YYYY')} - ${dayjs(r.endDate).format('DD/MM/YYYY')}` },
-                    { title: 'Trạng Thái', dataIndex: 'status', render: s => {
+                    {
+                        title: 'Trạng Thái', dataIndex: 'status', render: s => {
                             if (s === 'POSTPONED') return <Tag color="warning" className="font-bold">ĐÃ DỜI LỊCH</Tag>;
                             if (s === 'CANCELED') return <Tag color="error" className="font-bold">ĐÃ HỦY</Tag>;
+                            if (s === 'ONGOING') return <Tag color="success" className="font-bold">ĐANG DIỄN RA</Tag>;
+                            if (s === 'UPCOMING') return <Tag color="blue" className="font-bold">SẮP DIỄN RA</Tag>;
+                            if (s === 'COMPLETED') return <Tag color="default" className="font-bold">ĐÃ KẾT THÚC</Tag>;
                             return <Tag color="blue" className="font-bold">{s}</Tag>;
-                        }},
+                        }
+                    },
                     {
                         title: 'Thao Tác',
                         align: 'right',
                         render: (_, r) => <Space>
                             <Button type="dashed" className="font-bold" icon={<FlagOutlined />} onClick={() => { setSelectedTourId(r.id); setEditingRaceId(null); raceForm.resetFields(); setIsRaceModalVisible(true); }}>Thêm Chặng Đua</Button>
-                            <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status, reason: ''}); setIsTourModalVisible(true); }} />
+                            <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({ name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status, reason: '' }); setIsTourModalVisible(true); }} />
                             <Popconfirm title="Xác nhận xóa hoàn toàn giải đấu này?" onConfirm={() => handleDeleteTournament(r.id)} okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy">
                                 <Button danger icon={<DeleteOutlined />} />
                             </Popconfirm>
@@ -289,7 +297,7 @@ const AdminTournamentPage = () => {
             <Modal title={<span className="text-xl">{editingTourId ? 'Chỉnh Sửa Giải Đấu' : 'Tạo Giải Đấu Mới'}</span>} open={isTourModalVisible} onCancel={() => setIsTourModalVisible(false)} footer={null} centered>
                 <Form form={tourForm} layout="vertical" onFinish={handleSaveTournament} className="mt-4">
                     <Form.Item name="name" label={<Text strong>Tên Giải Đấu</Text>} rules={[{ required: true, message: 'Vui lòng nhập tên giải đấu' }]}>
-                        <Input size="large" placeholder="VD: Siêu Cúp Mùa Hè..."/>
+                        <Input size="large" placeholder="VD: Siêu Cúp Mùa Hè..." />
                     </Form.Item>
 
                     <Form.Item
@@ -362,7 +370,7 @@ const AdminTournamentPage = () => {
                 <Form form={raceForm} layout="vertical" onFinish={handleSaveRace}>
                     <Divider orientation="left" className="border-blue-500"><Text className="text-blue-600 font-bold">1. Thông Tin Cơ Bản</Text></Divider>
                     <Row gutter={16}>
-                        <Col span={12}><Form.Item name="name" label={<Text strong>Tên Chặng Đua</Text>} rules={[{ required: true, message: 'Nhập tên chặng đua' }]}><Input size="large" placeholder="VD: Chặng 1 - Khởi động"/></Form.Item></Col>
+                        <Col span={12}><Form.Item name="name" label={<Text strong>Tên Chặng Đua</Text>} rules={[{ required: true, message: 'Nhập tên chặng đua' }]}><Input size="large" placeholder="VD: Chặng 1 - Khởi động" /></Form.Item></Col>
                         <Col span={12}>
                             <Form.Item
                                 name="raceTime"
@@ -400,7 +408,7 @@ const AdminTournamentPage = () => {
                             )}
                         </Col>
                         <Col span={editingRaceId ? 12 : 24}>
-                            <Form.Item name="refereeId" label={<Text strong>Phân Công Trọng Tài</Text>} rules={[{required: true, message: 'Bắt buộc chọn Trọng tài giám sát!'}]}>
+                            <Form.Item name="refereeId" label={<Text strong>Phân Công Trọng Tài</Text>} rules={[{ required: true, message: 'Bắt buộc chọn Trọng tài giám sát!' }]}>
                                 <Select placeholder="-- Chọn Trọng tài --" size="large" showSearch optionFilterProp="children">
                                     {referees.map(r => <Option key={r.id} value={r.id}>👨‍⚖️ {r.username}</Option>)}
                                 </Select>
@@ -411,17 +419,17 @@ const AdminTournamentPage = () => {
                     <Divider orientation="left" className="border-yellow-500"><Text className="text-yellow-600 font-bold">3. Bảng Giải Thưởng (VNĐ)</Text></Divider>
                     <Row gutter={16}>
                         <Col span={8}>
-                            <Form.Item name="prize1" rules={[{required:true, message:'Bắt buộc nhập!'}]} label={<Text strong className="text-yellow-600">🥇 Tiền thưởng Hạng 1</Text>}>
+                            <Form.Item name="prize1" rules={[{ required: true, message: 'Bắt buộc nhập!' }]} label={<Text strong className="text-yellow-600">🥇 Tiền thưởng Hạng 1</Text>}>
                                 <InputNumber style={{ width: '100%' }} size="large" className="font-bold text-lg" min={0} step={50000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="prize2" rules={[{required:true, message:'Bắt buộc nhập!'}]} label={<Text strong className="text-gray-500">🥈 Tiền thưởng Hạng 2</Text>}>
+                            <Form.Item name="prize2" rules={[{ required: true, message: 'Bắt buộc nhập!' }]} label={<Text strong className="text-gray-500">🥈 Tiền thưởng Hạng 2</Text>}>
                                 <InputNumber style={{ width: '100%' }} size="large" className="font-bold text-lg" min={0} step={50000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
                             </Form.Item>
                         </Col>
                         <Col span={8}>
-                            <Form.Item name="prize3" rules={[{required:true, message:'Bắt buộc nhập!'}]} label={<Text strong className="text-orange-700">🥉 Tiền thưởng Hạng 3</Text>}>
+                            <Form.Item name="prize3" rules={[{ required: true, message: 'Bắt buộc nhập!' }]} label={<Text strong className="text-orange-700">🥉 Tiền thưởng Hạng 3</Text>}>
                                 <InputNumber style={{ width: '100%' }} size="large" className="font-bold text-lg" min={0} step={50000} formatter={v => `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')} parser={v => v.replace(/\$\s?|(,*)/g, '')} />
                             </Form.Item>
                         </Col>
