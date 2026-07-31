@@ -132,7 +132,8 @@ public class HorseServiceImpl implements HorseService {
     private HorseResponseDTO mapToResponseDTO(Horse horse) {
         Float winRate = 0f;
         if (horse.getTotalRaces() != null && horse.getTotalRaces() > 0) {
-            winRate = (float) horse.getWinRaces() / horse.getTotalRaces() * 100;
+            int wins = horse.getWinRaces() != null ? horse.getWinRaces() : 0;
+            winRate = (float) wins / horse.getTotalRaces() * 100;
         }
 
         List<String> certs = new ArrayList<>();
@@ -158,7 +159,7 @@ public class HorseServiceImpl implements HorseService {
                 .certDocumentUrls(certs)
                 .realImageUrls(reals)
                 .vetRecordUrls(vets)
-                .status(horse.getStatus())
+                .status(horse.getStatus() != null ? horse.getStatus() : com.swp.horseracing.model.HorseStatus.PENDING)
                 .totalRaces(horse.getTotalRaces())
                 .winRaces(horse.getWinRaces())
                 .winRate(winRate)

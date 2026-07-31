@@ -67,10 +67,11 @@ const AdminHorseApprovalPage = () => {
 
     const getFilteredData = () => {
         return horses.filter(horse => {
-            const matchTab = horse.status === activeTab;
-            const matchSearch =
-                (horse.name && horse.name.toLowerCase().includes(searchText.toLowerCase())) ||
-                (horse.ownerUsername && horse.ownerUsername.toLowerCase().includes(searchText.toLowerCase()));
+            const matchTab = (horse.status || 'PENDING') === activeTab;
+            const searchLower = searchText.trim().toLowerCase();
+            const matchSearch = !searchLower ||
+                (horse.name && horse.name.toLowerCase().includes(searchLower)) ||
+                (horse.ownerUsername && horse.ownerUsername.toLowerCase().includes(searchLower));
             return matchTab && matchSearch;
         });
     };
