@@ -111,8 +111,8 @@ const LandingPage = () => {
                                     )}
                                     <div className="mt-auto pt-4">
                                         {(tour.status !== 'CANCELED' && tour.status !== 'POSTPONED' && tour.status !== 'COMPLETED') ? (
-                                            <Button type="primary" size="large" className="bg-gradient-to-r from-yellow-500 to-yellow-400 border-none text-black font-bold px-6" onClick={() => navigate(user?.role === 'OWNER' ? '/owner/races' : user?.role === 'REFEREE' ? '/referee/dashboard' : '/betting')}>
-                                                {user?.role === 'OWNER' ? 'Đăng ký ngay' : user?.role === 'REFEREE' ? 'Giám sát giải' : 'Khám phá ngay'}
+                                            <Button type="primary" size="large" className="bg-gradient-to-r from-yellow-500 to-yellow-400 border-none text-black font-bold px-6" onClick={() => navigate(user?.role === 'OWNER' ? '/owner/races' : user?.role === 'REFEREE' ? '/referee/dashboard' : user?.role === 'JOCKEY' ? '/jockey/invitations' : '/betting')}>
+                                                {user?.role === 'OWNER' ? 'Đăng ký ngay' : user?.role === 'REFEREE' ? 'Giám sát giải' : user?.role === 'JOCKEY' ? 'Xem lời mời' : 'Khám phá ngay'}
                                             </Button>
                                         ) : (
                                             <Button disabled size="large" className="font-bold px-6 bg-gray-500 text-gray-300 border-none">
