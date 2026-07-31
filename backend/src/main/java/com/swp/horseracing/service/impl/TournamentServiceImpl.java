@@ -152,11 +152,15 @@ public class TournamentServiceImpl implements TournamentService {
         }
         tournamentRepository.save(tournament);
 
-        // Ghi Sổ Nhật Ký (Audit Log)
+        // Ghi Sổ Nhật Ký (Audit Log) chuẩn Enterprise
         AuditLog log = AuditLog.builder()
                 .action("CANCEL_TOURNAMENT")
                 .performedBy("ADMIN_SYSTEM")
-                .reason(reason != null ? reason : "Hủy sự kiện do nguyên nhân bất khả kháng")
+                .entityName("Tournament")
+                .entityId(String.valueOf(tournament.getId()))
+                .oldValue(tournament.getStatus() != null ? tournament.getStatus().name() : "UPCOMING")
+                .newValue("CANCELED")
+                .reason(reason != null ? reason : "Hủy sự kiện")
                 .affectedBetsCount(totalAffected)
                 .totalRefundAmount(totalRefund)
                 .build();
@@ -214,10 +218,14 @@ public class TournamentServiceImpl implements TournamentService {
             }
         }
 
-        // Ghi Sổ Nhật Ký (Audit Log)
+        // Ghi Sổ Nhật Ký (Audit Log) chuẩn Enterprise
         AuditLog log = AuditLog.builder()
                 .action("POSTPONE_TOURNAMENT")
                 .performedBy("ADMIN_SYSTEM")
+                .entityName("Tournament")
+                .entityId(String.valueOf(tournament.getId()))
+                .oldValue("startDate: " + (tournament.getStartDate() != null ? tournament.getStartDate().toString() : "N/A"))
+                .newValue("startDate: " + (newStart != null ? newStart.toString() : "N/A"))
                 .reason((reason != null ? reason : "Hoãn sự kiện") + " | Hoãn " + hoursDelay + " tiếng")
                 .affectedBetsCount(totalAffected)
                 .totalRefundAmount(totalRefund)

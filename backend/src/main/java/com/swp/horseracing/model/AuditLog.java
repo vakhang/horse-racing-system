@@ -23,6 +23,18 @@ public class AuditLog {
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason; // Bắt buộc lưu lý do theo chuẩn Audit pháp lý
 
+    @Column(name = "entity_name")
+    private String entityName;
+
+    @Column(name = "entity_id")
+    private String entityId;
+
+    @Column(name = "old_value", columnDefinition = "TEXT")
+    private String oldValue;
+
+    @Column(name = "new_value", columnDefinition = "TEXT")
+    private String newValue;
+
     @Column(name = "affected_bets_count")
     private Integer affectedBetsCount; // Số lượng vé cược bị ảnh hưởng
 

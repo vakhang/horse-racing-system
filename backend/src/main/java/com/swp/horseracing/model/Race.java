@@ -38,6 +38,10 @@ public class Race {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RaceStatus status;
 
+    @Column(name = "estimated_duration")
+    @Builder.Default
+    private Integer estimatedDuration = 30; // Phút
+
     // --- CÁC THUỘC TÍNH MỚI BỔ SUNG ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "referee_id", referencedColumnName = "id")

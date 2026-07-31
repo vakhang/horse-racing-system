@@ -51,15 +51,26 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
             throw new RuntimeException("Lời mời này đã được xử lý trước đó!");
         }
 
-        // RÀNG BUỘC: Kiểm tra trùng giờ
+        // RÀNG BUỘC: Kiểm tra trùng giờ (Overlapping) bằng công thức (startA < endB) AND (startB < endA)
         Registration currentReg = invitation.getRegistration();
-        java.time.LocalDateTime currentRaceTime = currentReg.getRace().getRaceTime();
+        java.time.LocalDateTime startB = currentReg.getRace().getRaceTime();
+        Integer durationB = currentReg.getRace().getEstimatedDuration() != null ? currentReg.getRace().getEstimatedDuration() : 30;
+        java.time.LocalDateTime endB = startB.plusMinutes(durationB);
 
-        java.util.List<Registration> overlappingRegs = registrationRepository.findByJockeyAndRaceTime(
-                invitation.getJockey().getId(), currentRaceTime);
+        java.util.List<Registration> allJockeyRegs = registrationRepository.findByJockeyId(invitation.getJockey().getId());
 
-        if (!overlappingRegs.isEmpty()) {
-            throw new RuntimeException("Bạn đã nhận một chặng đua khác diễn ra cùng giờ!");
+        boolean isOverlapping = allJockeyRegs.stream()
+                .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
+                .anyMatch(r -> {
+                    java.time.LocalDateTime startA = r.getRace().getRaceTime();
+                    Integer durationA = r.getRace().getEstimatedDuration() != null ? r.getRace().getEstimatedDuration() : 30;
+                    java.time.LocalDateTime endA = startA.plusMinutes(durationA);
+                    
+                    return startA.isBefore(endB) && startB.isBefore(endA);
+                });
+
+        if (isOverlapping) {
+            throw new RuntimeException("Bạn đã nhận một chặng đua khác diễn ra cùng giờ! Không thể Double-Booking.");
         }
 
         // 1. Cập nhật thiệp mời
