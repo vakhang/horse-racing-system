@@ -327,6 +327,7 @@ public class UserServiceImpl implements UserService {
                 .weight(user.getWeight())
                 .height(user.getHeight())
                 .balance(balance)
+                .banReason(user.getBanReason())
                 .build();
     }
 

@@ -21,6 +21,7 @@ public class UserResponseDTO {
     private UserStatus status;
     private LocalDateTime createdAt;
     private String token;
+    private String banReason;
 
     // Bổ sung danh sách mảng link (để hứng nhiều file)
     private List<String> kycDocumentUrls;
