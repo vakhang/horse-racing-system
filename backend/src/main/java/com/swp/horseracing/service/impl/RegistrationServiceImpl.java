@@ -182,6 +182,14 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         // Thông báo hệ thống cho Chủ Ngựa và Nài Ngựa
         String notifyMsg = "Ngựa " + reg.getHorse().getName() + " đã bị Ban Tổ Chức loại khỏi Chặng " + race.getName() + " vì lý do: " + (reason != null ? reason : "Vi phạm nội quy");
+        
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = null;
+        if (auth != null && auth.getName() != null) {
+            currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+        }
+        Integer adminId = currentUser != null ? currentUser.getId() : 1;
+        
         try {
             systemAnnouncementService.createAnnouncement(
                     notifyMsg,
@@ -189,7 +197,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     java.util.List.of("OWNER", "JOCKEY"),
                     java.util.List.of("ACTIVE"),
                     null,
-                    null,
+                    adminId,
                     "127.0.0.1"
             );
         } catch (Exception e) {
