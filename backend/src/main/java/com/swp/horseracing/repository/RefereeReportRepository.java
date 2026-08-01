@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface RefereeReportRepository extends JpaRepository<RefereeReport, Integer> {
+    java.util.List<RefereeReport> findByRaceId(Integer raceId);
 }

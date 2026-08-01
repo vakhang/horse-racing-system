@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
     public List<com.swp.horseracing.dto.JockeyMarketResponseDTO> getJockeyMarket() {
         List<User> jockeys = userRepository.findByRole(RoleEnum.JOCKEY);
         return jockeys.stream()
-                .filter(j -> j.getStatus() == UserStatus.ACTIVE && j.getWeight() != null && j.getHeight() != null)
+                .filter(j -> j.getStatus() == UserStatus.APPROVED && j.getWeight() != null && j.getHeight() != null)
                 .filter(j -> {
                     // Cần có CCCD, Chứng chỉ Nài, Khám sức khỏe
                     long requiredDocs = j.getAttachments().stream()
