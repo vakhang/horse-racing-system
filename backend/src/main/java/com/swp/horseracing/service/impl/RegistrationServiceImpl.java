@@ -276,6 +276,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .jockeyUsername(reg.getJockey() != null ? reg.getJockey().getUsername() : null)
                 .status(reg.getStatus())
                 .note(reg.getNote())
+                .finishPosition(reg.getRank())
                 .build();
     }
 }

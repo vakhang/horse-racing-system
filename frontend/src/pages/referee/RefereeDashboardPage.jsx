@@ -29,7 +29,7 @@ const RefereeDashboardPage = () => {
 
     useEffect(() => {
         fetchRaces();
-        setReportsHistory(JSON.parse(localStorage.getItem('referee_reports') || '[]'));
+        fetchReports();
     }, []);
 
     const fetchRaces = async () => {
@@ -40,6 +40,15 @@ const RefereeDashboardPage = () => {
             setRaces(sorted);
         } catch (error) { message.error('Lỗi tải danh sách chặng đua!'); }
         finally { setLoading(false); }
+    };
+
+    const fetchReports = async () => {
+        try {
+            const response = await api.get('/referees/reports');
+            setReportsHistory(response.data);
+        } catch (error) {
+            console.error('Failed to fetch reports', error);
+        }
     };
 
     const fetchRegistrations = async (raceId) => {
@@ -126,17 +135,7 @@ const RefereeDashboardPage = () => {
                 violationDetails: fullDetails
             });
 
-            const newReport = {
-                id: Date.now(),
-                raceName: selectedRace.name,
-                target: registrations.find(r => r.id === values.registrationId)?.horseName,
-                penalty: values.penaltyType,
-                reason: values.reason,
-                date: dayjs().toISOString()
-            };
-            const updatedHistory = [newReport, ...reportsHistory];
-            setReportsHistory(updatedHistory);
-            localStorage.setItem('referee_reports', JSON.stringify(updatedHistory));
+            await fetchReports();
 
             message.success('Lập biên bản vi phạm thành công! 📝');
             setIsReportModalVisible(false);

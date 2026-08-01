@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Statistic, Table, Tabs, Tag, Typography } from 'antd';
+import { Card, Statistic, Table, Tabs, Tag, Typography, Space } from 'antd';
 import { WalletOutlined, HistoryOutlined, TrophyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';

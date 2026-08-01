@@ -90,4 +90,33 @@ public class RefereeServiceImpl implements RefereeService {
 
         return "Lập biên bản và truất quyền thi đấu thành công!";
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> getAllReports() {
+        return refereeReportRepository.findAll().stream().map(report -> {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", report.getId());
+            map.put("raceName", report.getRace().getName());
+            map.put("target", report.getRegistration().getHorse().getName());
+            map.put("date", report.getCreatedAt().toString());
+            
+            String details = report.getViolationDetails();
+            String penalty = "Vi phạm";
+            String reason = details;
+            
+            if (details != null && details.startsWith("[")) {
+                int closingIndex = details.indexOf("]");
+                if (closingIndex > 0) {
+                    penalty = details.substring(1, closingIndex);
+                    reason = details.substring(closingIndex + 1).trim();
+                }
+            }
+            
+            map.put("penalty", penalty);
+            map.put("reason", reason);
+            
+            return map;
+        }).sorted((a, b) -> ((String)b.get("date")).compareTo((String)a.get("date"))).toList();
+    }
 }

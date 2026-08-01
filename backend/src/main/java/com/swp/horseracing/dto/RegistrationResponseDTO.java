@@ -18,4 +18,5 @@ public class RegistrationResponseDTO {
     private String jockeyUsername;
     private RegistrationStatus status;
     private String note;
+    private Integer finishPosition;
 }

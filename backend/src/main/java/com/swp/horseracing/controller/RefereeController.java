@@ -31,4 +31,13 @@ public class RefereeController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/reports")
+    public ResponseEntity<?> getAllReports() {
+        try {
+            return ResponseEntity.ok(refereeService.getAllReports());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }
