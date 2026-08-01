@@ -50,4 +50,11 @@ public class Race {
     private BigDecimal prize1;
     private BigDecimal prize2;
     private BigDecimal prize3;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.status == null) {
+            this.status = RaceStatus.REGISTRATION;
+        }
+    }
 }
