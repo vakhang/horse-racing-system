@@ -41,6 +41,39 @@ public class RefereeServiceImpl implements RefereeService {
         winningReg.setRank(1);
         registrationRepository.save(winningReg);
 
+        String resultReportStr = "Hạng 1: " + winningReg.getHorse().getName();
+
+        if (request.getTop2RegistrationId() != null) {
+            Registration top2 = registrationRepository.findById(request.getTop2RegistrationId()).orElse(null);
+            if (top2 != null) {
+                top2.setRank(2);
+                registrationRepository.save(top2);
+                resultReportStr += ", Hạng 2: " + top2.getHorse().getName();
+            }
+        }
+
+        if (request.getTop3RegistrationId() != null) {
+            Registration top3 = registrationRepository.findById(request.getTop3RegistrationId()).orElse(null);
+            if (top3 != null) {
+                top3.setRank(3);
+                registrationRepository.save(top3);
+                resultReportStr += ", Hạng 3: " + top3.getHorse().getName();
+            }
+        }
+
+        if (request.getRefereeId() != null) {
+            User referee = userRepository.findById(request.getRefereeId()).orElse(null);
+            if (referee != null) {
+                RefereeReport resultReport = RefereeReport.builder()
+                        .race(race)
+                        .registration(winningReg) // Target as winning horse
+                        .referee(referee)
+                        .violationDetails("[KẾT QUẢ THI ĐẤU] " + resultReportStr)
+                        .build();
+                refereeReportRepository.save(resultReport);
+            }
+        }
+
         // 1. Cập nhật chỉ số cho TẤT CẢ các con ngựa tham gia
         List<Registration> allRegs = registrationRepository.findByRaceId(race.getId());
         for (Registration reg : allRegs) {
@@ -99,6 +132,7 @@ public class RefereeServiceImpl implements RefereeService {
             map.put("id", report.getId());
             map.put("raceName", report.getRace().getName());
             map.put("target", report.getRegistration().getHorse().getName());
+            map.put("refereeName", report.getReferee().getUsername());
             map.put("date", report.getCreatedAt().toString());
             
             String details = report.getViolationDetails();

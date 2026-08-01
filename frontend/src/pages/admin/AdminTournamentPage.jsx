@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert } from 'antd';
-import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined, CrownOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
 
@@ -27,7 +27,9 @@ const AdminTournamentPage = () => {
     const [withdrawReason, setWithdrawReason] = useState('');
     const [selectedRegIdForWithdraw, setSelectedRegIdForWithdraw] = useState(null);
     const [raceRegistrations, setRaceRegistrations] = useState([]);
-    const [selectedRaceForWithdraw, setSelectedRaceForWithdraw] = useState(null);
+    const [isResultModalVisible, setIsResultModalVisible] = useState(false);
+    const [selectedRaceForResults, setSelectedRaceForResults] = useState(null);
+    const [raceResults, setRaceResults] = useState([]);
 
     const fetchTournaments = async () => {
         setLoading(true);
@@ -220,6 +222,19 @@ const AdminTournamentPage = () => {
         }
     };
 
+    const handleViewResult = async (race) => {
+        try {
+            setSelectedRaceForResults(race);
+            const response = await api.get('/registrations', { params: { raceId: race.id } });
+            const finished = response.data.filter(r => r.finishPosition != null);
+            finished.sort((a, b) => a.finishPosition - b.finishPosition);
+            setRaceResults(finished);
+            setIsResultModalVisible(true);
+        } catch (e) {
+            message.error("Lỗi lấy dữ liệu kết quả!");
+        }
+    };
+
     const disabledDate = (current) => {
         return current && current < dayjs().startOf('day');
     };
@@ -268,6 +283,9 @@ const AdminTournamentPage = () => {
                         )}
                         <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>Loại Ngựa</Button>
                         <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openEditRaceModal(record)}>Thiết Lập</Button>
+                        {(record.status === 'RESULT_CONFIRMED' || record.status === 'COMPLETED') && (
+                            <Button size="small" type="dashed" className="text-blue-600 font-bold" onClick={() => handleViewResult(record)}>🏆 XEM KẾT QUẢ</Button>
+                        )}
                         {record.status === 'RESULT_CONFIRMED' && (
                             <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={() => { handlePayout(record.id); handleForceTransition(record, 'COMPLETED'); }}>
                                 <Button size="small" type="primary" className="bg-green-600 border-none font-bold">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
@@ -497,6 +515,46 @@ const AdminTournamentPage = () => {
                         LƯU CẤU HÌNH CHẶNG ĐUA
                     </Button>
                 </Form>
+            </Modal>
+
+            <Modal
+                title={<span className="text-xl text-yellow-600 font-black tracking-wider"><TrophyOutlined /> KẾT QUẢ CHẶNG ĐUA: {selectedRaceForResults?.name}</span>}
+                open={isResultModalVisible}
+                onCancel={() => setIsResultModalVisible(false)}
+                footer={[<Button key="close" onClick={() => setIsResultModalVisible(false)}>Đóng</Button>]}
+                centered
+            >
+                {raceResults.length === 0 ? (
+                    <div className="p-8 text-center"><Text type="secondary">Chưa có kết quả hoặc lỗi hiển thị.</Text></div>
+                ) : (
+                    <List
+                        itemLayout="horizontal"
+                        dataSource={raceResults}
+                        renderItem={(item) => (
+                            <List.Item className="bg-gray-50 rounded-lg mb-2 px-4 shadow-sm border border-gray-100">
+                                <List.Item.Meta
+                                    avatar={
+                                        <div className="relative">
+                                            <Avatar size="large" src={item.horseImageUrl || 'https://joeschmoe.io/api/v1/random'} className="shadow-md" />
+                                            <div className="absolute -bottom-2 -right-2 rounded-full w-7 h-7 flex items-center justify-center text-white font-black shadow-md border-2 border-white"
+                                                style={{ backgroundColor: item.finishPosition === 1 ? '#FBBF24' : item.finishPosition === 2 ? '#9CA3AF' : item.finishPosition === 3 ? '#B45309' : '#374151' }}>
+                                                {item.finishPosition}
+                                            </div>
+                                        </div>
+                                    }
+                                    title={<Text strong className="text-lg">{item.horseName}</Text>}
+                                    description={
+                                        <div>
+                                            <Text type="secondary"><UserOutlined/> Nài: {item.jockeyUsername || 'Không rõ'}</Text>
+                                            <br/>
+                                            <Text type="secondary"><CrownOutlined/> Chủ: {item.ownerUsername}</Text>
+                                        </div>
+                                    }
+                                />
+                            </List.Item>
+                        )}
+                    />
+                )}
             </Modal>
         </div>
     );

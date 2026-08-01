@@ -33,6 +33,8 @@ public class UserServiceImpl implements UserService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
+    private final RegistrationRepository registrationRepository;
+    private final BetRepository betRepository;
     private final com.swp.horseracing.repository.JockeyInvitationRepository jockeyInvitationRepository;
 
     @Override
@@ -411,5 +413,44 @@ public class UserServiceImpl implements UserService {
                         .createdAt(tx.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<java.util.Map<String, Object>> getMyJockeyRewards(Integer userId) {
+        List<Registration> regs = registrationRepository.findAll().stream()
+                .filter(r -> r.getJockey() != null && r.getJockey().getId().equals(userId))
+                .filter(r -> r.getRank() != null && r.getRank() <= 3)
+                .filter(r -> r.getRace().getStatus() == com.swp.horseracing.model.RaceStatus.COMPLETED)
+                .sorted((a, b) -> b.getRace().getRaceTime().compareTo(a.getRace().getRaceTime()))
+                .collect(java.util.stream.Collectors.toList());
+
+        List<java.util.Map<String, Object>> rewards = new java.util.ArrayList<>();
+        for (Registration reg : regs) {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", reg.getId());
+            map.put("raceName", reg.getRace().getName());
+            map.put("horseName", reg.getHorse().getName());
+            map.put("rank", reg.getRank());
+            map.put("date", reg.getRace().getRaceTime().toString());
+
+            java.math.BigDecimal fixedPrize = java.math.BigDecimal.ZERO;
+            if (reg.getRank() == 1 && reg.getRace().getPrize1() != null) fixedPrize = reg.getRace().getPrize1();
+            if (reg.getRank() == 2 && reg.getRace().getPrize2() != null) fixedPrize = reg.getRace().getPrize2();
+            if (reg.getRank() == 3 && reg.getRace().getPrize3() != null) fixedPrize = reg.getRace().getPrize3();
+            
+            java.math.BigDecimal jockeyFixed = fixedPrize.multiply(new java.math.BigDecimal("0.30")).setScale(2, java.math.RoundingMode.HALF_UP);
+            java.math.BigDecimal jockeyPool = java.math.BigDecimal.ZERO;
+            
+            if (reg.getRank() == 1) {
+                java.math.BigDecimal totalPool = betRepository.findByRaceId(reg.getRace().getId()).stream()
+                        .map(com.swp.horseracing.model.Bet::getAmount)
+                        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+                jockeyPool = totalPool.multiply(reg.getRace().getTournament().getPrizeConfig().getJockeyPercentage()).setScale(2, java.math.RoundingMode.HALF_UP);
+            }
+            
+            map.put("reward", jockeyFixed.add(jockeyPool));
+            rewards.add(map);
+        }
+        return rewards;
     }
 }

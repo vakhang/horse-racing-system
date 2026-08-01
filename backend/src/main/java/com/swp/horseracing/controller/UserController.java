@@ -120,4 +120,13 @@ public class UserController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/my-jockey-rewards")
+    public ResponseEntity<?> getMyJockeyRewards(@RequestParam Integer userId) {
+        try {
+            return ResponseEntity.ok(userService.getMyJockeyRewards(userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

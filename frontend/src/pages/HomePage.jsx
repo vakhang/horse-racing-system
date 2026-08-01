@@ -46,10 +46,8 @@ const HomePage = () => {
             setTransactions(transRes.data || []);
 
             if (user?.role === 'JOCKEY') {
-                setJockeyRewards([
-                    { id: 1, raceName: 'Siêu giải đấu XUKA', horseName: 'Xích Thố', rank: 1, reward: 15000000, date: dayjs().subtract(1, 'day').toISOString() },
-                    { id: 2, raceName: 'Cúp FPT Mùa Hè 2026', horseName: 'Ngựa Lạc Hồng', rank: 2, reward: 5000000, date: dayjs().subtract(3, 'day').toISOString() }
-                ]);
+                const rewardsRes = await api.get(`/users/my-jockey-rewards?userId=${userId}`);
+                setJockeyRewards(rewardsRes.data || []);
             }
         } catch (error) {
             // Chỉ im lặng thôi

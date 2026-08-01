@@ -117,7 +117,10 @@ const RefereeDashboardPage = () => {
         try {
             await api.post('/referees/results', {
                 raceId: selectedRace.id,
-                top1RegistrationId: values.top1
+                refereeId: user.id,
+                top1RegistrationId: values.top1,
+                top2RegistrationId: values.top2,
+                top3RegistrationId: values.top3
             });
             message.success('Đã Ký Xác Nhận! Hệ thống đang tự động cộng tiền cho người thắng cược. 💸');
             setIsResultModalVisible(false);
@@ -227,10 +230,11 @@ const RefereeDashboardPage = () => {
 
     const historyColumns = [
         { title: 'Ngày Lập', dataIndex: 'date', render: d => dayjs(d).format('HH:mm DD/MM/YYYY') },
+        { title: 'Người Lập', dataIndex: 'refereeName', render: n => <Text strong className="text-blue-600">{n}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', render: t => <Text strong>{t}</Text> },
-        { title: 'Đối Tượng Phạt', dataIndex: 'target', render: t => <Tag color="blue">{t}</Tag> },
-        { title: 'Mức Phạt', dataIndex: 'penalty', render: p => <Tag color={p === 'Truất quyền thi đấu' ? 'red' : 'orange'}>{p}</Tag> },
-        { title: 'Lý Do', dataIndex: 'reason' }
+        { title: 'Nội Dung', dataIndex: 'target', render: (t, record) => record.penalty === 'KẾT QUẢ THI ĐẤU' ? <Text type="success">Xác nhận kết quả chung cuộc</Text> : t },
+        { title: 'Loại/Mức Phạt', dataIndex: 'penalty', render: p => p === 'KẾT QUẢ THI ĐẤU' ? <Tag color="green">KẾT QUẢ</Tag> : <Tag color="red">{p}</Tag> },
+        { title: 'Chi Tiết', dataIndex: 'reason' }
     ];
 
     return (

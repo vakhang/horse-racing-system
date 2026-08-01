@@ -26,6 +26,7 @@ public interface UserService {
 
     List<BetHistoryResponseDTO> getMyBets(Integer userId);
     List<TransactionHistoryResponseDTO> getMyTransactions(Integer userId);
+    List<java.util.Map<String, Object>> getMyJockeyRewards(Integer userId);
 
     List<com.swp.horseracing.dto.JockeyMarketResponseDTO> getJockeyMarket();
 }

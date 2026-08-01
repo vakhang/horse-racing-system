@@ -137,8 +137,8 @@ const ResultsPage = () => {
                     )}
                 </div>
             </div>
-
-            <Modal
+            <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorBgContainer: '#1f2937' } }}>
+                <Modal
                 title={`Kết quả: ${selectedRaceName}`}
                 open={isModalOpen}
                 onCancel={() => setIsModalOpen(false)}
@@ -173,8 +173,8 @@ const ResultsPage = () => {
                         locale={{ emptyText: 'Chưa có kết quả' }}
                     />
                 )}
-            </Modal>
-
+                </Modal>
+            </ConfigProvider>
             <Footer />
         </div>
     );

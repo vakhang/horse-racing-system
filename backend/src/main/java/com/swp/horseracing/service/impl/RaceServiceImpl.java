@@ -518,7 +518,7 @@ public class RaceServiceImpl implements RaceService {
 
         // BƯỚC 6: Chi trả Giải thưởng Cố định (Set Prize) cho Top 1, 2, 3 (Chủ ngựa)
         for (Registration reg : registrations) {
-            if (reg.getRank() == null || reg.getOwner() == null) continue;
+            if (reg.getRank() == null) continue;
 
             java.math.BigDecimal fixedPrize = java.math.BigDecimal.ZERO;
             if (reg.getRank() == 1 && race.getPrize1() != null) {
@@ -530,19 +530,42 @@ public class RaceServiceImpl implements RaceService {
             }
 
             if (fixedPrize.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                Wallet ownerWallet = walletRepository.findByUserIdForUpdate(reg.getOwner().getId()).orElse(null);
-                if (ownerWallet != null) {
-                    ownerWallet.setBalance(ownerWallet.getBalance().add(fixedPrize));
-                    walletRepository.save(ownerWallet);
-                    TransactionHistory txFixed = TransactionHistory.builder()
-                            .transactionCode("SETPRIZE-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
-                            .wallet(ownerWallet)
-                            .amount(fixedPrize)
-                            .type(TransactionType.REWARD)
-                            .direction(TransactionDirection.IN)
-                            .status(TransactionStatus.COMPLETED)
-                            .build();
-                    transactionHistoryRepository.save(txFixed);
+                // 70% Owner
+                java.math.BigDecimal ownerFixed = fixedPrize.multiply(new java.math.BigDecimal("0.70")).setScale(2, java.math.RoundingMode.HALF_UP);
+                if (ownerFixed.compareTo(java.math.BigDecimal.ZERO) > 0 && reg.getOwner() != null) {
+                    Wallet ownerWallet = walletRepository.findByUserIdForUpdate(reg.getOwner().getId()).orElse(null);
+                    if (ownerWallet != null) {
+                        ownerWallet.setBalance(ownerWallet.getBalance().add(ownerFixed));
+                        walletRepository.save(ownerWallet);
+                        TransactionHistory txFixed = TransactionHistory.builder()
+                                .transactionCode("SETPRIZE-OWNER-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
+                                .wallet(ownerWallet)
+                                .amount(ownerFixed)
+                                .type(TransactionType.REWARD)
+                                .direction(TransactionDirection.IN)
+                                .status(TransactionStatus.COMPLETED)
+                                .build();
+                        transactionHistoryRepository.save(txFixed);
+                    }
+                }
+
+                // 30% Jockey
+                java.math.BigDecimal jockeyFixed = fixedPrize.subtract(ownerFixed);
+                if (jockeyFixed.compareTo(java.math.BigDecimal.ZERO) > 0 && reg.getJockey() != null) {
+                    Wallet jockeyWallet = walletRepository.findByUserIdForUpdate(reg.getJockey().getId()).orElse(null);
+                    if (jockeyWallet != null) {
+                        jockeyWallet.setBalance(jockeyWallet.getBalance().add(jockeyFixed));
+                        walletRepository.save(jockeyWallet);
+                        TransactionHistory txFixedJockey = TransactionHistory.builder()
+                                .transactionCode("SETPRIZE-JOCKEY-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
+                                .wallet(jockeyWallet)
+                                .amount(jockeyFixed)
+                                .type(TransactionType.REWARD)
+                                .direction(TransactionDirection.IN)
+                                .status(TransactionStatus.COMPLETED)
+                                .build();
+                        transactionHistoryRepository.save(txFixedJockey);
+                    }
                 }
             }
         }
