@@ -50,8 +50,8 @@ const SchedulePage = () => {
         setModalLoading(true);
         try {
             const res = await api.get(`/registrations?raceId=${raceId}`);
-            const approved = res.data.filter(r => r.status === 'APPROVED');
-            setParticipants(approved);
+            const activeParticipants = res.data.filter(r => r.status !== 'WITHDRAWN' && r.status !== 'DISQUALIFIED');
+            setParticipants(activeParticipants);
         } catch (error) {
             console.error("Failed to fetch participants", error);
             message.error("Không thể tải danh sách đăng ký");
@@ -137,41 +137,43 @@ const SchedulePage = () => {
                 </div>
             </div>
 
-            <Modal
-                title={`Danh sách tham gia: ${selectedRaceName}`}
-                open={isModalOpen}
-                onCancel={() => setIsModalOpen(false)}
-                footer={null}
-                bodyStyle={{ maxHeight: '60vh', overflowY: 'auto' }}
-            >
-                {modalLoading ? (
-                    <div className="flex justify-center p-8"><Spin /></div>
-                ) : (
-                    <List
-                        itemLayout="horizontal"
-                        dataSource={participants}
-                        renderItem={item => (
-                            <List.Item>
-                                <List.Item.Meta
-                                    avatar={<Avatar src={item.horseImageUrl || 'https://joeschmoe.io/api/v1/random'} />}
-                                    title={
-                                        <Space>
-                                            <Text strong>Ngựa: {item.horseName}</Text>
-                                            {item.status === 'DISQUALIFIED' && (
-                                                <Tooltip title={`Lý do: ${item.note || 'Vi phạm nội quy'}`}>
-                                                    <Badge color="red" text="TRUẤT QUYỀN" className="font-bold text-red-600" />
-                                                </Tooltip>
-                                            )}
-                                        </Space>
-                                    }
-                                    description={<Text type="secondary">Nài ngựa: {item.jockeyUsername || 'Chưa có'}</Text>}
-                                />
-                            </List.Item>
-                        )}
-                        locale={{ emptyText: 'Chưa có danh sách thi đấu' }}
-                    />
-                )}
-            </Modal>
+            <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorBgElevated: '#001529' } }}>
+                <Modal
+                    title={`Danh sách tham gia: ${selectedRaceName}`}
+                    open={isModalOpen}
+                    onCancel={() => setIsModalOpen(false)}
+                    footer={null}
+                    bodyStyle={{ maxHeight: '60vh', overflowY: 'auto' }}
+                >
+                    {modalLoading ? (
+                        <div className="flex justify-center p-8"><Spin /></div>
+                    ) : (
+                        <List
+                            itemLayout="horizontal"
+                            dataSource={participants}
+                            renderItem={item => (
+                                <List.Item>
+                                    <List.Item.Meta
+                                        avatar={<Avatar src={item.horseImageUrl || 'https://joeschmoe.io/api/v1/random'} />}
+                                        title={
+                                            <Space>
+                                                <Text strong className="text-yellow-400">Ngựa: {item.horseName}</Text>
+                                                {item.status === 'DISQUALIFIED' && (
+                                                    <Tooltip title={`Lý do: ${item.note || 'Vi phạm nội quy'}`}>
+                                                        <Badge color="red" text="TRUẤT QUYỀN" className="font-bold text-red-600" />
+                                                    </Tooltip>
+                                                )}
+                                            </Space>
+                                        }
+                                        description={<Text className="text-gray-300">Nài ngựa: {item.jockeyUsername || 'Chưa có'}</Text>}
+                                    />
+                                </List.Item>
+                            )}
+                            locale={{ emptyText: <span className="text-gray-400">Chưa có danh sách thi đấu</span> }}
+                        />
+                    )}
+                </Modal>
+            </ConfigProvider>
 
             <Footer />
         </div>

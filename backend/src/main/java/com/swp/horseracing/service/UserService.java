@@ -26,4 +26,6 @@ public interface UserService {
 
     List<BetHistoryResponseDTO> getMyBets(Integer userId);
     List<TransactionHistoryResponseDTO> getMyTransactions(Integer userId);
+
+    List<com.swp.horseracing.dto.JockeyMarketResponseDTO> getJockeyMarket();
 }

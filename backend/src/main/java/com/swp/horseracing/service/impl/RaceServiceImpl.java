@@ -34,6 +34,7 @@ public class RaceServiceImpl implements RaceService {
     private final WalletRepository walletRepository;
     private final AuditLogRepository auditLogRepository;
     private final PrizeConfigRepository prizeConfigRepository;
+    private final com.swp.horseracing.repository.JockeyInvitationRepository jockeyInvitationRepository;
 
     private void validateRaceTimeConstraints(java.time.LocalDateTime newRaceTime, Integer tournamentId, Integer currentRaceId) {
         if (newRaceTime == null) return;
@@ -243,6 +244,20 @@ public class RaceServiceImpl implements RaceService {
         raceRepository.deleteById(id);
     }
 
+    public void cleanupInvalidRegistrations(Integer raceId) {
+        java.util.List<Registration> registrations = registrationRepository.findByRaceId(raceId);
+        for (Registration reg : registrations) {
+            java.util.List<JockeyInvitation> invitations = jockeyInvitationRepository.findByRegistrationId(reg.getId());
+            boolean hasAccepted = invitations.stream().anyMatch(inv -> inv.getStatus() == InvitationStatus.ACCEPTED);
+            if (!hasAccepted) {
+                // Delete invitations first due to FK constraints
+                jockeyInvitationRepository.deleteAll(invitations);
+                // Then delete registration to free up the horse
+                registrationRepository.delete(reg);
+            }
+        }
+    }
+
     private RaceResponseDTO mapToResponseDTO(Race race) {
         return RaceResponseDTO.builder()
                 .id(race.getId())
@@ -326,6 +341,12 @@ public class RaceServiceImpl implements RaceService {
         Race race = raceRepository.findById(id).orElseThrow(() -> new RuntimeException("Race not found"));
         try {
             RaceStatus newStatus = RaceStatus.valueOf(targetStatus);
+            
+            // Nếu chuẩn bị chuyển sang BETTING, dọn dẹp các đơn đăng ký lỗi (không có nài ngựa)
+            if (newStatus == RaceStatus.BETTING) {
+                cleanupInvalidRegistrations(race.getId());
+            }
+
             race.setStatus(newStatus);
             return mapToResponseDTO(raceRepository.save(race));
         } catch (IllegalArgumentException e) {

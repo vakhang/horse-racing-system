@@ -27,7 +27,15 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-
+    // LẤY DANH SÁCH NÀI NGỰA TRÊN SÀN GIAO DỊCH
+    @GetMapping("/jockeys/market")
+    public ResponseEntity<?> getJockeyMarket() {
+        try {
+            return ResponseEntity.ok(userService.getJockeyMarket());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     // Lấy thông tin 1 User theo ID
     @GetMapping("/{id}")

@@ -138,10 +138,32 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
                 .respondedAt(inv.getRespondedAt())
                 .build();
     }
+
     @Override
     public java.util.List<InvitationResponseDTO> getInvitationsByJockeyId(Integer jockeyId) {
         return invitationRepository.findByJockeyId(jockeyId).stream()
                 .map(this::mapToDTO)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public java.util.List<InvitationResponseDTO> getInvitationsByOwnerId(Integer ownerId) {
+        return invitationRepository.findByRegistrationOwnerId(ownerId).stream()
+                .map(this::mapToDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public InvitationResponseDTO cancelInvitation(Integer id) {
+        JockeyInvitation invitation = invitationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy lời mời!"));
+
+        if (invitation.getStatus() != InvitationStatus.PENDING) {
+            throw new RuntimeException("Chỉ có thể hủy lời mời đang ở trạng thái CHỜ XÁC NHẬN!");
+        }
+
+        invitation.setStatus(InvitationStatus.CANCELED);
+        return mapToDTO(invitationRepository.save(invitation));
     }
 }

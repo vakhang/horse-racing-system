@@ -24,6 +24,9 @@ public class TournamentServiceImpl implements TournamentService {
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final AuditLogRepository auditLogRepository; // Inject AuditLog
+    private final RegistrationRepository registrationRepository;
+    private final JockeyInvitationRepository jockeyInvitationRepository;
+    private final RefereeReportRepository refereeReportRepository;
 
     @Override
     @Transactional
@@ -102,6 +105,31 @@ public class TournamentServiceImpl implements TournamentService {
         if (!tournamentRepository.existsById(id)) {
             throw new RuntimeException("Không tìm thấy Giải đấu với ID: " + id);
         }
+        
+        // Hỗ trợ xóa Giải đấu đã phát sinh dữ liệu (Dùng cho môi trường Test/Dev)
+        List<Race> races = raceRepository.findByTournamentId(id);
+        for (Race race : races) {
+            // Xóa vé cược
+            List<Bet> bets = betRepository.findByRaceId(race.getId());
+            betRepository.deleteAll(bets);
+            
+            // Xóa đăng ký và thư mời liên quan
+            List<Registration> regs = registrationRepository.findByRaceId(race.getId());
+            for (Registration reg : regs) {
+                // Phải xóa thư mời nài ngựa trước vì có khóa ngoại
+                var invitations = jockeyInvitationRepository.findByRegistrationId(reg.getId());
+                jockeyInvitationRepository.deleteAll(invitations);
+            }
+            registrationRepository.deleteAll(regs);
+            
+            // Xóa báo cáo trọng tài
+            var reports = refereeReportRepository.findByRaceId(race.getId());
+            refereeReportRepository.deleteAll(reports);
+            
+            // Cuối cùng xóa chặng đua
+            raceRepository.delete(race);
+        }
+
         tournamentRepository.deleteById(id);
     }
 

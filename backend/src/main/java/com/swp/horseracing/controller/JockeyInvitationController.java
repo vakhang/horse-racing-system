@@ -39,11 +39,27 @@ public class JockeyInvitationController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    // API LẤY DANH SÁCH LỜI MỜI CHO NÀI NGỰA
+    // API LẤY DANH SÁCH LỜI MỜI CHO NÀI NGỰA HOẶC CHỦ NGỰA
     @GetMapping
-    public ResponseEntity<?> getInvitations(@RequestParam Integer jockeyId) {
+    public ResponseEntity<?> getInvitations(
+            @RequestParam(required = false) Integer jockeyId,
+            @RequestParam(required = false) Integer ownerId) {
         try {
-            return ResponseEntity.ok(invitationService.getInvitationsByJockeyId(jockeyId));
+            if (jockeyId != null) {
+                return ResponseEntity.ok(invitationService.getInvitationsByJockeyId(jockeyId));
+            } else if (ownerId != null) {
+                return ResponseEntity.ok(invitationService.getInvitationsByOwnerId(ownerId));
+            }
+            return ResponseEntity.badRequest().body("Phải cung cấp jockeyId hoặc ownerId");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelInvitation(@PathVariable Integer id) {
+        try {
+            return ResponseEntity.ok(invitationService.cancelInvitation(id));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -186,16 +186,24 @@ const AdminTournamentPage = () => {
         }
     };
 
-    const handleWithdrawHorse = async (regId) => {
-        const reason = prompt("Pháp lý bắt buộc: Nhập lý do ngựa rút lui để lưu Nhật ký sự kiện (Audit Log):");
-        if (!reason) return message.warning("Bắt buộc nhập lý do mới được loại ngựa!");
+    const handleWithdrawHorse = (regId) => {
+        setSelectedRegIdForWithdraw(regId);
+        setWithdrawReason('');
+        setIsReasonModalVisible(true);
+    };
+
+    const confirmWithdrawHorse = async () => {
+        if (!withdrawReason || withdrawReason.trim() === '') {
+            return message.warning("Bắt buộc nhập lý do mới được loại ngựa!");
+        }
 
         try {
-            await api.put(`/registrations/${regId}`, {
+            await api.put(`/registrations/${selectedRegIdForWithdraw}`, {
                 status: 'WITHDRAWN',
-                reason: reason
+                reason: withdrawReason
             });
             message.success("Đã loại ngựa và tự động hoàn trả (Refund) tiền cược cho khán giả!");
+            setIsReasonModalVisible(false);
             const response = await api.get(`/registrations`, { params: { raceId: selectedRaceForWithdraw.id } });
             setRaceRegistrations(response.data);
         } catch (e) {
@@ -391,6 +399,14 @@ const AdminTournamentPage = () => {
                         </li>
                     ))}
                 </ul>
+            </Modal>
+
+            {/* MODAL NHẬP LÝ DO RÚT LUI */}
+            <Modal title={<span className="text-xl text-red-600 font-bold"><CloseCircleOutlined /> Xác Nhận Rút Lui Ngựa</span>} open={isReasonModalVisible} onOk={confirmWithdrawHorse} onCancel={() => setIsReasonModalVisible(false)} okText="Xác Nhận Loại Ngựa" okButtonProps={{ danger: true, size: 'large' }} cancelText="Hủy Bỏ" centered>
+                <div className="mb-4">
+                    <Text strong className="text-red-500">Pháp lý bắt buộc:</Text> Nhập lý do ngựa rút lui để lưu Nhật ký sự kiện (Audit Log) và thông báo cho Chủ ngựa.
+                </div>
+                <Input.TextArea rows={4} placeholder="Ví dụ: Sự cố kỹ thuật, vi phạm nội quy, chấn thương..." value={withdrawReason} onChange={(e) => setWithdrawReason(e.target.value)} />
             </Modal>
 
             <Modal title={<span className="text-xl font-bold">{editingRaceId ? '⚙️ Thiết Lập Chặng Đua' : '➕ Thêm Chặng Đua Mới'}</span>} open={isRaceModalVisible} onCancel={() => setIsRaceModalVisible(false)} footer={null} width={800} centered>

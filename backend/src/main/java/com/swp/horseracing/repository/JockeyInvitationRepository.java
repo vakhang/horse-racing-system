@@ -10,4 +10,7 @@ public interface JockeyInvitationRepository extends JpaRepository<JockeyInvitati
 
     // Hỗ trợ FE lấy danh sách lời mời của 1 Đơn đăng ký (Để chủ ngựa theo dõi)
     List<JockeyInvitation> findByRegistrationId(Integer registrationId);
+
+    // Hỗ trợ FE lấy danh sách lời mời của tất cả ngựa thuộc về 1 Chủ ngựa
+    List<JockeyInvitation> findByRegistrationOwnerId(Integer ownerId);
 }

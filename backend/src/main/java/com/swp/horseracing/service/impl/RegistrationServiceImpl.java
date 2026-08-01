@@ -28,6 +28,7 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final AuditLogRepository auditLogRepository;
     private final RefereeReportRepository refereeReportRepository;
+    private final com.swp.horseracing.service.SystemAnnouncementService systemAnnouncementService;
 
     @Override
     @Transactional
@@ -178,6 +179,22 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .totalRefundAmount(totalRefund)
                 .build();
         auditLogRepository.save(log);
+
+        // Thông báo hệ thống cho Chủ Ngựa và Nài Ngựa
+        String notifyMsg = "Ngựa " + reg.getHorse().getName() + " đã bị Ban Tổ Chức loại khỏi Chặng " + race.getName() + " vì lý do: " + (reason != null ? reason : "Vi phạm nội quy");
+        try {
+            systemAnnouncementService.createAnnouncement(
+                    notifyMsg,
+                    AnnouncementCategory.WARNING,
+                    java.util.List.of("OWNER", "JOCKEY"),
+                    java.util.List.of("ACTIVE"),
+                    null,
+                    null,
+                    "127.0.0.1"
+            );
+        } catch (Exception e) {
+            System.err.println("Không thể gửi thông báo loại ngựa: " + e.getMessage());
+        }
     }
 
     // NGHIỆP VỤ PHẠT TRUẤT QUYỀN (Không hoàn tiền, vé cược -> LOST)

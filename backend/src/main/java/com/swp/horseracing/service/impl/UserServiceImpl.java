@@ -33,6 +33,57 @@ public class UserServiceImpl implements UserService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
+    private final com.swp.horseracing.repository.JockeyInvitationRepository jockeyInvitationRepository;
+
+    @Override
+    public List<com.swp.horseracing.dto.JockeyMarketResponseDTO> getJockeyMarket() {
+        List<User> jockeys = userRepository.findByRole(RoleEnum.JOCKEY);
+        return jockeys.stream()
+                .filter(j -> j.getStatus() == UserStatus.ACTIVE && j.getWeight() != null && j.getHeight() != null)
+                .filter(j -> {
+                    // Cần có CCCD, Chứng chỉ Nài, Khám sức khỏe
+                    long requiredDocs = j.getAttachments().stream()
+                            .filter(a -> a.getDocType() == UserDocType.ID_CARD 
+                                      || a.getDocType() == UserDocType.JOCKEY_CERT 
+                                      || a.getDocType() == UserDocType.HEALTH_CHECK)
+                            .map(UserAttachment::getDocType)
+                            .distinct()
+                            .count();
+                    return requiredDocs == 3;
+                })
+                .map(j -> {
+                    List<JockeyInvitation> invitations = jockeyInvitationRepository.findByJockeyId(j.getId());
+                    String status = "SẴN SÀNG";
+                    boolean hasPending = false;
+
+                    for (JockeyInvitation inv : invitations) {
+                        if (inv.getStatus() == InvitationStatus.ACCEPTED) {
+                            RaceStatus rs = inv.getRegistration().getRace().getStatus();
+                            if (rs != RaceStatus.COMPLETED && rs != RaceStatus.CANCELED) {
+                                status = "ĐANG CÓ LỊCH";
+                                break;
+                            }
+                        } else if (inv.getStatus() == InvitationStatus.PENDING) {
+                            hasPending = true;
+                        }
+                    }
+
+                    if (status.equals("SẴN SÀNG") && hasPending) {
+                        status = "CHỜ DUYỆT";
+                    }
+
+                    return com.swp.horseracing.dto.JockeyMarketResponseDTO.builder()
+                            .id(j.getId())
+                            .username(j.getUsername())
+                            .weight(j.getWeight())
+                            .height(j.getHeight())
+                            .phone(j.getPhoneNumber())
+                            .email(j.getEmail())
+                            .status(status)
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional

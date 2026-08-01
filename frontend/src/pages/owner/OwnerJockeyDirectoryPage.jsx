@@ -13,52 +13,40 @@ const OwnerJockeyDirectoryPage = () => {
         const fetchJockeys = async () => {
             setLoading(true);
             try {
-                const response = await api.get('/users');
-                const onlyJockeys = response.data.filter(u => u.role === 'JOCKEY');
-
-                // Thuật toán giả lập chỉ số Pro cho Jockey
-                const jockeysWithStats = onlyJockeys.map(j => {
-                    // KÉO CV CỦA JOCKEY TỪ MÁY LÊN
-                    const savedCV = JSON.parse(localStorage.getItem(`jockey_cv_${j.id}`) || '{}');
-                    const winRate = savedCV.winRate || Math.floor(Math.random() * (90 - 40 + 1) + 40);
-
-                    return {
-                        ...j,
-                        weight: savedCV.weight ? `${savedCV.weight} kg` : 'Chưa khai báo',
-                        height: savedCV.height ? `${savedCV.height} cm` : 'Chưa khai báo',
-                        winRate: winRate,
-                        rank: winRate > 75 ? 'S' : (winRate > 60 ? 'A' : 'B'),
-                        fee: winRate > 75 ? '15%' : '10%'
-                    };
-                });
-                // Sắp xếp người giỏi nhất lên đầu
-                setJockeys(jockeysWithStats.sort((a, b) => b.winRate - a.winRate));
+                const response = await api.get('/users/jockeys/market');
+                setJockeys(response.data);
             } catch (error) { message.error('Lỗi tải thị trường nài ngựa!'); }
             finally { setLoading(false); }
         };
         fetchJockeys();
     }, []);
 
-    const rankColor = { 'S': 'gold', 'A': 'purple', 'B': 'blue' };
-
     const columns = [
         {
-            title: 'Hồ Sơ Nài Ngựa',
+            title: 'Tên Nài Ngựa',
             render: (_, r) => (
                 <div className="flex items-center gap-4">
-                    <Avatar size={48} icon={<UserOutlined />} className={r.rank === 'S' ? "bg-yellow-500" : "bg-gray-400"} />
+                    <Avatar size={48} icon={<UserOutlined />} className="bg-purple-500" />
                     <div>
                         <Text strong className="text-lg block">{r.username}</Text>
-                        <Tag color={rankColor[r.rank]} className="font-bold border-none">Hạng {r.rank}</Tag>
+                        <Tag color={
+                            r.status === 'SẴN SÀNG' ? 'green' :
+                            r.status === 'ĐANG CÓ LỊCH' ? 'red' : 'orange'
+                        } className="font-bold border-none mt-1">
+                            {r.status}
+                        </Tag>
                     </div>
                 </div>
             )
         },
-        { title: 'Cân Nặng', dataIndex: 'weight', render: w => <Text strong>{w}</Text> },
-        { title: 'Chiều Cao', dataIndex: 'height' },
-        { title: 'Tỷ Lệ Thắng (Win Rate)', dataIndex: 'winRate', render: w => <Text type="success" strong>{w}%</Text> },
-        { title: 'Phí Ký Hợp Đồng', dataIndex: 'fee', render: f => <Text type="danger" strong>{f} Tiền Thưởng</Text> },
-        { title: 'Liên Hệ', align: 'right', render: () => <Button type="dashed" icon={<MessageOutlined />}>Gửi Tin Nhắn</Button> }
+        { title: 'Cân Nặng', dataIndex: 'weight', render: w => <Text strong>{w} kg</Text> },
+        { title: 'Chiều Cao', dataIndex: 'height', render: h => <Text>{h} cm</Text> },
+        { title: 'Liên Hệ', render: (_, r) => (
+            <div>
+                <div className="text-gray-500">📞 {r.phone}</div>
+                <div className="text-gray-500">✉️ {r.email}</div>
+            </div>
+        ) }
     ];
 
     return (

@@ -11,4 +11,8 @@ public interface JockeyInvitationService {
 
     // THÊM HÀM NÀY ĐỂ LẤY DANH SÁCH
     List<InvitationResponseDTO> getInvitationsByJockeyId(Integer jockeyId);
+    List<InvitationResponseDTO> getInvitationsByOwnerId(Integer ownerId);
+
+    // THÊM HÀM HỦY LỜI MỜI CHO CHỦ NGỰA
+    InvitationResponseDTO cancelInvitation(Integer id);
 }

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Alert } from 'antd';
-import { FlagOutlined, UserAddOutlined, SendOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Alert, Tabs } from 'antd';
+import { FlagOutlined, UserAddOutlined, SendOutlined, HistoryOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 const OwnerRaceRegistrationPage = () => {
     const { user } = useAuth();
@@ -21,13 +22,8 @@ const OwnerRaceRegistrationPage = () => {
     const [selectedRace, setSelectedRace] = useState(null);
     const [form] = Form.useForm();
 
-    useEffect(() => {
-        fetchAvailableRaces();
-        if (currentOwnerId) fetchMyApprovedHorses(currentOwnerId);
-        fetchJockeys();
-    }, [currentOwnerId]);
-
     const [currentRaceRegistrations, setCurrentRaceRegistrations] = useState([]);
+    const [invitations, setInvitations] = useState([]);
 
     const fetchAvailableRaces = async () => {
         setLoading(true);
@@ -38,6 +34,25 @@ const OwnerRaceRegistrationPage = () => {
         } catch (error) { message.error('Không thể tải danh sách chặng đua!'); }
         finally { setLoading(false); }
     };
+
+    const fetchInvitations = async () => {
+        if (!currentOwnerId) return;
+        try {
+            const response = await api.get(`/invitations?ownerId=${currentOwnerId}`);
+            setInvitations(response.data);
+        } catch (error) {
+            console.error('Lỗi tải danh sách lời mời:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAvailableRaces();
+        if (currentOwnerId) {
+            fetchMyApprovedHorses(currentOwnerId);
+            fetchInvitations();
+        }
+        fetchJockeys();
+    }, [currentOwnerId]);
 
     const fetchMyApprovedHorses = async (ownerId) => {
         try {
@@ -93,6 +108,62 @@ const OwnerRaceRegistrationPage = () => {
         setIsModalVisible(true);
     };
 
+    const handleCancelInvitation = async (invitationId) => {
+        try {
+            await api.put(`/invitations/${invitationId}/cancel`);
+            message.success('Đã hủy lời mời!');
+            fetchInvitations();
+        } catch (error) {
+            message.error(error.response?.data?.error || 'Lỗi khi hủy lời mời');
+        }
+    };
+
+    const [isReinviteModalVisible, setIsReinviteModalVisible] = useState(false);
+    const [selectedRegistrationId, setSelectedRegistrationId] = useState(null);
+
+    const openReinviteModal = (invitation) => {
+        setSelectedRegistrationId(invitation.registrationId);
+        form.resetFields();
+        setIsReinviteModalVisible(true);
+    };
+
+    const handleReinvite = async (values) => {
+        try {
+            const invitePayload = { registrationId: selectedRegistrationId, jockeyId: values.jockeyId };
+            await api.post('/invitations', invitePayload);
+            message.success('Đã gửi lời mời mới cho Nài ngựa!');
+            setIsReinviteModalVisible(false);
+            fetchInvitations();
+        } catch (error) {
+            message.error(error.response?.data?.error || 'Có lỗi xảy ra khi xử lý!');
+        }
+    };
+
+    const historyColumns = [
+        { title: 'Tên Chiến Mã', dataIndex: 'horseName', render: text => <Text strong>{text}</Text> },
+        { title: 'Chặng Đua', dataIndex: 'raceName' },
+        { title: 'Nài Ngựa Được Mời', dataIndex: 'jockeyUsername' },
+        { title: 'Trạng Thái', dataIndex: 'status', render: s => {
+                if (s === 'PENDING') return <Tag color="orange">CHỜ XÁC NHẬN</Tag>;
+                if (s === 'ACCEPTED') return <Tag color="green">ĐÃ ĐỒNG Ý</Tag>;
+                if (s === 'REJECTED') return <Tag color="red">BỊ TỪ CHỐI</Tag>;
+                if (s === 'CANCELED') return <Tag color="default">ĐÃ HỦY</Tag>;
+                return <Tag>{s}</Tag>;
+            }
+        },
+        {
+            title: 'Hành Động', align: 'right', render: (_, record) => {
+                if (record.status === 'PENDING') {
+                    return <Button danger onClick={() => handleCancelInvitation(record.id)}>❌ Hủy Lời Mời</Button>;
+                }
+                if (record.status === 'REJECTED' || record.status === 'CANCELED') {
+                    return <Button type="dashed" onClick={() => openReinviteModal(record)}>🔄 Mời Nài Khác</Button>;
+                }
+                return null;
+            }
+        }
+    ];
+
     const columns = [
         { title: 'Tên Giải Đấu', dataIndex: 'tournamentName', render: text => <Text strong className="text-blue-700">{text}</Text> },
         { title: 'Tên Chặng', dataIndex: 'name' },
@@ -117,13 +188,26 @@ const OwnerRaceRegistrationPage = () => {
     return (
         <div className="p-8 bg-gray-100 min-h-screen">
             <Card className="shadow-xl rounded-2xl border-none">
-                <Row justify="space-between" align="middle" className="mb-6">
-                    <Col>
-                        <Title level={2} className="m-0 flex items-center gap-3"><FlagOutlined className="text-red-500"/> Chặng Đua Sắp Diễn Ra</Title>
-                        <Text type="secondary">Chọn giải và bắt cặp Nài ngựa cho chiến mã của bạn</Text>
-                    </Col>
-                </Row>
-                <Table columns={columns} dataSource={races} rowKey="id" loading={loading} className="border border-gray-200" />
+                <Tabs defaultActiveKey="1" size="large">
+                    <TabPane tab={<span className="font-bold text-lg"><FlagOutlined /> Đăng Ký Thi Đấu</span>} key="1">
+                        <Row justify="space-between" align="middle" className="mb-4 mt-2">
+                            <Col>
+                                <Title level={3} className="m-0 text-red-500">Chặng Đua Sắp Diễn Ra</Title>
+                                <Text type="secondary">Chọn giải và bắt cặp Nài ngựa cho chiến mã của bạn</Text>
+                            </Col>
+                        </Row>
+                        <Table columns={columns} dataSource={races} rowKey="id" loading={loading} className="border border-gray-200" />
+                    </TabPane>
+                    <TabPane tab={<span className="font-bold text-lg"><HistoryOutlined /> Lịch Sử Lời Mời</span>} key="2">
+                        <Row justify="space-between" align="middle" className="mb-4 mt-2">
+                            <Col>
+                                <Title level={3} className="m-0 text-blue-600">Trạng Thái Thỏa Thuận</Title>
+                                <Text type="secondary">Theo dõi trạng thái các lời mời nài ngựa và xử lý khi bị từ chối</Text>
+                            </Col>
+                        </Row>
+                        <Table columns={historyColumns} dataSource={invitations} rowKey="id" loading={loading} className="border border-gray-200" />
+                    </TabPane>
+                </Tabs>
             </Card>
 
             <Modal title={<span className="text-xl">Đăng ký: <span className="text-blue-600">{selectedRace?.name}</span></span>} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null} centered>
@@ -154,6 +238,25 @@ const OwnerRaceRegistrationPage = () => {
                         </Select>
                     </Form.Item>
                     <Button type="primary" htmlType="submit" size="large" block icon={<SendOutlined />} className="bg-blue-600 hover:bg-blue-700">CHỐT DANH SÁCH & GỬI LỜI MỜI</Button>
+                </Form>
+            </Modal>
+
+            <Modal title={<span className="text-xl text-blue-600">🔄 Mời Nài Ngựa Thay Thế</span>} open={isReinviteModalVisible} onCancel={() => setIsReinviteModalVisible(false)} footer={null} centered>
+                <Alert message="Lưu ý" description="Bạn đang gửi lời mời thay thế cho nài ngựa khác trên cùng đơn đăng ký cũ." type="info" showIcon className="mb-4" />
+                <Form form={form} layout="vertical" onFinish={handleReinvite}>
+                    <Form.Item name="jockeyId" label={<Text strong>Chọn Nài Ngựa Mới</Text>} rules={[{ required: true, message: 'Vui lòng chọn nài ngựa!' }]}>
+                        <Select placeholder="-- Tìm và chọn nài ngựa --" size="large" showSearch optionFilterProp="children">
+                            {jockeys.map(jockey => (
+                                <Option key={jockey.id} value={jockey.id}>
+                                    <div className="flex justify-between w-full">
+                                        <Text strong>{jockey.username}</Text>
+                                        <Text type="secondary">⚖️ {jockey.weight}kg | 📏 {jockey.height}cm</Text>
+                                    </div>
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                    <Button type="primary" htmlType="submit" size="large" block icon={<SendOutlined />} className="bg-blue-600 hover:bg-blue-700">GỬI LỜI MỜI</Button>
                 </Form>
             </Modal>
         </div>

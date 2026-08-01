@@ -17,6 +17,7 @@ import java.util.List;
 public class RaceStateScheduler {
 
     private final RaceRepository raceRepository;
+    private final com.swp.horseracing.service.RaceService raceService;
 
     // Chạy ngầm mỗi phút một lần
     @Scheduled(cron = "0 * * * * *")
@@ -27,6 +28,7 @@ public class RaceStateScheduler {
         List<Race> registrationRaces = raceRepository.findByStatus(RaceStatus.REGISTRATION);
         for (Race race : registrationRaces) {
             if (race.getRaceTime() != null && now.plusMinutes(5).isAfter(race.getRaceTime())) {
+                raceService.cleanupInvalidRegistrations(race.getId()); // Dọn rác
                 race.setStatus(RaceStatus.BETTING);
                 raceRepository.save(race);
                 log.info("Auto-transitioned Race {} to BETTING", race.getId());

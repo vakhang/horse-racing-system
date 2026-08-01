@@ -14,6 +14,7 @@ public interface RaceService {
     RaceResponseDTO forceTransition(Integer id, String targetStatus);
     RaceResponseDTO updateRace(Integer id, RaceRequestDTO request);
     void deleteRace(Integer id);
+    void cleanupInvalidRegistrations(Integer raceId);
 
     java.util.List<com.swp.horseracing.dto.LiveOddsResponseDTO> getLiveOdds(Integer raceId);
     void payoutRace(Integer id);
