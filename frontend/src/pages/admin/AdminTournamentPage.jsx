@@ -33,7 +33,13 @@ const AdminTournamentPage = () => {
         setLoading(true);
         try {
             const response = await api.get('/tournaments');
-            setTournaments(response.data.map(tour => ({ ...tour, races: [] })));
+            const sortedTournaments = response.data.map(tour => ({ ...tour, races: [] })).sort((a, b) => {
+                const statusOrder = { ONGOING: 1, UPCOMING: 2, COMPLETED: 3, POSTPONED: 4, CANCELED: 5 };
+                const orderA = statusOrder[a.status] || 99;
+                const orderB = statusOrder[b.status] || 99;
+                return orderA - orderB;
+            });
+            setTournaments(sortedTournaments);
         } catch (error) {
             message.error('Không thể tải danh sách Giải đấu!');
         } finally {
@@ -304,7 +310,6 @@ const AdminTournamentPage = () => {
                     <Col><Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => { setEditingTourId(null); tourForm.resetFields(); setIsTourModalVisible(true); }}>Tạo Giải Đấu Mới</Button></Col>
                 </Row>
                 <Table columns={[
-                    { title: 'ID', dataIndex: 'id' },
                     { title: 'Tên Giải Đấu', dataIndex: 'name', render: t => <Text strong className="text-blue-700 text-lg">{t}</Text> },
                     { title: 'Thời Gian Tổ Chức', render: (_, r) => `${dayjs(r.startDate).format('DD/MM/YYYY')} - ${dayjs(r.endDate).format('DD/MM/YYYY')}` },
                     {
