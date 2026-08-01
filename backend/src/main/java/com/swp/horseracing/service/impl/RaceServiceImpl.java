@@ -133,7 +133,9 @@ public class RaceServiceImpl implements RaceService {
 
         if (request.getName() != null) race.setName(request.getName());
         if (request.getRaceTime() != null) {
-            validateRaceTimeConstraints(request.getRaceTime(), race.getTournament().getId(), race.getId());
+            if (!request.getRaceTime().equals(race.getRaceTime())) {
+                validateRaceTimeConstraints(request.getRaceTime(), race.getTournament().getId(), race.getId());
+            }
             race.setRaceTime(request.getRaceTime());
         }
 
