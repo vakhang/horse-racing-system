@@ -37,7 +37,6 @@ public class Registration {
 
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RegistrationStatus status;
 
     private String note;

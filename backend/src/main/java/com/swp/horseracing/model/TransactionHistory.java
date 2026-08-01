@@ -33,15 +33,12 @@ public class TransactionHistory {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TransactionType type;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TransactionDirection direction;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TransactionStatus status;
 
     @Column(name = "proof_url", columnDefinition = "TEXT")

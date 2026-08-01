@@ -35,7 +35,6 @@ public class Race {
     private BigDecimal rakePercentage = new BigDecimal("20.00");
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RaceStatus status;
 
     @Column(name = "estimated_duration")

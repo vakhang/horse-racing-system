@@ -24,7 +24,6 @@ public class JockeyInvitation {
     private User jockey;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private InvitationStatus status;
 
     @CreationTimestamp

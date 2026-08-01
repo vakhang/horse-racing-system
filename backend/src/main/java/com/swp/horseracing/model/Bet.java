@@ -33,7 +33,6 @@ public class Bet {
     private BigDecimal expectedOdds;
 
     @Enumerated(EnumType.STRING)
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     @Builder.Default
     private BetStatus status = BetStatus.PENDING;
 
