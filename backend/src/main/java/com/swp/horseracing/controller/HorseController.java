@@ -18,7 +18,7 @@ public class HorseController {
         try {
             return ResponseEntity.ok(horseService.createHorse(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -36,7 +36,7 @@ public class HorseController {
         try {
             return ResponseEntity.ok(horseService.getHorseById(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -45,7 +45,7 @@ public class HorseController {
         try {
             return ResponseEntity.ok(horseService.updateHorse(id, request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -55,7 +55,7 @@ public class HorseController {
             horseService.deleteHorse(id);
             return ResponseEntity.ok("Xóa Ngựa thành công!");
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

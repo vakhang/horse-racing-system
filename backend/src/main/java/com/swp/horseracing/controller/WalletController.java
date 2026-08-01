@@ -18,7 +18,7 @@ public class WalletController {
         try {
             return ResponseEntity.ok(walletService.getWalletByUserId(userId));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -27,7 +27,7 @@ public class WalletController {
         try {
             return ResponseEntity.ok(walletService.depositMoney(request.getUserId(), request.getAmount()));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 

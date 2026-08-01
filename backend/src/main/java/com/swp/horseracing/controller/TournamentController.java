@@ -18,7 +18,7 @@ public class TournamentController {
         try {
             return ResponseEntity.ok(tournamentService.createTournament(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -32,7 +32,7 @@ public class TournamentController {
         try {
             return ResponseEntity.ok(tournamentService.getTournamentById(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -41,7 +41,7 @@ public class TournamentController {
         try {
             return ResponseEntity.ok(tournamentService.updateTournament(id, request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -51,7 +51,7 @@ public class TournamentController {
             tournamentService.deleteTournament(id);
             return ResponseEntity.ok("Xóa Giải đấu thành công!");
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
     // API Hủy giải đấu và hoàn tiền

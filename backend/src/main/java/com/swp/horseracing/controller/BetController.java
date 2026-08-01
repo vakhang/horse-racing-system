@@ -18,7 +18,7 @@ public class BetController {
         try {
             return ResponseEntity.ok(betService.createBet(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

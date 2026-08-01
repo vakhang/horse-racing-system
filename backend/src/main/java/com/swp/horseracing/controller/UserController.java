@@ -33,7 +33,7 @@ public class UserController {
         try {
             return ResponseEntity.ok(userService.getJockeyMarket());
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -43,7 +43,7 @@ public class UserController {
         try {
             return ResponseEntity.ok(userService.getUserById(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -53,7 +53,7 @@ public class UserController {
         try {
             return ResponseEntity.ok(userService.updateUser(id, request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -87,7 +87,7 @@ public class UserController {
             userService.deleteUser(id);
             return ResponseEntity.ok("Xóa User thành công!");
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -97,7 +97,7 @@ public class UserController {
         try {
             return ResponseEntity.ok(userService.updateUserStatus(id, UserStatus.SELF_EXCLUSION));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -107,7 +107,7 @@ public class UserController {
         try {
             return ResponseEntity.ok(userService.getMyBets(userId));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -117,7 +117,7 @@ public class UserController {
         try {
             return ResponseEntity.ok(userService.getMyTransactions(userId));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

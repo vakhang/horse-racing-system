@@ -42,7 +42,7 @@ public class SystemAnnouncementController {
                     content, category, targetRoles, targetStatuses, file, adminId, adminIp);
             return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 

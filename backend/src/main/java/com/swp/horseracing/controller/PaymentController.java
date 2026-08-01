@@ -20,7 +20,7 @@ public class PaymentController {
             PaymentResponseDTO response = paymentService.createDepositQR(request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

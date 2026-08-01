@@ -19,7 +19,7 @@ public class SystemContentController {
         try {
             return ResponseEntity.ok(systemContentService.getContentByPageId(pageId));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -29,7 +29,7 @@ public class SystemContentController {
         try {
             return ResponseEntity.ok(systemContentService.getAllContents());
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -40,7 +40,7 @@ public class SystemContentController {
             return ResponseEntity.ok(systemContentService.updateContent(pageId, request));
         } catch (RuntimeException e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

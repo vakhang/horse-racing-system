@@ -35,7 +35,7 @@ public class AdminController {
         try {
             return ResponseEntity.ok(adminTransactionService.approveDeposit(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -44,7 +44,7 @@ public class AdminController {
         try {
             return ResponseEntity.ok(adminTransactionService.rejectDeposit(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

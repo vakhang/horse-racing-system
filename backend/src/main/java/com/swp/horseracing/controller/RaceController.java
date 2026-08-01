@@ -19,7 +19,7 @@ public class RaceController {
         try {
             return ResponseEntity.ok(raceService.createRace(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -38,7 +38,7 @@ public class RaceController {
         try {
             return ResponseEntity.ok(raceService.getRaceById(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -47,7 +47,7 @@ public class RaceController {
         try {
             return ResponseEntity.ok(raceService.updateRace(id, request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -67,7 +67,7 @@ public class RaceController {
         try {
             return ResponseEntity.ok(raceService.getLiveOdds(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -77,7 +77,7 @@ public class RaceController {
             raceService.payoutRace(id);
             return ResponseEntity.ok("Trả thưởng chặng đua thành công!");
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

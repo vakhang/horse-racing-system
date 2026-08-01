@@ -19,7 +19,7 @@ public class RefereeController {
         try {
             return ResponseEntity.ok(refereeService.submitRaceResult(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -28,7 +28,7 @@ public class RefereeController {
         try {
             return ResponseEntity.ok(refereeService.submitReport(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

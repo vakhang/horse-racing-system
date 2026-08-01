@@ -18,7 +18,7 @@ public class RegistrationController {
         try {
             return ResponseEntity.ok(registrationService.createRegistration(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -40,7 +40,7 @@ public class RegistrationController {
         try {
             return ResponseEntity.ok(registrationService.getRegistrationById(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -49,7 +49,7 @@ public class RegistrationController {
         try {
             return ResponseEntity.ok(registrationService.updateRegistration(id, request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -59,7 +59,7 @@ public class RegistrationController {
             registrationService.deleteRegistration(id);
             return ResponseEntity.ok("Xóa Đơn đăng ký thành công!");
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

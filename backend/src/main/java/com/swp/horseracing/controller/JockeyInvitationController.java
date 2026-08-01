@@ -18,7 +18,7 @@ public class JockeyInvitationController {
         try {
             return ResponseEntity.ok(invitationService.createInvitation(request));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -27,7 +27,7 @@ public class JockeyInvitationController {
         try {
             return ResponseEntity.ok(invitationService.acceptInvitation(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -36,7 +36,7 @@ public class JockeyInvitationController {
         try {
             return ResponseEntity.ok(invitationService.rejectInvitation(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
     // API LẤY DANH SÁCH LỜI MỜI CHO NÀI NGỰA HOẶC CHỦ NGỰA
@@ -52,7 +52,7 @@ public class JockeyInvitationController {
             }
             return ResponseEntity.badRequest().body("Phải cung cấp jockeyId hoặc ownerId");
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -61,7 +61,7 @@ public class JockeyInvitationController {
         try {
             return ResponseEntity.ok(invitationService.cancelInvitation(id));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }
