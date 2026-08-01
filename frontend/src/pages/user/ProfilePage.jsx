@@ -137,11 +137,11 @@ const ProfilePage = () => {
                                 </Form.Item>
                             </div>
                             <div className="flex gap-4">
-                                <Form.Item label="Chứng chỉ hành nghề" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
-                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Bằng Cấp</Button></Upload>
+                                <Form.Item label="Chứng chỉ hành nghề (Nếu có cập nhật)" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Bằng Cấp Mới</Button></Upload>
                                 </Form.Item>
-                                <Form.Item label="Giấy Khám Sức Khỏe" name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
-                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Sổ Khám Bệnh</Button></Upload>
+                                <Form.Item label="Giấy Khám Sức Khỏe (Nếu có cập nhật)" name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Sổ Khám Mới</Button></Upload>
                                 </Form.Item>
                             </div>
                             <Text className="text-gray-500 text-sm italic">* Hồ sơ chứng chỉ sẽ được hiển thị công khai trên Sàn Giao Dịch.</Text>
@@ -151,13 +151,13 @@ const ProfilePage = () => {
                     {/* KHU VỰC DÀNH RIÊNG CHO TRỌNG TÀI */}
                     {user?.role === 'REFEREE' && (
                         <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mt-4 mb-4">
-                            <Title level={5} className="text-indigo-700 mb-4">Tài Liệu Bắt Buộc (Dành cho Trọng Tài)</Title>
+                            <Title level={5} className="text-indigo-700 mb-4">Tài Liệu Cập Nhật (Tùy chọn bổ sung dành cho Trọng Tài)</Title>
                             <div className="flex gap-4">
-                                <Form.Item label="CCCD / Hộ Chiếu" name="kycFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
-                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên CCCD</Button></Upload>
+                                <Form.Item label="CCCD / Hộ Chiếu (Nếu làm lại)" name="kycFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên CCCD mới</Button></Upload>
                                 </Form.Item>
-                                <Form.Item label="Chứng chỉ chuyên môn" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full" rules={[{ required: true }]}>
-                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Chứng Chỉ</Button></Upload>
+                                <Form.Item label="Chứng chỉ chuyên môn (Nếu có mới)" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                    <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Chứng Chỉ mới</Button></Upload>
                                 </Form.Item>
                             </div>
                         </div>
