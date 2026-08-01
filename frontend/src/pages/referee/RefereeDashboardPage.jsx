@@ -60,7 +60,8 @@ const RefereeDashboardPage = () => {
             message.success('Đã phát lệnh bắt đầu! Tỷ lệ cược đã được chốt sổ tự động.');
             fetchRaces();
         } catch (error) {
-            message.error('Có lỗi xảy ra khi bắt đầu chặng đua!');
+            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.response?.data || 'Có lỗi xảy ra khi bắt đầu chặng đua!';
+            message.error(typeof errorMsg === 'string' ? errorMsg : 'Có lỗi xảy ra khi bắt đầu chặng đua!');
         }
     };
 

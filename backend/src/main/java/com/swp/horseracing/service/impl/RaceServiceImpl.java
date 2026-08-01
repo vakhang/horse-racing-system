@@ -163,7 +163,8 @@ public class RaceServiceImpl implements RaceService {
             org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_REFEREE"))) {
                 // Lỗi BOLA: Chỉ trọng tài được phân công mới được đổi trạng thái chặng đua
-                User currentUser = userRepository.findByUsername(auth.getName())
+                Integer currentUserId = Integer.parseInt(auth.getName());
+                User currentUser = userRepository.findById(currentUserId)
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy user đăng nhập!"));
                 if (race.getReferee() == null || !race.getReferee().getId().equals(currentUser.getId())) {
                     throw new RuntimeException("Bạn không có quyền thao tác trên chặng đua này!");

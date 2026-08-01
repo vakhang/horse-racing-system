@@ -186,7 +186,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         User currentUser = null;
         if (auth != null && auth.getName() != null) {
-            currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+            try {
+                currentUser = userRepository.findById(Integer.parseInt(auth.getName())).orElse(null);
+            } catch (NumberFormatException e) {
+                currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+            }
         }
         Integer adminId = currentUser != null ? currentUser.getId() : 1;
         
@@ -223,7 +227,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         User currentUser = null;
         if (auth != null && auth.getName() != null) {
-            currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+            try {
+                currentUser = userRepository.findById(Integer.parseInt(auth.getName())).orElse(null);
+            } catch (NumberFormatException e) {
+                currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+            }
         }
         if (currentUser != null) {
             RefereeReport report = RefereeReport.builder()
