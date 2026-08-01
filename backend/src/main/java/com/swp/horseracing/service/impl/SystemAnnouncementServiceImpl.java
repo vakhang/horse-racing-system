@@ -56,7 +56,7 @@ public class SystemAnnouncementServiceImpl implements SystemAnnouncementService 
                 .createdBy(adminId)
                 .adminIp(adminIp)
                 .successCount(successCount)
-                .createdAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")))
                 .build();
 
         SystemAnnouncement saved = announcementRepository.save(announcement);

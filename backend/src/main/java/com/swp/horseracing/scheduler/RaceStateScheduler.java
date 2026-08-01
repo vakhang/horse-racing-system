@@ -21,7 +21,7 @@ public class RaceStateScheduler {
     // Chạy ngầm mỗi phút một lần
     @Scheduled(cron = "0 * * * * *")
     public void updateRaceStates() {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
 
         // Tự động chuyển REGISTRATION -> BETTING khi chạm mốc 12 giờ trước giờ chạy
         List<Race> registrationRaces = raceRepository.findByStatus(RaceStatus.REGISTRATION);

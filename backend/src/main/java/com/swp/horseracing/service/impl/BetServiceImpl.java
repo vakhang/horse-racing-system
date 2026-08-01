@@ -37,7 +37,7 @@ public class BetServiceImpl implements BetService {
 
         // RÀO CẢN 1: Khóa cược 1 phút trước giờ xuất phát và chỉ mở trước 12 giờ
         if (race.getRaceTime() != null) {
-            java.time.LocalDateTime now = java.time.LocalDateTime.now();
+            java.time.LocalDateTime now = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
             if (now.plusMinutes(1).isAfter(race.getRaceTime())) {
                 throw new RuntimeException("Hệ thống đã khóa nhận cược cho chặng đua này!");
             }
@@ -51,8 +51,8 @@ public class BetServiceImpl implements BetService {
             throw new RuntimeException("Số tiền cược tối thiểu là 10,000 VNĐ!");
         }
 
-        java.time.LocalDateTime startOfDay = java.time.LocalDateTime.now().with(java.time.LocalTime.MIN);
-        java.time.LocalDateTime endOfDay = java.time.LocalDateTime.now().with(java.time.LocalTime.MAX);
+        java.time.LocalDateTime startOfDay = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).with(java.time.LocalTime.MIN);
+        java.time.LocalDateTime endOfDay = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).with(java.time.LocalTime.MAX);
         BigDecimal dailyTotal = betRepository.sumDailyBetAmountBySpectatorId(spectator.getId(), startOfDay, endOfDay);
         if (dailyTotal == null) {
             dailyTotal = BigDecimal.ZERO;

@@ -97,7 +97,7 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
 
         // 1. Cập nhật thiệp mời
         invitation.setStatus(InvitationStatus.ACCEPTED);
-        invitation.setRespondedAt(LocalDateTime.now());
+        invitation.setRespondedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         invitationRepository.save(invitation);
 
         // 2. Cập nhật Đơn đăng ký bằng trạng thái chuẩn của DB
@@ -120,7 +120,7 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         }
 
         invitation.setStatus(InvitationStatus.REJECTED);
-        invitation.setRespondedAt(LocalDateTime.now());
+        invitation.setRespondedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
 
         return mapToDTO(invitationRepository.save(invitation));
     }

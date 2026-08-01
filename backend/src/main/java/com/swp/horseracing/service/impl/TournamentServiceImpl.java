@@ -236,7 +236,7 @@ public class TournamentServiceImpl implements TournamentService {
     private TournamentResponseDTO mapToResponseDTO(Tournament tournament) {
         TournamentStatus currentStatus = tournament.getStatus();
         if (currentStatus != TournamentStatus.CANCELED && currentStatus != TournamentStatus.POSTPONED) {
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
             if (tournament.getStartDate() != null && tournament.getEndDate() != null) {
                 if (now.isBefore(tournament.getStartDate())) {
                     currentStatus = TournamentStatus.UPCOMING;
