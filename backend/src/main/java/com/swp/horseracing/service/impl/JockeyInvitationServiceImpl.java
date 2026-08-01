@@ -72,9 +72,18 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
 
         java.util.List<Registration> allJockeyRegs = registrationRepository.findByJockeyId(invitation.getJockey().getId());
 
+        boolean isSameRace = allJockeyRegs.stream()
+                .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
+                .anyMatch(r -> r.getRace().getId().equals(currentReg.getRace().getId()));
+
+        if (isSameRace) {
+            throw new RuntimeException("Bạn đã nhận lời tham gia chặng đua này với một chiến mã khác!");
+        }
+
         boolean isOverlapping = allJockeyRegs.stream()
                 .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
                 .anyMatch(r -> {
+                    if (r.getRace().getRaceTime() == null || currentReg.getRace().getRaceTime() == null) return false;
                     java.time.LocalDateTime startA = r.getRace().getRaceTime();
                     Integer durationA = r.getRace().getEstimatedDuration() != null ? r.getRace().getEstimatedDuration() : 30;
                     java.time.LocalDateTime endA = startA.plusMinutes(durationA);
