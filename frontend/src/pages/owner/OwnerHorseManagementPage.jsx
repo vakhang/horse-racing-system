@@ -131,15 +131,6 @@ const OwnerHorseManagementPage = () => {
                     <Text>Win Rate: <Text strong type="success">{r.winRate ? r.winRate.toFixed(1) : 0}%</Text> ({r.winRaces || 0}/{r.totalRaces || 0} Trận)</Text>
                 </Space>
             )},
-        { title: 'Thể Lực', render: (_, r) => {
-                const lastRaced = localStorage.getItem(`horse_last_raced_${r.id}`);
-                let stamina = 100;
-                if (lastRaced) {
-                    const hoursPassed = dayjs().diff(dayjs(lastRaced), 'hour');
-                    stamina = Math.min(100, Math.max(20, hoursPassed * 2));
-                }
-                return <Progress percent={stamina} size="small" status={stamina < 50 ? 'exception' : 'active'} format={p => `${p}%`} />;
-            }},
         { title: 'Hồ sơ', render: (_, r) => <RenderFilesStatus horse={r} /> },
         { title: 'Trạng Thái', dataIndex: 'status', render: s => s === 'APPROVED' ? <Tag color="green">ĐÃ DUYỆT</Tag> : (s === 'REJECTED' ? <Tag color="red">TỪ CHỐI</Tag> : <Tag color="orange">CHỜ XỬ LÝ</Tag>) },
         {
