@@ -35,7 +35,9 @@ const JockeyInvitationPage = () => {
             message.success(action === 'accept' ? 'Đã NHẬN lời mời thi đấu!' : 'Đã TỪ CHỐI lời mời thi đấu!');
             fetchMyInvitations();
         } catch (error) {
-            message.error(error.response?.data?.message || error.response?.data || 'Có lỗi xảy ra!');
+            const errData = error.response?.data;
+            const errorMsg = errData?.error || errData?.message || (typeof errData === 'string' ? errData : 'Có lỗi xảy ra!');
+            message.error(errorMsg);
         }
     };
 

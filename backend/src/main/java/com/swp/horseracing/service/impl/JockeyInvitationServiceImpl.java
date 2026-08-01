@@ -73,6 +73,7 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         java.util.List<Registration> allJockeyRegs = registrationRepository.findByJockeyId(invitation.getJockey().getId());
 
         boolean isSameRace = allJockeyRegs.stream()
+                .filter(r -> r.getRace().getStatus() != com.swp.horseracing.model.RaceStatus.CANCELED)
                 .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
                 .anyMatch(r -> r.getRace().getId().equals(currentReg.getRace().getId()));
 
@@ -81,6 +82,7 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         }
 
         boolean isOverlapping = allJockeyRegs.stream()
+                .filter(r -> r.getRace().getStatus() != com.swp.horseracing.model.RaceStatus.CANCELED)
                 .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
                 .anyMatch(r -> {
                     if (r.getRace().getRaceTime() == null || currentReg.getRace().getRaceTime() == null) return false;
