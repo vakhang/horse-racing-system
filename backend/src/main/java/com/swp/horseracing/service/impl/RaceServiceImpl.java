@@ -49,7 +49,7 @@ public class RaceServiceImpl implements RaceService {
         for (Race r : existingRaces) {
             if (currentRaceId != null && r.getId().equals(currentRaceId)) continue;
             
-            if (r.getRaceTime() == null) continue;
+            if (r.getRaceTime() == null || com.swp.horseracing.model.RaceStatus.CANCELED.equals(r.getStatus())) continue;
             
             java.time.LocalDateTime startA = r.getRaceTime();
             java.time.LocalDateTime endA = startA.plusMinutes(r.getEstimatedDuration() != null ? r.getEstimatedDuration() : 30);
@@ -271,6 +271,18 @@ public class RaceServiceImpl implements RaceService {
                 java.math.BigDecimal.valueOf(100).subtract(rakePercentage)
         ).divide(java.math.BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
 
+        PrizeConfig config = prizeConfigRepository.findById(1).orElse(
+                PrizeConfig.builder()
+                        .horseOwnerPercentage(new java.math.BigDecimal("0.05"))
+                        .jockeyPercentage(new java.math.BigDecimal("0.02"))
+                        .jackpotPool(java.math.BigDecimal.ZERO)
+                        .build()
+        );
+        java.math.BigDecimal currentJackpot = config.getJackpotPool() != null ? config.getJackpotPool() : java.math.BigDecimal.ZERO;
+        
+        // CỘNG DỒN JACKPOT CŨ VÀO NET POOL ĐỂ TÍNH TỶ LỆ KÍCH THÍCH KHÁN GIẢ
+        netPool = netPool.add(currentJackpot);
+
         List<Registration> registrations = registrationRepository.findByRaceId(raceId);
         List<LiveOddsResponseDTO> oddsList = new java.util.ArrayList<>();
 
@@ -290,6 +302,8 @@ public class RaceServiceImpl implements RaceService {
                     .horseName(reg.getHorse().getName())
                     .totalBetOnHorse(totalBetOnHorse)
                     .calculatedOdds(calculatedOdds)
+                    .status(reg.getStatus() != null ? reg.getStatus().name() : null)
+                    .note(reg.getNote())
                     .build());
         }
 
@@ -338,6 +352,19 @@ public class RaceServiceImpl implements RaceService {
         java.math.BigDecimal totalPool = race.getTotalPool() != null ? race.getTotalPool() : java.math.BigDecimal.ZERO;
         java.math.BigDecimal netPool = totalPool.multiply(new java.math.BigDecimal("0.65")).setScale(2, java.math.RoundingMode.HALF_UP);
 
+        PrizeConfig config = prizeConfigRepository.findById(1).orElse(
+                PrizeConfig.builder()
+                        .horseOwnerPercentage(new java.math.BigDecimal("0.05"))
+                        .jockeyPercentage(new java.math.BigDecimal("0.02"))
+                        .jackpotPool(java.math.BigDecimal.ZERO)
+                        .build()
+        );
+
+        java.math.BigDecimal currentJackpot = config.getJackpotPool() != null ? config.getJackpotPool() : java.math.BigDecimal.ZERO;
+        
+        // CỘNG DỒN JACKPOT CŨ VÀO NET POOL MỚI ĐỂ CHIA CHO KHÁN GIẢ
+        netPool = netPool.add(currentJackpot);
+
         // Lấy tất cả bet của race
         List<Bet> allBets = betRepository.findByRaceId(raceId);
         
@@ -351,6 +378,16 @@ public class RaceServiceImpl implements RaceService {
         java.math.BigDecimal dividend = java.math.BigDecimal.ZERO;
         if (totalBetOnWinner.compareTo(java.math.BigDecimal.ZERO) > 0) {
             dividend = netPool.divide(totalBetOnWinner, 4, java.math.RoundingMode.HALF_UP);
+            
+            // Xóa sổ Jackpot cũ vì đã có người trúng
+            if (currentJackpot.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                config.setJackpotPool(java.math.BigDecimal.ZERO);
+                prizeConfigRepository.save(config);
+            }
+        } else {
+            // Không có người trúng, Net Pool hiện tại trở thành Jackpot Carryover mới
+            config.setJackpotPool(netPool);
+            prizeConfigRepository.save(config);
         }
 
         for (Bet bet : allBets) {
@@ -413,12 +450,7 @@ public class RaceServiceImpl implements RaceService {
         }
 
         // BƯỚC 5: Phân chia lợi nhuận thể thao (Chủ ngựa, Nài ngựa)
-        PrizeConfig config = prizeConfigRepository.findById(1).orElse(
-                PrizeConfig.builder()
-                        .horseOwnerPercentage(new java.math.BigDecimal("0.05"))
-                        .jockeyPercentage(new java.math.BigDecimal("0.02"))
-                        .build()
-        );
+        // config đã được gọi ở BƯỚC 1
 
         java.math.BigDecimal ownerPrize = totalPool.multiply(config.getHorseOwnerPercentage()).setScale(2, java.math.RoundingMode.HALF_UP);
         if (ownerPrize.compareTo(java.math.BigDecimal.ZERO) > 0 && winnerReg.getOwner() != null) {

@@ -193,6 +193,9 @@ const RefereeDashboardPage = () => {
             key: 'action',
             align: 'right',
             render: (_, record) => {
+                if (record.refereeId !== user?.id) {
+                    return <Text type="secondary" italic>Chỉ xem (Không được phân công)</Text>;
+                }
                 if (record.status === 'COMPLETED') return <Text type="success" className="font-bold"><SafetyCertificateOutlined /> Đã Phát Thưởng</Text>;
                 if (record.status === 'CANCELED') return <Text type="secondary">Chặng Bị Hủy</Text>;
 
@@ -242,11 +245,16 @@ const RefereeDashboardPage = () => {
                 <Tabs size="large" items={[
                     {
                         key: '1',
-                        label: 'Bàn Trọng Tài (Live)',
-                        children: <Table columns={columns} dataSource={races} rowKey="id" loading={loading} className="border rounded-xl" expandable={{ expandedRowRender, onExpand: (exp, rec) => { if(exp) fetchRegistrations(rec.id) } }} />
+                        label: 'Phân Công Của Tôi (Thao Tác)',
+                        children: <Table columns={columns} dataSource={races.filter(r => r.refereeId === user?.id)} rowKey="id" loading={loading} className="border rounded-xl" expandable={{ expandedRowRender, onExpand: (exp, rec) => { if(exp) fetchRegistrations(rec.id) } }} locale={{ emptyText: 'Bạn chưa được phân công giám sát chặng đua nào.' }} />
                     },
                     {
                         key: '2',
+                        label: 'Lịch Thi Đấu Chung (Chỉ Xem)',
+                        children: <Table columns={columns} dataSource={races} rowKey="id" loading={loading} className="border rounded-xl" expandable={{ expandedRowRender, onExpand: (exp, rec) => { if(exp) fetchRegistrations(rec.id) } }} />
+                    },
+                    {
+                        key: '3',
                         label: 'Lịch Sử Biên Bản',
                         children: <Table columns={historyColumns} dataSource={reportsHistory} rowKey="id" className="border rounded-xl" locale={{ emptyText: 'Chưa có biên bản nào được lập.' }} />
                     }
