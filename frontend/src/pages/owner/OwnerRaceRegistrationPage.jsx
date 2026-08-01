@@ -27,6 +27,8 @@ const OwnerRaceRegistrationPage = () => {
         fetchJockeys();
     }, [currentOwnerId]);
 
+    const [currentRaceRegistrations, setCurrentRaceRegistrations] = useState([]);
+
     const fetchAvailableRaces = async () => {
         setLoading(true);
         try {
@@ -47,14 +49,25 @@ const OwnerRaceRegistrationPage = () => {
     const fetchJockeys = async () => {
         try {
             const response = await api.get('/users');
-            const onlyJockeys = response.data.filter(u => u.role === 'JOCKEY');
-            const jockeysWithStats = onlyJockeys.map(j => ({
-                ...j,
-                weight: Math.floor(Math.random() * (65 - 55 + 1) + 55) + 'kg',
-                winRate: Math.floor(Math.random() * (80 - 40 + 1) + 40) + '%'
-            }));
-            setJockeys(jockeysWithStats);
+            const validJockeys = response.data.filter(u => 
+                u.role === 'JOCKEY' && 
+                u.weight != null && 
+                u.height != null && 
+                u.certDocumentUrls && u.certDocumentUrls.length > 0 && 
+                u.healthDocumentUrls && u.healthDocumentUrls.length > 0
+            );
+            setJockeys(validJockeys);
         } catch (error) { console.error('Lỗi tải nài ngựa:', error); }
+    };
+
+    const fetchRaceRegistrations = async (raceId) => {
+        try {
+            const response = await api.get(`/registrations?raceId=${raceId}`);
+            setCurrentRaceRegistrations(response.data);
+        } catch (error) {
+            console.error('Lỗi tải danh sách đăng ký:', error);
+            setCurrentRaceRegistrations([]);
+        }
     };
 
     const handleRegisterAndInvite = async (values) => {
@@ -64,9 +77,6 @@ const OwnerRaceRegistrationPage = () => {
 
             const invitePayload = { registrationId: regResponse.data.id, jockeyId: values.jockeyId };
             await api.post('/invitations', invitePayload);
-
-            // THUẬT TOÁN ĐÁNH DẤU THỂ LỰC VÀO MÁY
-            localStorage.setItem(`horse_last_raced_${values.horseId}`, selectedRace.raceTime);
 
             message.success('Đã gửi đơn đăng ký và lời mời cho Nài ngựa thành công! 🏇');
             setIsModalVisible(false);
@@ -79,15 +89,8 @@ const OwnerRaceRegistrationPage = () => {
     const openInviteModal = (race) => {
         setSelectedRace(race);
         form.resetFields();
+        fetchRaceRegistrations(race.id);
         setIsModalVisible(true);
-    };
-
-    // KIỂM TRA THỂ LỰC (FATIGUE CHECK)
-    const checkFatigue = (horseId, targetRaceTime) => {
-        const lastRaced = localStorage.getItem(`horse_last_raced_${horseId}`);
-        if (!lastRaced) return { isTired: false };
-        const hoursDiff = Math.abs(dayjs(targetRaceTime).diff(dayjs(lastRaced), 'hour'));
-        return { isTired: hoursDiff < 24, hours: hoursDiff }; // Nghỉ dưới 24 tiếng là mệt
     };
 
     const columns = [
@@ -115,15 +118,14 @@ const OwnerRaceRegistrationPage = () => {
             </Card>
 
             <Modal title={<span className="text-xl">Đăng ký: <span className="text-blue-600">{selectedRace?.name}</span></span>} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null} centered>
-                <Alert message="Luật thi đấu" description="Chiến mã cần được nghỉ ngơi ít nhất 24 giờ giữa 2 chặng đua để đảm bảo an toàn." type="info" showIcon className="mb-4" />
                 <Form form={form} layout="vertical" onFinish={handleRegisterAndInvite}>
-                    <Form.Item name="horseId" label={<Text strong>Chọn Chiến Mã Đạt Thể Lực</Text>} rules={[{ required: true }]}>
+                    <Form.Item name="horseId" label={<Text strong>Chọn Chiến Mã</Text>} rules={[{ required: true }]}>
                         <Select placeholder="-- Chọn ngựa --" size="large">
                             {myHorses.map(horse => {
-                                const fatigue = checkFatigue(horse.id, selectedRace?.raceTime);
+                                const isAlreadyRegistered = currentRaceRegistrations.some(reg => reg.horseId === horse.id);
                                 return (
-                                    <Option key={horse.id} value={horse.id} disabled={fatigue.isTired}>
-                                        {horse.name} {fatigue.isTired ? <span className="text-red-500 font-bold ml-2">(⚠️ Đang hồi thể lực)</span> : <span className="text-green-600 ml-2">(Sẵn sàng)</span>}
+                                    <Option key={horse.id} value={horse.id} disabled={isAlreadyRegistered}>
+                                        {horse.name} {isAlreadyRegistered ? <span className="text-red-500 font-bold ml-2">(Đã được chọn để thi đấu)</span> : <span className="text-green-600 ml-2">(Sẵn sàng)</span>}
                                     </Option>
                                 );
                             })}
@@ -136,7 +138,7 @@ const OwnerRaceRegistrationPage = () => {
                                 <Option key={jockey.id} value={jockey.id}>
                                     <div className="flex justify-between w-full">
                                         <Text strong>{jockey.username}</Text>
-                                        <Text type="secondary">⚖️ {jockey.weight} | 🏆 Win: {jockey.winRate}</Text>
+                                        <Text type="secondary">⚖️ {jockey.weight}kg | 📏 {jockey.height}cm</Text>
                                     </div>
                                 </Option>
                             ))}

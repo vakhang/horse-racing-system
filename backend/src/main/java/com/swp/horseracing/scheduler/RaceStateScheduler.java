@@ -26,7 +26,7 @@ public class RaceStateScheduler {
         // Tự động chuyển REGISTRATION -> BETTING khi chạm mốc 12 giờ trước giờ chạy
         List<Race> registrationRaces = raceRepository.findByStatus(RaceStatus.REGISTRATION);
         for (Race race : registrationRaces) {
-            if (race.getRaceTime() != null && now.plusHours(12).isAfter(race.getRaceTime())) {
+            if (race.getRaceTime() != null && now.plusMinutes(5).isAfter(race.getRaceTime())) {
                 race.setStatus(RaceStatus.BETTING);
                 raceRepository.save(race);
                 log.info("Auto-transitioned Race {} to BETTING", race.getId());
