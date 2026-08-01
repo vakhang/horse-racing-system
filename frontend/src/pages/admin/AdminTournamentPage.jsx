@@ -23,6 +23,9 @@ const AdminTournamentPage = () => {
 
     // Modal quản lý trạng thái ngựa rút lui
     const [isWithdrawModalVisible, setIsWithdrawModalVisible] = useState(false);
+    const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
+    const [withdrawReason, setWithdrawReason] = useState('');
+    const [selectedRegIdForWithdraw, setSelectedRegIdForWithdraw] = useState(null);
     const [raceRegistrations, setRaceRegistrations] = useState([]);
     const [selectedRaceForWithdraw, setSelectedRaceForWithdraw] = useState(null);
 
