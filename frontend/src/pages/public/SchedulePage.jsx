@@ -33,7 +33,7 @@ const SchedulePage = () => {
                     race.status === 'BETTING' || 
                     race.status === 'LOCK_SESSION' || 
                     race.status === 'RUNNING'
-                ) && raceDate >= now;
+                );
             });
             setRaces(futureRaces);
         } catch (error) {
