@@ -177,7 +177,7 @@ public class RaceServiceImpl implements RaceService {
                                 && r.getRaceTime() != null 
                                 && race.getRaceTime() != null 
                                 && r.getRaceTime().isBefore(race.getRaceTime())) {
-                            if (r.getStatus() != RaceStatus.RESULT_CONFIRMED && r.getStatus() != RaceStatus.CANCELED) {
+                            if (r.getStatus() != RaceStatus.RESULT_CONFIRMED && r.getStatus() != RaceStatus.CANCELED && r.getStatus() != RaceStatus.COMPLETED) {
                                 throw new RuntimeException("Bạn phải ký xác nhận chặng đua trước đó (" + r.getName() + ") trước khi bắt đầu chặng mới!");
                             }
                         }
