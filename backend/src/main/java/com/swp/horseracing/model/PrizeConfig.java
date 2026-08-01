@@ -23,4 +23,8 @@ public class PrizeConfig {
     @Column(name = "jockey_percentage", nullable = false)
     @Builder.Default
     private BigDecimal jockeyPercentage = new BigDecimal("0.02");
+
+    @Column(name = "jackpot_pool", nullable = false)
+    @Builder.Default
+    private BigDecimal jackpotPool = BigDecimal.ZERO;
 }

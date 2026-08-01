@@ -122,32 +122,55 @@ const BettingPage = () => {
             dataIndex: 'horseName',
             key: 'horseName',
             align: 'left', // Nội dung căn trái
-            render: (text) => <span className="font-bold text-blue-700 text-lg">{text}</span>
+            render: (text, record) => (
+                <div className="flex flex-col">
+                    <span className="font-bold text-blue-700 text-lg">{text}</span>
+                    {record.status === 'DISQUALIFIED' && (
+                        <Tag color="red" className="mt-1 max-w-xs whitespace-normal">
+                            [BỊ TRUẤT QUYỀN] - {record.note || 'Vi phạm luật'}
+                        </Tag>
+                    )}
+                    {record.status === 'WITHDRAWN' && (
+                        <Tag color="orange" className="mt-1 max-w-xs whitespace-normal">
+                            [ĐÃ RÚT LUI] - {record.note || 'Sự cố trước giờ thi đấu'}
+                        </Tag>
+                    )}
+                </div>
+            )
         },
         {
             title: <div className="text-center">Tỷ Lệ Cược (Live)</div>,
             dataIndex: 'calculatedOdds',
             key: 'calculatedOdds',
             align: 'center', // Tiêu đề và nội dung căn giữa
-            render: (val) => (
-                <Tag color={val > 0 ? "green" : "default"} className="text-base px-3 py-1">
-                    <LineChartOutlined /> {val > 0 ? `x${val}` : 'Chưa có cược'}
-                </Tag>
-            )
+            render: (val, record) => {
+                if (record.status === 'DISQUALIFIED' || record.status === 'WITHDRAWN') {
+                    return <Tag color="default" className="text-base px-3 py-1">Đã đóng</Tag>;
+                }
+                return (
+                    <Tag color={val > 0 ? "green" : "default"} className="text-base px-3 py-1">
+                        <LineChartOutlined /> {val > 0 ? `x${val}` : 'Chưa có cược'}
+                    </Tag>
+                );
+            }
         },
         {
             title: <div className="text-center">Thao Tác</div>,
             key: 'action',
             align: 'center', // Căn giữa toàn bộ cột thao tác
-            render: (_, record) => (
-                <Button
-                    type={bettingHorseRegId === record.registrationId ? "primary" : "default"}
-                    onClick={() => setBettingHorseRegId(record.registrationId)}
-                    className={bettingHorseRegId === record.registrationId ? "bg-yellow-500 border-none text-black font-bold" : ""}
-                >
-                    {bettingHorseRegId === record.registrationId ? "Đã Chọn" : "Chọn Ngựa Này"}
-                </Button>
-            )
+            render: (_, record) => {
+                const isDisabled = record.status === 'DISQUALIFIED' || record.status === 'WITHDRAWN';
+                return (
+                    <Button
+                        type={bettingHorseRegId === record.registrationId ? "primary" : "default"}
+                        onClick={() => setBettingHorseRegId(record.registrationId)}
+                        disabled={isDisabled}
+                        className={bettingHorseRegId === record.registrationId ? "bg-yellow-500 border-none text-black font-bold" : ""}
+                    >
+                        {isDisabled ? "Bị Cấm" : bettingHorseRegId === record.registrationId ? "Đã Chọn" : "Chọn Ngựa Này"}
+                    </Button>
+                );
+            }
         }
     ];
 
