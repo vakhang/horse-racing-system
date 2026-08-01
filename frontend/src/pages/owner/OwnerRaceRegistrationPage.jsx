@@ -97,7 +97,16 @@ const OwnerRaceRegistrationPage = () => {
         { title: 'Tên Giải Đấu', dataIndex: 'tournamentName', render: text => <Text strong className="text-blue-700">{text}</Text> },
         { title: 'Tên Chặng', dataIndex: 'name' },
         { title: 'Giờ Xuất Phát', dataIndex: 'raceTime', render: v => <Text strong>{dayjs(v).format('DD/MM/YYYY HH:mm')}</Text> },
-        { title: 'Trạng Thái', dataIndex: 'status', render: s => <Tag color="orange">{s}</Tag> },
+        { title: 'Trạng Thái', dataIndex: 'status', render: s => {
+                if (s === 'REGISTRATION') return <Tag color="orange">ĐĂNG KÝ THI ĐẤU</Tag>;
+                if (s === 'BETTING') return <Tag color="blue">NHẬN ĐẶT CƯỢC</Tag>;
+                if (s === 'LOCK_SESSION') return <Tag color="gray">KHÓA NHẬN CƯỢC</Tag>;
+                if (s === 'RUNNING') return <Tag color="red" className="animate-pulse">ĐANG THI ĐẤU</Tag>;
+                if (s === 'COMPLETED') return <Tag color="green">ĐÃ KẾT THÚC</Tag>;
+                if (s === 'CANCELED') return <Tag color="default">ĐÃ HỦY</Tag>;
+                return <Tag>{s}</Tag>;
+            }
+        },
         {
             title: 'Thao Tác', align: 'right', render: (_, record) => (
                 <Button type="primary" icon={<UserAddOutlined />} onClick={() => openInviteModal(record)}>Đăng ký & Gửi Lời Mời</Button>
