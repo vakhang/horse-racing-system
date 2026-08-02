@@ -1,3 +1,4 @@
+import api from '../../config/api.js';
 import React, { useState, useEffect } from 'react';
 import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin } from 'antd';
 import { RocketOutlined, DollarOutlined, LineChartOutlined } from '@ant-design/icons';
