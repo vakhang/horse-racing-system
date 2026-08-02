@@ -1,4 +1,4 @@
-import api from '../../config/api.js';
+import api from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import { Card, Statistic, Table, Tabs, Tag, Typography, Space } from 'antd';
 import { WalletOutlined, HistoryOutlined, TrophyOutlined, InfoCircleOutlined } from '@ant-design/icons';
