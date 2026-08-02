@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert } from 'antd';
+import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, ConfigProvider, theme } from 'antd';
 import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined, CrownOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
@@ -287,8 +287,8 @@ const AdminTournamentPage = () => {
                             <Button size="small" type="dashed" className="text-blue-600 font-bold" onClick={() => handleViewResult(record)}>🏆 XEM KẾT QUẢ</Button>
                         )}
                         {record.status === 'RESULT_CONFIRMED' && (
-                            <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={() => { handlePayout(record.id); handleForceTransition(record, 'COMPLETED'); }}>
-                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
+                            <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={async () => { await handlePayout(record.id); await handleForceTransition(record, 'COMPLETED'); }}>
+                                <Button size="small" type="primary" className="font-bold bg-blue-600">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
                             </Popconfirm>
                         )}
                         {(record.status === 'REGISTRATION' || record.status === 'BETTING' || record.status === 'LOCK_SESSION') && (
