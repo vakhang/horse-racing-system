@@ -26,6 +26,7 @@ const AdminTournamentPage = () => {
     const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
     const [withdrawReason, setWithdrawReason] = useState('');
     const [selectedRegIdForWithdraw, setSelectedRegIdForWithdraw] = useState(null);
+    const [selectedRaceForWithdraw, setSelectedRaceForWithdraw] = useState(null);
     const [raceRegistrations, setRaceRegistrations] = useState([]);
     const [isResultModalVisible, setIsResultModalVisible] = useState(false);
     const [selectedRaceForResults, setSelectedRaceForResults] = useState(null);
