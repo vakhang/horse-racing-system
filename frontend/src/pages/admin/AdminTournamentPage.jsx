@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, ConfigProvider, theme } from 'antd';
+import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, ConfigProvider, theme, Avatar } from 'antd';
 import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined, CrownOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
