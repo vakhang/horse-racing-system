@@ -117,6 +117,13 @@ const RefereeDashboardPage = () => {
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
     };
 
+    const handleConfirmResult = (raceId) => {
+        const race = races.find(r => r.id === raceId);
+        setSelectedRace(race);
+        fetchRegistrations(raceId);
+        setIsResultModalVisible(true);
+    };
+
     const handleSubmitResult = async (values) => {
         try {
             await api.post('/referees/results', {
