@@ -32,6 +32,10 @@ public class WalletServiceImpl implements WalletService {
         });
     }
 
+    // [Chức năng rõ ràng]: Nạp tiền ảo (Deposit)
+    // [Tác dụng]: Hàm giả lập nạp tiền vào ví của user. Tự động sinh mã giao dịch (DP-...) và lưu lịch sử cộng tiền.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu sau này tích hợp VNPay/Momo, hãy thay thế logic cộng tiền trực tiếp bằng cách tạo hóa đơn Pending và chỉ cộng tiền sau khi VNPay trả về callback thành công.
     @Override
     @Transactional
     public Wallet depositMoney(Integer userId, BigDecimal amount) {
@@ -55,6 +59,10 @@ public class WalletServiceImpl implements WalletService {
         return savedWallet;
     }
 
+    // [Chức năng rõ ràng]: Yêu cầu Rút tiền thật (Withdraw)
+    // [Tác dụng]: Trừ tiền trong ví ngay lập tức, và tạo một bản ghi Giao Dịch ở trạng thái PENDING để chờ Admin chuyển khoản thật và duyệt.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Để thay đổi mức rút tiền tối thiểu, hãy sửa giá trị `100000` ở điều kiện check phía dưới.
     @Override
     @Transactional
     public String requestWithdrawal(Integer userId, BigDecimal amount, String bankName, String accNumber, String accName) {

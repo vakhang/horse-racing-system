@@ -6,9 +6,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Chính sách Bảo mật (Privacy Policy)
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) lấy từ Backend quy định về quyền riêng tư.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `BAO_MAT`.
 const PrivacyPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('CHÍNH SÁCH BẢO MẬT & EKYC');
+    const [title] = useState('CHÍNH SÁCH BẢO MẬT & EKYC');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

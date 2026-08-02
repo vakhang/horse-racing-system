@@ -7,9 +7,13 @@ import api from '../../config/api';
 
 const { Title, Paragraph } = Typography;
 
+// [Chức năng rõ ràng]: Trang Câu hỏi thường gặp (FAQ)
+// [Tác dụng]: Hiển thị danh sách câu hỏi và câu trả lời phổ biến dưới dạng Collapse/Accordion để người dùng dễ đọc.
+// [Hướng dẫn sửa đổi]:
+// - Data: Thêm hoặc sửa câu hỏi trực tiếp trong mảng data của Component này.
 const FAQPage = () => {
     const [faqs, setFaqs] = useState([]);
-    const [title, setTitle] = useState('CÂU HỎI THƯỜNG GẶP (FAQ)');
+    const [title] = useState('CÂU HỎI THƯỜNG GẶP (FAQ)');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

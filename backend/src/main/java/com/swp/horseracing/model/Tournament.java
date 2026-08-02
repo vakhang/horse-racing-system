@@ -2,13 +2,16 @@ package com.swp.horseracing.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tournaments")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Giải đấu
+    // [Tác dụng]: Ánh xạ bảng `tournaments`. Lưu thông tin tổng quan của một Giải đấu lớn (bao gồm nhiều Chặng đua).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm Logo hoặc Banner URL cho giải đấu.
 public class Tournament {
 
     @Id

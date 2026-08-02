@@ -6,6 +6,10 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Tạo/Sửa Chặng đua
+    // [Tác dụng]: Hứng dữ liệu từ Admin khi tạo chặng đua mới (khoảng cách, thời gian bắt đầu, tên chặng).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm các điều kiện về thời tiết, loại đường chạy nếu có.
 public class RaceRequestDTO {
     private Integer tournamentId;
     private String name;

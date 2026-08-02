@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Ngựa
+    // [Tác dụng]: Ánh xạ bảng `horses` trong CSDL. Quản lý thông tin cốt lõi của một chú ngựa (Chủ sở hữu, tuổi, giống, trạng thái).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Sửa/Thêm thuộc tính nếu cần lưu trữ thêm các thông số y tế hoặc lịch sử chấn thương.
 public class Horse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

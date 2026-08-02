@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_attachments")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Tài liệu Người dùng
+    // [Tác dụng]: Ánh xạ bảng `user_attachments`. Lưu ảnh Avatar và hình CCCD của User phục vụ mục đích KYC.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột trạng thái Duyệt (Approved/Rejected) riêng cho từng ảnh nếu muốn.
 public class UserAttachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

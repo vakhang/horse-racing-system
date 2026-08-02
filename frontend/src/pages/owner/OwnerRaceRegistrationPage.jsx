@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Alert, Tabs } from 'antd';
+import { Table, Button, Tag, message, Card, Typography, Modal, Form, Select, Row, Col, Alert, Tabs } from 'antd';
 import { FlagOutlined, UserAddOutlined, SendOutlined, HistoryOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
@@ -9,6 +9,10 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { TabPane } = Tabs;
 
+// [Chức năng rõ ràng]: Trang Đăng ký Thi đấu (Chủ Ngựa)
+// [Tác dụng]: Nơi Chủ ngựa chọn (Ngựa + Nài ngựa đã đồng ý) để ghép vào một Chặng đua (Race) cụ thể đang mở đăng ký.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API gọi hàm `post` tới `/registrations`. UI: Tùy chỉnh màu sắc bảng chọn ngựa.
 const OwnerRaceRegistrationPage = () => {
     const { user } = useAuth();
     const currentOwnerId = user?.id;

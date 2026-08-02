@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "bets")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Vé cược
+    // [Tác dụng]: Ánh xạ bảng `bets` trong CSDL. Lưu thông tin cá cược của Người chơi (Cược con ngựa nào, chặng nào, bao nhiêu tiền).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính tỷ lệ cược (odds) tại thời điểm đặt, nếu không muốn tính toán động.
 public class Bet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -8,6 +8,10 @@ import { TrophyOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Kết quả thi đấu
+// [Tác dụng]: Hiển thị danh sách các chặng đua đã KẾT THÚC, kèm theo bảng xếp hạng thứ hạng ngựa.
+// [Hướng dẫn sửa đổi]:
+// - UI: Tùy chỉnh màu sắc các huy chương (Vàng, Bạc, Đồng) hoặc cách hiển thị thời gian về đích.
 const ResultsPage = () => {
     const [races, setRaces] = useState([]);
     const [loading, setLoading] = useState(true);

@@ -5,6 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @org.springframework.scheduling.annotation.EnableScheduling
+    // [Chức năng rõ ràng]: Class Khởi chạy Ứng dụng (Main Class)
+    // [Tác dụng]: Đây là trái tim của hệ thống Backend, nơi Spring Boot bắt đầu khởi động. Nó bao gồm hàm `main`, cấu hình múi giờ (Timezone) mặc định về Việt Nam và một đoạn code `CommandLineRunner` để tự động fix data cũ lúc khởi động.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu không cần chạy đoạn code tự động sửa data `initDummyAttachments` nữa, hãy comment hàm đó lại để ứng dụng khởi động nhanh hơn.
 public class HorseracingApplication {
 
 	@jakarta.annotation.PostConstruct

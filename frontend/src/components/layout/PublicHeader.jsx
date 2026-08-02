@@ -5,6 +5,10 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const { Text } = Typography;
 
+// [Chức năng rõ ràng]: Component Đầu trang (Header Public)
+// [Tác dụng]: Hiển thị thanh điều hướng cho Khách (Guest) chưa đăng nhập, chứa nút Đăng nhập / Đăng ký.
+// [Hướng dẫn sửa đổi]:
+// - UI: Thay logo hoặc màu sắc ở class `bg-white/10`.
 const PublicHeader = () => {
     const navigate = useNavigate();
     const location = useLocation();

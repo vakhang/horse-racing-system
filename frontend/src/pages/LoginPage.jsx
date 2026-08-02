@@ -8,6 +8,10 @@ import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Đăng Nhập
+// [Tác dụng]: Cung cấp Form nhập Username/Password, gọi API `/auth/login`, nhận JWT Token và lưu vào AuthContext/LocalStorage.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Nếu sau này hỗ trợ Login bằng Google, hãy gọi SDK Google tại màn hình này.
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [isBanModalVisible, setIsBanModalVisible] = useState(false);

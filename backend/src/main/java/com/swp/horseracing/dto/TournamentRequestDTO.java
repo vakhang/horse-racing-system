@@ -5,6 +5,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Tạo Giải đấu
+    // [Tác dụng]: Hứng tên, ngày bắt đầu, ngày kết thúc và mô tả từ Admin khi tạo một Giải đấu mới.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính hình ảnh banner cho Giải đấu.
 public class TournamentRequestDTO {
     private String name;
     private LocalDateTime startDate;

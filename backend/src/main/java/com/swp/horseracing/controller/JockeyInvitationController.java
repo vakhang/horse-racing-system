@@ -13,6 +13,10 @@ public class JockeyInvitationController {
 
     private final JockeyInvitationService invitationService;
 
+    // [Chức năng rõ ràng]: API Tạo lời mời Nài ngựa
+    // [Tác dụng]: Nhận request từ Chủ Ngựa gửi lời mời thuê Nài ngựa lái con ngựa của mình trong 1 chặng đua cụ thể.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint bằng cách sửa `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createInvitation(@RequestBody InvitationRequestDTO request) {
         try {
@@ -39,7 +43,10 @@ public class JockeyInvitationController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
-    // API LẤY DANH SÁCH LỜI MỜI CHO NÀI NGỰA HOẶC CHỦ NGỰA
+    // [Chức năng rõ ràng]: API Lấy danh sách Lời mời
+    // [Tác dụng]: Dùng chung cho cả Chủ Ngựa (xem lời mời đã gửi) và Nài Ngựa (xem lời mời nhận được). Dựa vào biến truyền lên là `jockeyId` hay `ownerId`.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu muốn đổi cách lọc, chỉnh sửa các tham số `@RequestParam` bên dưới.
     @GetMapping
     public ResponseEntity<?> getInvitations(
             @RequestParam(required = false) Integer jockeyId,

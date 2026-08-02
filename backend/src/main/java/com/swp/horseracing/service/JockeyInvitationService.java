@@ -4,6 +4,10 @@ import com.swp.horseracing.dto.InvitationRequestDTO;
 import com.swp.horseracing.dto.InvitationResponseDTO;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Lời mời Nài Ngựa
+    // [Tác dụng]: Định nghĩa luồng Gửi - Nhận - Từ chối - Hủy lời mời.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm khai báo hàm đếm lời mời chưa đọc.
 public interface JockeyInvitationService {
     InvitationResponseDTO createInvitation(InvitationRequestDTO request);
     InvitationResponseDTO acceptInvitation(Integer id);

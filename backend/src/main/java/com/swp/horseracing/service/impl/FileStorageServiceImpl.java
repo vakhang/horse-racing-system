@@ -14,6 +14,10 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Upload File
+    // [Tác dụng]: Kết nối trực tiếp với SDK của Cloudinary để upload file Multipart, trả về đường link ảnh an toàn (Secure URL).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Đổi Folder lưu trữ trên Cloudinary (Ví dụ: `horse_racing_dev`) tại biến cấu hình.
 public class FileStorageServiceImpl implements FileStorageService {
 
     private final Cloudinary cloudinary;

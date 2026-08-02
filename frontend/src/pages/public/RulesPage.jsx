@@ -6,9 +6,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Điều khoản chung (Terms of Service)
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) quy định chung của hệ thống.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `DIEU_KHOAN`.
 const RulesPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('THỂ LỆ ĐẶT CƯỢC');
+    const [title] = useState('THỂ LỆ ĐẶT CƯỢC');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

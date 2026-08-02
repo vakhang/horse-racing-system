@@ -2,7 +2,11 @@ import { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
+export // [Chức năng rõ ràng]: Provider Quản lý Trạng thái Đăng nhập
+// [Tác dụng]: Dùng React Context API để lưu giữ cục bộ thông tin `user` (id, role, token) và hàm `login/logout`. Giúp các Component con truy xuất dễ dàng mà không cần truyền Props liên tục.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Đổi từ lưu trữ `localStorage` sang `sessionStorage` hoặc Cookie nếu cần tăng bảo mật.
+const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 

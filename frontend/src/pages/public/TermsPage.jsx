@@ -6,9 +6,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quy định Tham gia Đua (Dành cho Chủ/Nài)
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) quy định về sức khỏe ngựa, cân nặng nài ngựa.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `LUAT_CHOI`.
 const TermsPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('ĐIỀU KHOẢN SỬ DỤNG & MIỄN TRỪ');
+    const [title] = useState('ĐIỀU KHOẢN SỬ DỤNG & MIỄN TRỪ');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

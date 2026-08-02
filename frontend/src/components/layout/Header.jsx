@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Dropdown, Avatar, Tag, Badge, Popover, List, Typography } from 'antd';
+import { Layout, Dropdown, Avatar, Tag, Badge, Popover, List } from 'antd';
 import { UserOutlined, LogoutOutlined, WalletOutlined, BellOutlined, NotificationOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+
 import api from '../../config/api';
 import dayjs from 'dayjs';
 
 const { Header: AntHeader } = Layout;
-const { Text } = Typography;
 
+
+// [Chức năng rõ ràng]: Component Đầu trang (Header cho User Đăng nhập)
+// [Tác dụng]: Thanh điều hướng chính chứa Avatar, Số dư ví, Nút nạp tiền, Thông báo hệ thống và Menu đăng xuất.
+// [Hướng dẫn sửa đổi]:
+// - Logic/UI: Thêm menu con vào biến `profileMenuItems`. Sửa cách lấy số dư ở `fetchWalletBalance`.
 const Header = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth() || {};

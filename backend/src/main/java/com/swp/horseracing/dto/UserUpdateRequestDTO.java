@@ -8,6 +8,10 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Sửa User
+    // [Tác dụng]: Hứng thông tin text khi User muốn đổi avatar, mật khẩu hoặc cập nhật họ tên.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu thêm form liên kết ngân hàng, hãy thêm biến nhận `bankNumber`.
 public class UserUpdateRequestDTO {
     private String username;
     private RoleEnum role;

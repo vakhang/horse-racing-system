@@ -16,6 +16,10 @@ public class AuthController {
 
     private final UserService userService;
 
+    // [Chức năng rõ ràng]: API Đăng ký tài khoản (Register)
+    // [Tác dụng]: Nhận request từ Frontend (bao gồm thông tin text và ảnh đại diện/CMND qua dạng Multipart form) để tạo tài khoản mới.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi đường dẫn API ở `@PostMapping("/register")`.
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<?> register(@ModelAttribute RegisterRequestDTO request) {
         try {

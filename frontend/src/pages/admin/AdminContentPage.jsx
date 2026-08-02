@@ -109,6 +109,10 @@ const AdminContentPage = () => {
         fetchContent(pageId);
     }, [pageId]);
 
+    // [Chức năng rõ ràng]: Lấy nội dung trang
+    // [Tác dụng]: Fetch API để lấy nội dung (HTML cho bài viết hoặc JSON cho FAQ) dựa vào pageId đang chọn.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint lưu trữ nội dung public, sửa URL `/public/content/${id}`.
     const fetchContent = async (id) => {
         try {
             setLoading(true);
@@ -122,6 +126,11 @@ const AdminContentPage = () => {
         }
     };
 
+    // [Chức năng rõ ràng]: Lưu nội dung tĩnh (CMS)
+    // [Tác dụng]: Gọi API PUT để lưu lại nội dung chỉnh sửa (từ Quill Editor hoặc mảng FAQ) vào database.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API lưu ở `api.put('/content')`. Đổi tiêu đề mặc định khi tạo mới nội dung ở `titleMap`.
+    // - UI (CSS/Style): Đổi câu thông báo thành công ở `message.success(...)`.
     const handleSave = async () => {
         try {
             setSaving(true);

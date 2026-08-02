@@ -1,11 +1,6 @@
 import React from 'react';
 import { Typography, Row, Col, Button, Card } from 'antd';
-import { 
-    SafetyCertificateOutlined, 
-    GlobalOutlined, 
-    BankOutlined,
-    LoginOutlined
-} from '@ant-design/icons';
+import { SafetyCertificateOutlined, GlobalOutlined, BankOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 import PublicHeader from '../components/layout/PublicHeader';
@@ -13,6 +8,10 @@ import horseRacingImg from '../assets/anhgioithieu.jpg';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Landing Page Doanh nghiệp (Corporate)
+// [Tác dụng]: Trang giới thiệu cực kỳ bắt mắt dành cho nhà đầu tư hoặc đối tác lớn, sử dụng Framer Motion để tạo hiệu ứng cuộn (Scroll Animation) ấn tượng.
+// [Hướng dẫn sửa đổi]:
+// - UI: Tùy chỉnh các khối `motion.div` để sửa tốc độ và kiểu Animation.
 const CorporateLandingPage = () => {
     const navigate = useNavigate();
 

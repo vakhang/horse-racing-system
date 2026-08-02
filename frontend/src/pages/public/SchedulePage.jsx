@@ -8,6 +8,10 @@ import { TeamOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Lịch Thi Đấu
+// [Tác dụng]: Hiển thị danh sách các giải đấu và chặng đua sắp diễn ra (SCHEDULED, REGISTRATION).
+// [Hướng dẫn sửa đổi]:
+// - UI: Cấu hình lại bộ lọc Calendar để chọn ngày hiển thị lịch đua dễ dàng hơn.
 const SchedulePage = () => {
     const [races, setRaces] = useState([]);
     const [loading, setLoading] = useState(true);

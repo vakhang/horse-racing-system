@@ -11,6 +11,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Cấu hình Giải thưởng
+    // [Tác dụng]: Ánh xạ bảng `prize_configs`. Lưu tỷ lệ chia tiền thưởng cho Hạng 1, 2, 3 và % phí nền tảng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính nếu chia thưởng cho cả Hạng 4 hoặc Hạng 5.
 public class PrizeConfig {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

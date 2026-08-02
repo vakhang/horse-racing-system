@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, ConfigProvider, theme, Avatar } from 'antd';
+import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, Avatar } from 'antd';
 import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined, CrownOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
@@ -176,6 +176,11 @@ const AdminTournamentPage = () => {
         setIsRaceModalVisible(true);
     };
 
+    // [Chức năng rõ ràng]: Xử lý trả thưởng (Payout)
+    // [Tác dụng]: Gửi yêu cầu lên Backend để chia tiền thưởng cho những khán giả cược trúng ngựa hạng 1.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API trả thưởng, sửa `/races/${raceId}/payout`.
+    // - UI (CSS/Style): Đổi câu thông báo thành công ở `message.success(...)`.
     const handlePayout = async (raceId) => {
         try {
             await api.post(`/races/${raceId}/payout`);
@@ -286,6 +291,10 @@ const AdminTournamentPage = () => {
                         {(record.status === 'RESULT_CONFIRMED' || record.status === 'COMPLETED') && (
                             <Button size="small" type="dashed" className="text-blue-600 font-bold" onClick={() => handleViewResult(record)}>🏆 XEM KẾT QUẢ</Button>
                         )}
+                        {/* [Chức năng rõ ràng]: Nút thao tác nhanh của Trạng thái ĐÃ CÓ KẾT QUẢ */}
+                        {/* [Tác dụng]: Hiển thị nút Xác nhận trả thưởng để admin bấm chốt tiền. Nút này gọi 2 API tuần tự: trả thưởng và ép kết thúc chặng. */}
+                        {/* [Hướng dẫn sửa đổi]: */}
+                        {/* - UI (CSS/Style): Sửa màu sắc nút ở className `bg-blue-600`. Sửa chữ thông báo Popconfirm ở thuộc tính `title`. */}
                         {record.status === 'RESULT_CONFIRMED' && (
                             <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={async () => { await handlePayout(record.id); await handleForceTransition(record, 'COMPLETED'); }}>
                                 <Button size="small" type="primary" className="font-bold bg-blue-600">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
@@ -517,6 +526,11 @@ const AdminTournamentPage = () => {
                 </Form>
             </Modal>
 
+            {/* [Chức năng rõ ràng]: Modal hiển thị bảng Kết quả chặng đua */}
+            {/* [Tác dụng]: Popup mở lên khi bấm "XEM KẾT QUẢ", render danh sách ngựa xếp hạng 1, 2, 3 kèm ảnh đại diện. */}
+            {/* [Hướng dẫn sửa đổi]: */}
+            {/* - UI (CSS/Style): Để đổi icon cup vàng, thay `<TrophyOutlined />` ở thuộc tính `title`. */}
+            {/* - UI (CSS/Style): Để đổi màu sắc vòng tròn thứ hạng (Hạng 1 Vàng, 2 Bạc, 3 Đồng), tìm mảng điều kiện `item.finishPosition === 1 ? '#FBBF24' : ...` bên dưới. */}
             <Modal
                 title={<span className="text-xl text-yellow-600 font-black tracking-wider"><TrophyOutlined /> KẾT QUẢ CHẶNG ĐUA: {selectedRaceForResults?.name}</span>}
                 open={isResultModalVisible}

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, Card, Typography, Row, Col, Avatar, message } from 'antd';
-import { TeamOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
+import { Table, Tag, Card, Typography, Row, Col, Avatar, message } from 'antd';
+import { TeamOutlined, UserOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Danh bạ Nài Ngựa
+// [Tác dụng]: Hiển thị danh sách tất cả các Nài ngựa trong hệ thống để Chủ ngựa xem thông tin (kinh nghiệm, cân nặng) và gửi lời mời thuê.
+// [Hướng dẫn sửa đổi]:
+// - UI: Sửa giao diện dạng Card thay vì Table nếu muốn hiển thị hình ảnh Nài ngựa to hơn.
 const OwnerJockeyDirectoryPage = () => {
     const [jockeys, setJockeys] = useState([]);
     const [loading, setLoading] = useState(false);

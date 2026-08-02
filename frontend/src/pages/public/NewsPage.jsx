@@ -1,12 +1,16 @@
 import React from 'react';
-import { Typography, Breadcrumb } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import { Typography } from 'antd';
+
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
 
 const { Title, Paragraph } = Typography;
 
+// [Chức năng rõ ràng]: Trang Tin tức / Thông báo
+// [Tác dụng]: Hiển thị danh sách các bài viết thông báo mới nhất của trường đua để thu hút khán giả.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Hiện tại đang Fake Data, cần nối API `/announcements` để lấy data thật từ DB.
 const NewsPage = () => {
     return (
         <div className="min-h-screen bg-[#001529] font-sans flex flex-col">

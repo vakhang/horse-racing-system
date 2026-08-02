@@ -17,6 +17,10 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
+    // [Chức năng rõ ràng]: Phân quyền API (Spring Security)
+    // [Tác dụng]: Chặn hoặc cho phép các request (yêu cầu) đi vào Backend. Cấu hình các API được phép truy cập public (không cần token).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu bạn viết thêm 1 API mới (VD: xem tin tức) mà KHÔNG cần đăng nhập, hãy thêm `.requestMatchers("/api/news/**").permitAll()` vào khối `authorizeHttpRequests`.
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http

@@ -13,6 +13,10 @@ public class BetController {
 
     private final BetService betService;
 
+    // [Chức năng rõ ràng]: API Đặt cược (Place Bet)
+    // [Tác dụng]: Nhận request đặt cược từ Frontend (chứa số tiền, ID ngựa, ID chặng), gọi xuống BetService để xử lý trừ tiền và lưu vé cược.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API đặt cược, hãy đổi đường dẫn ở class `@RequestMapping("/api/bets")` và `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createBet(@RequestBody BetRequestDTO request) {
         try {

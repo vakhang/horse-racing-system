@@ -29,6 +29,10 @@ public class TournamentServiceImpl implements TournamentService {
     private final RefereeReportRepository refereeReportRepository;
 
     @Override
+    // [Chức năng rõ ràng]: Quản lý Giải đấu (Tournament)
+    // [Tác dụng]: Tạo mới một giải đấu.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi tên trường dữ liệu hoặc logic khởi tạo thêm ở đây.
     @Transactional
     public TournamentResponseDTO createTournament(TournamentRequestDTO request) {
         if (tournamentRepository.existsByName(request.getName())) {
@@ -59,6 +63,10 @@ public class TournamentServiceImpl implements TournamentService {
         return mapToResponseDTO(tournament);
     }
 
+    // [Chức năng rõ ràng]: Cập nhật Giải đấu
+    // [Tác dụng]: Thay đổi thông tin chung của giải đấu như tên, ngày bắt đầu, ngày kết thúc và trạng thái.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu cần chặn người dùng đổi ngày bắt đầu khi giải đã "ĐANG DIỄN RA", hãy thêm if (tournament.getStatus() == TournamentStatus.ONGOING) trước khi lưu.
     @Override
     @Transactional
     public TournamentResponseDTO updateTournament(Integer id, TournamentRequestDTO request) {
@@ -133,6 +141,10 @@ public class TournamentServiceImpl implements TournamentService {
         tournamentRepository.deleteById(id);
     }
 
+    // [Chức năng rõ ràng]: Hủy Giải đấu
+    // [Tác dụng]: Khóa hoặc hủy giải đấu khẩn cấp. Lệnh này sẽ duyệt qua toàn bộ các chặng đua bên trong và hủy bỏ (kèm hoàn tiền cược) nếu chúng chưa bắt đầu.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi lý do hủy mặc định ở dòng `cancelRaceLogic(...)`.
     @Override
     @Transactional
     public void cancelTournament(Integer id) {

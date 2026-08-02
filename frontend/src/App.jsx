@@ -47,6 +47,10 @@ const OwnerRaceRegistrationPage = lazy(() => import('./pages/owner/OwnerRaceRegi
 const OwnerHorseManagementPage = lazy(() => import('./pages/owner/OwnerHorseManagementPage'));
 
 // 0. COMPONENT CUỘN LÊN ĐẦU TRANG
+// [Chức năng rõ ràng]: Component Gốc (Root Component) & Routing
+// [Tác dụng]: Khai báo tất cả các đường dẫn (Routes) của hệ thống bằng React Router DOM. Có cấu hình các Route bảo vệ (ProtectedRoute) kiểm tra Role trước khi cho vào.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Khai báo thêm `<Route>` ở đây nếu tạo thêm trang mới. Chú ý đặt đúng vào nhóm Layout tương ứng (AdminLayout/MainLayout/PublicLayout).
 const ScrollToTop = () => {
     const { pathname } = useLocation();
     useEffect(() => {
@@ -74,7 +78,6 @@ const RootRedirect = () => {
     if (user.role === 'OWNER') return <Navigate to="/my-horses" replace />;
     if (user.role === 'JOCKEY') return <Navigate to="/jockey/invitations" replace />;
     if (user.role === 'REFEREE') return <Navigate to="/referee/dashboard" replace />;
-    if (user.role === 'ADMIN') return <Navigate to="/admin/users" replace />;
 
     // Các role khác thì cho ra trang chủ
     return <Navigate to="/home" replace />;

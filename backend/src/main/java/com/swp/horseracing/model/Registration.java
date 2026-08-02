@@ -2,8 +2,6 @@ package com.swp.horseracing.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 
@@ -12,6 +10,10 @@ import org.hibernate.type.SqlTypes;
         @UniqueConstraint(columnNames = {"race_id", "jockey_id"})
 })
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Đơn đăng ký tham gia Chặng đua
+    // [Tác dụng]: Ánh xạ bảng `registrations`. Lưu thông tin 1 suất thi đấu gồm: Chặng đua + Ngựa + Nài ngựa + Số báo danh.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `Final Rank` (Thứ hạng chung cuộc) để lưu trữ kết quả cuối cùng.
 public class Registration {
 
     @Id

@@ -29,6 +29,10 @@ public class WebhookController {
     @Value("${sepay.webhook.token:MySecretToken123!}")
     private String webhookToken;
 
+    // [Chức năng rõ ràng]: API Webhook Tự động cộng tiền (SePay)
+    // [Tác dụng]: Nhận tín hiệu báo biến động số dư từ cổng thanh toán SePay. Hàm sẽ cắt chuỗi nội dung chuyển khoản để lấy ra UserID và tự động cộng tiền thật vào số dư ví của User đó.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi mã Token bảo mật ở biến `webhookToken`. Đổi format cú pháp chuyển khoản (hiện tại là `NAP{UserID}xxxx`) bằng cách sửa Regex `Pattern.compile("NAP[A-Z0-9]+")`.
     @PostMapping("/sepay")
     public ResponseEntity<?> handleSePayWebhook(@RequestHeader(value = "Authorization", required = false) String authHeader, @RequestBody SePayWebhookRequestDTO request) {
         try {

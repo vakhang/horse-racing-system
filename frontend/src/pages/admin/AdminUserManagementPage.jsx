@@ -23,6 +23,10 @@ const AdminUserManagementPage = () => {
     const [notifyType, setNotifyType] = useState('AUTO');
     const [customMessage, setCustomMessage] = useState('');
 
+    // [Chức năng rõ ràng]: Lấy danh sách Người Dùng
+    // [Tác dụng]: Gọi API để fetch toàn bộ người dùng từ Backend và lưu vào state `users`.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API danh sách tài khoản, sửa `/users`.
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -39,6 +43,11 @@ const AdminUserManagementPage = () => {
         fetchUsers();
     }, []);
 
+    // [Chức năng rõ ràng]: Đổi trạng thái Tài Khoản
+    // [Tác dụng]: Gửi yêu cầu Khóa (BANNED) hoặc Mở khóa (APPROVED) tài khoản người dùng đang chọn.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Thay đổi API cập nhật trạng thái ở `api.put('/users/${userId}/status')`.
+    // - UI (CSS/Style): Sửa câu thông báo thành công ở `message.success(...)`.
     const handleStatusChange = async (userId, newStatus) => {
         try {
             await api.put(`/users/${userId}/status`, { status: newStatus });

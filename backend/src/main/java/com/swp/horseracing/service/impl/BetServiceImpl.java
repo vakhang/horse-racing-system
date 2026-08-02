@@ -21,6 +21,10 @@ public class BetServiceImpl implements BetService {
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionRepository;
 
+    // [Chức năng rõ ràng]: Đặt cược (Place Bet)
+    // [Tác dụng]: Trừ tiền trong ví khán giả và tạo vé cược. Số tiền cược được cộng dồn vào Total Pool (Tổng quỹ) của chặng đua.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Để chặn đặt cược sau một khoảng thời gian nhất định (ví dụ trước 5 phút), sửa logic ở đoạn so sánh `race.getRaceTime()`.
     @Override
     @Transactional
     public Bet createBet(BetRequestDTO request) {
@@ -30,7 +34,7 @@ public class BetServiceImpl implements BetService {
         Race race = raceRepository.findById(request.getRaceId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
 
-        // RÀO CẢN: Chỉ được cược khi chặng đua chưa bắt đầu (PENDING)
+        // RÀO CẢN: Chỉ được cược khi chặng đua đang ở trạng thái BETTING (mở cược)
         if (race.getStatus() != RaceStatus.BETTING) {
             throw new RuntimeException("Chặng đua hiện không trong trạng thái nhận cược!");
         }

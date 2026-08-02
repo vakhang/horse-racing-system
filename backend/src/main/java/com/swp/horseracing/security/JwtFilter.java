@@ -16,6 +16,10 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Bộ lọc chặn Request (Middleware)
+    // [Tác dụng]: Can thiệp vào mọi API request gửi từ Frontend. Nó kiểm tra xem request có gửi kèm Token JWT hợp lệ hay không. Nếu có thì cho qua, nếu không thì chặn (401 Unauthorized).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Sửa logic bóc tách header `Authorization` nếu hệ thống đổi sang dùng Cookie.
 public class JwtFilter extends OncePerRequestFilter {
 
 

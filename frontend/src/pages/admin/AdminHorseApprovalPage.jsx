@@ -5,6 +5,10 @@ import api from "../../config/api.js";
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Duyệt Ngựa (Admin)
+// [Tác dụng]: Danh sách các chú ngựa do Chủ ngựa mới tạo (Trạng thái PENDING). Admin có thể xem giấy khai sinh, hồ sơ thú y và bấm Duyệt/Từ chối.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Bổ sung input nhập lý do từ chối (Reject Reason) khi bấm nút Từ chối.
 const RenderFilesStatus = ({ urls }) => {
     if (!urls || urls.length === 0) return <Tag color="red" className="m-0">Chưa bổ sung</Tag>;
     return <Tag color="green">Đã nộp ({urls.length} tệp)</Tag>;

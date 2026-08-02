@@ -1,3 +1,8 @@
+// [Chức năng rõ ràng]: Hàm Tiện ích (Utility) Xác thực
+// [Tác dụng]: Cung cấp các hàm dùng chung để lưu, xóa và lấy Token từ LocalStorage.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Sửa lại hàm này nếu dự án chuyển sang dùng Cookie thay vì LocalStorage để chống XSS.
+
 // Lưu chìa khóa vào kho trình duyệt (LocalStorage)
 export const setToken = (token) => {
     localStorage.setItem('accessToken', token);

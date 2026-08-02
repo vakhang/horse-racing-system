@@ -9,6 +9,10 @@ import { useAuth } from '../../context/AuthContext';
 const { Title, Text } = Typography;
 const { Option, OptGroup } = Select;
 
+// [Chức năng rõ ràng]: Trang Dashboard Trọng Tài
+// [Tác dụng]: Cho phép trọng tài xem lịch đua trong ngày, báo cáo sự cố (Report) và nhập kết quả về đích (Rank) cho từng con ngựa.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API gọi tới `/referees/...`. UI: Thêm tính năng kéo-thả (Drag & Drop) để sắp xếp thứ hạng ngựa thay vì nhập số.
 const RefereeDashboardPage = () => {
     const { user } = useAuth();
     const [races, setRaces] = useState([]);

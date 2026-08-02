@@ -14,6 +14,10 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+    // [Chức năng rõ ràng]: Job chạy ngầm tự động (Cronjob)
+    // [Tác dụng]: Được Spring Boot gọi định kỳ mỗi 1 phút để tự động chuyển trạng thái chặng đua (Ví dụ: Từ SCHEDULED -> BETTING_OPEN khi đến giờ) mà không cần Admin thao tác tay.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu muốn đổi chu kỳ chạy, hãy sửa `@Scheduled(cron = "0 * * * * *")`.
 public class RaceStateScheduler {
 
     private final RaceRepository raceRepository;
@@ -24,7 +28,7 @@ public class RaceStateScheduler {
     public void updateRaceStates() {
         LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
 
-        // Tự động chuyển REGISTRATION -> BETTING khi chạm mốc 12 giờ trước giờ chạy
+        // Tự động chuyển REGISTRATION -> BETTING khi còn 5 phút nữa tới giờ đua
         List<Race> registrationRaces = raceRepository.findByStatus(RaceStatus.REGISTRATION);
         for (Race race : registrationRaces) {
             if (race.getRaceTime() != null && now.plusMinutes(5).isAfter(race.getRaceTime())) {

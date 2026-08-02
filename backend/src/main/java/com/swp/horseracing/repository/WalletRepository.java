@@ -7,6 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (Wallet)
+    // [Tác dụng]: Thao tác bảng `wallets`. Hỗ trợ lấy Ví tiền theo ID người dùng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Sử dụng cơ chế Lock (Bi quan/Lạc quan) trên `@Query` nếu sau này hệ thống gặp lỗi tranh chấp (Race condition) khi trừ tiền.
 public interface WalletRepository extends JpaRepository<Wallet, Integer> {
     Optional<Wallet> findByUserId(Integer userId);
 

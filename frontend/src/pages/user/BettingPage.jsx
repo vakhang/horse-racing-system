@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin } from 'antd';
 import { RocketOutlined, DollarOutlined, LineChartOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import api from '../../config/api';
+
+
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
@@ -64,6 +64,10 @@ const BettingPage = () => {
     };
 
     // 2. Mở Modal và lấy Tỷ lệ cược Live khi chọn 1 chặng đua
+    // [Chức năng rõ ràng]: Mở Popup Đặt cược
+    // [Tác dụng]: Gọi API lấy danh sách ngựa và tỷ lệ cược (Live Odds) của chặng đua được chọn, sau đó mở Modal đặt cược.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu API tỷ lệ cược đổi đường dẫn, hãy sửa `api.get('/races/${race.id}/live-odds')`.
     const handleOpenBetModal = async (race) => {
         setSelectedRace(race);
         setIsModalVisible(true);
@@ -81,6 +85,11 @@ const BettingPage = () => {
     };
 
     // 3. Xử lý Gửi lệnh đặt cược xuống Spring Boot
+    // [Chức năng rõ ràng]: Xử lý Xác nhận Đặt cược
+    // [Tác dụng]: Gửi lệnh đặt cược lên server với số tiền và ngựa đã chọn. Nếu thành công, làm mới lại danh sách tỷ lệ cược.
+    // [Hướng dẫn sửa đổi]:
+    // - UI (CSS/Style): Đổi câu chữ cảnh báo thành công/thất bại ở các lệnh `message.error(...)` và `message.success(...)`.
+    // - Logic/Data: Đổi mức cược tối thiểu, sửa số tiền mặc định của state `betAmount` ở phía trên (`useState(100000)`).
     const handlePlaceBet = async () => {
         if (!bettingHorseRegId) {
             message.warning('Vui lòng chọn một chiến mã để đặt cược!');

@@ -14,6 +14,10 @@ public class RefereeController {
 
     private final RefereeService refereeService;
 
+    // [Chức năng rõ ràng]: API Cập nhật Kết quả chặng đua
+    // [Tác dụng]: Trọng tài gọi API này để báo cáo kết quả (con ngựa nào hạng mấy). Sau đó chặng đua mới có thể trả thưởng.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API cập nhật kết quả, hãy sửa `@PostMapping("/results")`.
     @PostMapping("/results")
     public ResponseEntity<?> submitRaceResult(@RequestBody RefereeResultRequestDTO request) {
         try {

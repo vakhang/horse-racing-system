@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "wallets")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Ví tiền ảo
+    // [Tác dụng]: Ánh xạ bảng `wallets`. Lưu giữ số dư khả dụng (Balance) hiện tại của User.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nên lưu Balance dưới dạng `BigDecimal` (đã làm) để tránh sai số thập phân.
 public class Wallet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

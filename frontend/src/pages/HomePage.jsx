@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Card, Statistic, Table, Tabs, Tag, Typography, Space } from 'antd';
 import { WalletOutlined, HistoryOutlined, TrophyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
-import api from '../config/api';
+
+
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -27,6 +27,10 @@ const HomePage = () => {
         }
     }, [userId, token]);
 
+    // [Chức năng rõ ràng]: Lấy Dữ liệu Tổng quan (Dashboard)
+    // [Tác dụng]: Fetch API để lấy số dư ví, danh sách lịch sử cược, lịch sử giao dịch và lịch sử nhận giải (nếu là nài ngựa/chủ ngựa).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API lấy số dư ví ở `api.get('/wallets/my-wallet?userId=${userId}')`.
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
@@ -152,6 +156,10 @@ const HomePage = () => {
         children: <Table dataSource={transactions} columns={transColumns} rowKey="transactionCode" loading={loading} className="border rounded-xl" />
     });
 
+    // [Chức năng rõ ràng]: Render Giao diện Tổng quan
+    // [Tác dụng]: Render giao diện chính của trang chủ gồm Số dư khả dụng và các Tabs hiển thị bảng lịch sử.
+    // [Hướng dẫn sửa đổi]:
+    // - UI (CSS/Style): Đổi layout tổng thể của trang ở class `flex flex-col gap-6 max-w-6xl mx-auto`.
     return (
         <div className="flex flex-col gap-6 max-w-6xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-wide border-b pb-2">

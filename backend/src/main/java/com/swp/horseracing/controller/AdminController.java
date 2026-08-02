@@ -13,7 +13,10 @@ public class AdminController {
 
     private final AdminTransactionService adminTransactionService;
 
-    // Duyệt rút tiền CÓ UPLOAD FILE
+    // [Chức năng rõ ràng]: API Duyệt rút tiền (Kèm biên lai)
+    // [Tác dụng]: Nhận request từ Frontend chứa ID giao dịch và file ảnh biên lai chuyển khoản để đánh dấu lệnh rút tiền là COMPLETED.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi đường dẫn API ở `@PutMapping("/withdrawals/{id}/complete")`. Nếu không bắt buộc phải có ảnh biên lai, bỏ tham số `@RequestParam("file") MultipartFile file` đi.
     @PutMapping(value = "/withdrawals/{id}/complete", consumes = "multipart/form-data")
     public ResponseEntity<?> completeWithdrawal(
             @PathVariable Integer id,

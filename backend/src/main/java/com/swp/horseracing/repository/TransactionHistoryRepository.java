@@ -7,6 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (TransactionHistory)
+    // [Tác dụng]: Thao tác bảng `transaction_history`. Hỗ trợ lấy toàn bộ lịch sử nạp/rút/cược của một người chơi, sắp xếp theo thời gian mới nhất.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm `@Query` để tính tổng tiền Nạp hoặc tổng tiền Rút trong tháng của 1 User.
 public interface TransactionHistoryRepository extends JpaRepository<TransactionHistory, Integer> {
     
     // Tìm lịch sử giao dịch của 1 User

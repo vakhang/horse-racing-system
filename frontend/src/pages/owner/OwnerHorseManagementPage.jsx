@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Input, InputNumber, Popconfirm, Row, Col, Progress, Upload } from 'antd';
+import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Input, InputNumber, Popconfirm, Row, Col, Upload } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, AppstoreAddOutlined, HistoryOutlined, UploadOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +7,10 @@ import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quản lý Ngựa (Chủ Ngựa)
+// [Tác dụng]: Bảng danh sách ngựa thuộc sở hữu của User này. Chứa Form Upload ảnh, giấy tờ để đăng ký ngựa mới chờ Admin duyệt.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Sửa hàm `handleUpload` nếu đổi API. UI: Thêm cột hiển thị tỷ lệ thắng của ngựa vào Table.
 const RenderFilesStatus = ({ horse }) => {
     const hasRealImage = horse?.realImageUrls?.length > 0;
     const hasCert = horse?.certDocumentUrls?.length > 0;

@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Người dùng
+    // [Tác dụng]: Ánh xạ bảng `users`. Chứa thông tin đăng nhập và Profile cơ bản của mọi tài khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Có thể thiết lập thêm quan hệ One-to-One tới bảng `Settings` nếu User muốn tùy chỉnh UI.
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

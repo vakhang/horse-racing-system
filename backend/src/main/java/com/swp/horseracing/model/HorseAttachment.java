@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "horse_attachments")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Tài liệu Ngựa
+    // [Tác dụng]: Ánh xạ bảng `horse_attachments`, lưu trữ URL ảnh, giấy khai sinh, hồ sơ thú y của Ngựa.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `fileName` nếu muốn lưu cả tên file gốc do người dùng tải lên.
 public class HorseAttachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

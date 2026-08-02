@@ -14,6 +14,10 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Thanh toán
+    // [Tác dụng]: Call API sang bên thứ 3 (Ví dụ: VietQR - vietqr.io) để lấy URL hình ảnh QR Code.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Đổi STK ngân hàng thụ hưởng tại URL gọi sang VietQR nếu công ty đổi tài khoản.
 public class PaymentServiceImpl implements PaymentService {
 
     private final WalletRepository walletRepository;

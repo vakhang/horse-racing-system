@@ -13,6 +13,10 @@ public class HorseController {
 
     private final HorseService horseService;
 
+    // [Chức năng rõ ràng]: API Thêm Ngựa mới
+    // [Tác dụng]: Nhận request tạo ngựa từ Chủ Ngựa (bao gồm text và file ảnh đại diện ngựa).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API tạo ngựa, hãy sửa `@PostMapping`.
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> createHorse(@ModelAttribute HorseRequestDTO request) {
         try {
@@ -22,7 +26,10 @@ public class HorseController {
         }
     }
 
-    // Nếu truyền ?ownerId=1 thì lấy ngựa của ông chủ đó, không thì lấy tất cả
+    // [Chức năng rõ ràng]: API Lấy danh sách Ngựa
+    // [Tác dụng]: Trả về danh sách ngựa. Nếu truyền tham số `?ownerId=1` thì chỉ lấy ngựa của chủ đó, nếu không truyền thì lấy tất cả.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu muốn đổi tham số lọc, sửa `@RequestParam(required = false) Integer ownerId`.
     @GetMapping
     public ResponseEntity<?> getHorses(@RequestParam(required = false) Integer ownerId) {
         if (ownerId != null) {

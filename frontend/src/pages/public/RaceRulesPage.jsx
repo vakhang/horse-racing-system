@@ -6,9 +6,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Luật cá cược
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) giải thích chi tiết về tỷ lệ cược (Odds), luật thắng/thua.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `LUAT_CUOC`.
 const RaceRulesPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('ĐIỀU LỆ ĐUA NGỰA');
+    const [title] = useState('ĐIỀU LỆ ĐUA NGỰA');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

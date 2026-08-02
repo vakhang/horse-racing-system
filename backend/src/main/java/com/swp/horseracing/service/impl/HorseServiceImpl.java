@@ -22,6 +22,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Logic Ngựa
+    // [Tác dụng]: Kiểm tra nghiệp vụ (file đính kèm hợp lệ không) trước khi lưu ngựa mới vào Database.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu muốn tự động Reject ngựa của tài khoản đang bị Ban, hãy check status Chủ ngựa trước.
 public class HorseServiceImpl implements HorseService {
 
     private final HorseRepository horseRepository;

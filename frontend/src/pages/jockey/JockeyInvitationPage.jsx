@@ -7,6 +7,10 @@ import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quản lý Lời mời (Nài Ngựa)
+// [Tác dụng]: Hiển thị danh sách các Chủ ngựa muốn thuê Nài ngựa này. Nài ngựa có thể Bấm Chấp nhận (Accept) hoặc Từ chối (Reject).
+// [Hướng dẫn sửa đổi]:
+// - Logic: Gọi API `/jockey-invitations/{id}/accept` khi bấm nút. UI: Đổi icon/màu nút ở cột Action của Ant Design Table.
 const JockeyInvitationPage = () => {
     const { user } = useAuth();
     const [invitations, setInvitations] = useState([]);

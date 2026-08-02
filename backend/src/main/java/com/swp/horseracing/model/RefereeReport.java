@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "referee_reports")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Báo cáo Trọng tài
+    // [Tác dụng]: Ánh xạ bảng `referee_reports`. Lưu vết báo cáo kết quả và các vi phạm (nếu có) do Trọng tài ghi nhận.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột URL chứa hình ảnh/video bằng chứng (Evidence).
 public class RefereeReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

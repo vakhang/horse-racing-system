@@ -22,6 +22,10 @@ public class CloudinaryConfig {
     @Value("${cloudinary.api-secret}")
     private String apiSecret;
 
+    // [Chức năng rõ ràng]: Cấu hình Cloudinary (Dịch vụ lưu trữ ảnh)
+    // [Tác dụng]: Đọc API Key từ file `application.properties` để khởi tạo kết nối với Cloudinary. Giúp Backend có thể upload ảnh (Avatar, Ngựa, CMND).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Không sửa cứng API key ở đây. Nếu muốn đổi tài khoản Cloudinary, hãy mở file `application.properties` (hoặc biến môi trường trên Railway) và đổi giá trị của `cloudinary.cloud-name`, `api-key`, `api-secret`.
     @Bean
     public Cloudinary cloudinary() {
         Map<String, String> config = new HashMap<>();
@@ -47,11 +51,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
+    // [Chức năng rõ ràng]: Cấu hình CORS (Cross-Origin Resource Sharing)
+    // [Tác dụng]: Cho phép Frontend (Vercel, Localhost) có thể gọi API tới Backend (Railway) mà không bị trình duyệt chặn lỗi CORS.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Để bảo mật hơn, thay `.allowedOriginPatterns("*")` bằng tên miền cụ thể của Frontend như `.allowedOrigins("https://horse-racing-vercel.app")`.
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**") // Mở cửa cho toàn bộ API
-
-                // Cho phép bất kỳ tên miền nào (như Vercel) truy cập vào Backend
                 .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
@@ -77,6 +83,10 @@ public class DatabaseConstraintFixer implements CommandLineRunner {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    // [Chức năng rõ ràng]: Vá lỗi ràng buộc (Constraint Fixer) Database khi khởi động
+    // [Tác dụng]: Tự động chạy mỗi khi Spring Boot khởi động (nhờ implement CommandLineRunner). Dùng để xóa các check constraint mặc định của Hibernate sinh ra, giúp việc thêm giá trị Enum mới không bị lỗi DB.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu bạn thêm một Enum mới vào code mà bị lỗi "violates check constraint" khi insert DB, hãy copy block `try...catch` bên dưới, thay tên constraint bị lỗi vào câu lệnh `ALTER TABLE ... DROP CONSTRAINT...`
     @Override
     public void run(String... args) {
         try {
@@ -114,6 +124,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DatabaseInitializer {
 
+    // [Chức năng rõ ràng]: Khởi tạo Bảng (Table) tự động
+    // [Tác dụng]: Chạy một lần duy nhất lúc server khởi động để tạo bảng `system_contents` (chứa dữ liệu bài viết) nếu nó chưa tồn tại trong PostgreSQL, giúp Admin có thể đăng bài.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu bạn muốn tự động tạo thêm một bảng mới nào đó, hãy copy cụm `jdbcTemplate.execute(...)` và dán câu lệnh SQL tạo bảng của bạn vào.
     @Bean
     public CommandLineRunner initDatabase(JdbcTemplate jdbcTemplate) {
         return args -> {
@@ -157,7 +171,10 @@ public class AdminController {
 
     private final AdminTransactionService adminTransactionService;
 
-    // Duyệt rút tiền CÓ UPLOAD FILE
+    // [Chức năng rõ ràng]: API Duyệt rút tiền (Kèm biên lai)
+    // [Tác dụng]: Nhận request từ Frontend chứa ID giao dịch và file ảnh biên lai chuyển khoản để đánh dấu lệnh rút tiền là COMPLETED.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi đường dẫn API ở `@PutMapping("/withdrawals/{id}/complete")`. Nếu không bắt buộc phải có ảnh biên lai, bỏ tham số `@RequestParam("file") MultipartFile file` đi.
     @PutMapping(value = "/withdrawals/{id}/complete", consumes = "multipart/form-data")
     public ResponseEntity<?> completeWithdrawal(
             @PathVariable Integer id,
@@ -216,6 +233,10 @@ public class AuthController {
 
     private final UserService userService;
 
+    // [Chức năng rõ ràng]: API Đăng ký tài khoản (Register)
+    // [Tác dụng]: Nhận request từ Frontend (bao gồm thông tin text và ảnh đại diện/CMND qua dạng Multipart form) để tạo tài khoản mới.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi đường dẫn API ở `@PostMapping("/register")`.
     @PostMapping(value = "/register", consumes = "multipart/form-data")
     public ResponseEntity<?> register(@ModelAttribute RegisterRequestDTO request) {
         try {
@@ -258,6 +279,10 @@ public class BetController {
 
     private final BetService betService;
 
+    // [Chức năng rõ ràng]: API Đặt cược (Place Bet)
+    // [Tác dụng]: Nhận request đặt cược từ Frontend (chứa số tiền, ID ngựa, ID chặng), gọi xuống BetService để xử lý trừ tiền và lưu vé cược.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API đặt cược, hãy đổi đường dẫn ở class `@RequestMapping("/api/bets")` và `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createBet(@RequestBody BetRequestDTO request) {
         try {
@@ -288,6 +313,10 @@ public class HorseController {
 
     private final HorseService horseService;
 
+    // [Chức năng rõ ràng]: API Thêm Ngựa mới
+    // [Tác dụng]: Nhận request tạo ngựa từ Chủ Ngựa (bao gồm text và file ảnh đại diện ngựa).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API tạo ngựa, hãy sửa `@PostMapping`.
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> createHorse(@ModelAttribute HorseRequestDTO request) {
         try {
@@ -297,7 +326,10 @@ public class HorseController {
         }
     }
 
-    // Nếu truyền ?ownerId=1 thì lấy ngựa của ông chủ đó, không thì lấy tất cả
+    // [Chức năng rõ ràng]: API Lấy danh sách Ngựa
+    // [Tác dụng]: Trả về danh sách ngựa. Nếu truyền tham số `?ownerId=1` thì chỉ lấy ngựa của chủ đó, nếu không truyền thì lấy tất cả.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu muốn đổi tham số lọc, sửa `@RequestParam(required = false) Integer ownerId`.
     @GetMapping
     public ResponseEntity<?> getHorses(@RequestParam(required = false) Integer ownerId) {
         if (ownerId != null) {
@@ -355,6 +387,10 @@ public class JockeyInvitationController {
 
     private final JockeyInvitationService invitationService;
 
+    // [Chức năng rõ ràng]: API Tạo lời mời Nài ngựa
+    // [Tác dụng]: Nhận request từ Chủ Ngựa gửi lời mời thuê Nài ngựa lái con ngựa của mình trong 1 chặng đua cụ thể.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint bằng cách sửa `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createInvitation(@RequestBody InvitationRequestDTO request) {
         try {
@@ -381,7 +417,10 @@ public class JockeyInvitationController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
-    // API LẤY DANH SÁCH LỜI MỜI CHO NÀI NGỰA HOẶC CHỦ NGỰA
+    // [Chức năng rõ ràng]: API Lấy danh sách Lời mời
+    // [Tác dụng]: Dùng chung cho cả Chủ Ngựa (xem lời mời đã gửi) và Nài Ngựa (xem lời mời nhận được). Dựa vào biến truyền lên là `jockeyId` hay `ownerId`.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu muốn đổi cách lọc, chỉnh sửa các tham số `@RequestParam` bên dưới.
     @GetMapping
     public ResponseEntity<?> getInvitations(
             @RequestParam(required = false) Integer jockeyId,
@@ -429,6 +468,10 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    // [Chức năng rõ ràng]: API Tạo mã QR Nạp tiền
+    // [Tác dụng]: Nhận request từ User muốn nạp tiền, gọi sang VietQR để tạo link ảnh QR Code hiển thị lên màn hình.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi nhà cung cấp (VD: Momo thay vì VietQR), thì không sửa ở đây mà sửa logic bên trong hàm `paymentService.createDepositQR()`.
     @PostMapping("/create-qr")
     public ResponseEntity<?> createPaymentQR(@RequestBody DepositRequestDTO request) {
         try {
@@ -461,6 +504,10 @@ public class RaceController {
 
     private final RaceService raceService;
 
+    // [Chức năng rõ ràng]: API Tạo Chặng Đua
+    // [Tác dụng]: Nhận request từ Admin/Ban Tổ Chức để tạo một chặng đua mới thuộc về 1 Giải đấu.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API tạo chặng đua, hãy sửa `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createRace(@RequestBody RaceRequestDTO request) {
         try {
@@ -518,6 +565,10 @@ public class RaceController {
         }
     }
 
+    // [Chức năng rõ ràng]: API Trả thưởng Chặng đua
+    // [Tác dụng]: Gọi hàm trả thưởng khi chặng đua kết thúc. Hàm này chia tiền cho những người đoán trúng và Nài/Chủ ngựa thắng giải.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint bằng cách sửa `@PostMapping("/{id}/payout")`.
     @PostMapping("/{id}/payout")
     public ResponseEntity<?> payoutRace(@PathVariable Integer id) {
         try {
@@ -550,6 +601,10 @@ public class RefereeController {
 
     private final RefereeService refereeService;
 
+    // [Chức năng rõ ràng]: API Cập nhật Kết quả chặng đua
+    // [Tác dụng]: Trọng tài gọi API này để báo cáo kết quả (con ngựa nào hạng mấy). Sau đó chặng đua mới có thể trả thưởng.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API cập nhật kết quả, hãy sửa `@PostMapping("/results")`.
     @PostMapping("/results")
     public ResponseEntity<?> submitRaceResult(@RequestBody RefereeResultRequestDTO request) {
         try {
@@ -563,6 +618,15 @@ public class RefereeController {
     public ResponseEntity<?> submitReport(@RequestBody RefereeReportRequestDTO request) {
         try {
             return ResponseEntity.ok(refereeService.submitReport(request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/reports")
+    public ResponseEntity<?> getAllReports() {
+        try {
+            return ResponseEntity.ok(refereeService.getAllReports());
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
@@ -590,6 +654,10 @@ public class RegistrationController {
 
     private final RegistrationService registrationService;
 
+    // [Chức năng rõ ràng]: API Đăng ký tham gia Chặng Đua
+    // [Tác dụng]: Nhận request từ Chủ Ngựa (hoặc Nài ngựa) để đăng ký một con ngựa tham gia vào 1 chặng đua cụ thể.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu muốn chặn đăng ký khi chặng đua đã bắt đầu, hãy thêm logic kiểm tra `race.getStatus()` bên trong RegistrationService.
     @PostMapping
     public ResponseEntity<?> createRegistration(@RequestBody RegistrationRequestDTO request) {
         try {
@@ -668,6 +736,10 @@ public class SystemAnnouncementController {
     private final SystemAnnouncementService announcementService;
     private final JwtUtils jwtUtils;
 
+    // [Chức năng rõ ràng]: API Tạo thông báo hệ thống (Admin)
+    // [Tác dụng]: Nhận request từ Admin (gồm nội dung, ảnh đính kèm, đối tượng nhận) để phát thông báo tới tất cả user.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Có thể bỏ đoạn `MultipartFile file` nếu không muốn cho admin gửi kèm ảnh.
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> createAnnouncement(
             @RequestParam("content") String content,
@@ -729,7 +801,10 @@ public class SystemContentController {
 
     private final SystemContentService systemContentService;
 
-    // Public API for visitors
+    // [Chức năng rõ ràng]: API Lấy bài viết (Public)
+    // [Tác dụng]: Cho phép Frontend (dù người dùng chưa đăng nhập) lấy nội dung HTML của các bài viết (như Giới thiệu, Luật chơi) để hiển thị lên màn hình.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API lấy bài viết, hãy sửa `@GetMapping("/public/content/{pageId}")`. Đảm bảo URL này đã được `permitAll` trong `SecurityConfig.java`.
     @GetMapping("/public/content/{pageId}")
     public ResponseEntity<?> getPublicContent(@PathVariable String pageId) {
         try {
@@ -782,6 +857,10 @@ public class TournamentController {
 
     private final TournamentService tournamentService;
 
+    // [Chức năng rõ ràng]: API Tạo Giải Đấu
+    // [Tác dụng]: Nhận request từ Admin/Ban Tổ Chức để tạo một giải đấu mới.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint bằng cách sửa `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createTournament(@RequestBody TournamentRequestDTO request) {
         try {
@@ -863,7 +942,10 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    // Lấy danh sách tất cả Users (Dành cho Admin)
+    // [Chức năng rõ ràng]: API Lấy danh sách Users (Cho Admin)
+    // [Tác dụng]: Trả về danh sách tất cả người dùng trong hệ thống (gồm cả Người chơi, Chủ ngựa, Nài ngựa) để Admin quản lý.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Có thể thêm các biến truyền vào `@GetMapping` để hỗ trợ lọc theo Role nếu cần (VD: `?role=OWNER`).
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -899,7 +981,10 @@ public class UserController {
         }
     }
 
-    // API CHUYÊN BIỆT CHO ADMIN DUYỆT/KHÓA TÀI KHOẢN (Chỉ nhận JSON)
+    // [Chức năng rõ ràng]: API Đổi trạng thái Tài Khoản
+    // [Tác dụng]: Admin gọi API này để Duyệt (APPROVED), Từ chối (REJECTED), hoặc Khóa (BANNED) tài khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint ở `@PutMapping("/{id}/status")`. Chỉ nhận tham số JSON là `status`.
     @PutMapping("/{id}/status")
     public ResponseEntity<UserResponseDTO> updateUserStatus(
             @PathVariable Integer id,
@@ -962,6 +1047,15 @@ public class UserController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @GetMapping("/my-jockey-rewards")
+    public ResponseEntity<?> getMyJockeyRewards(@RequestParam Integer userId) {
+        try {
+            return ResponseEntity.ok(userService.getMyJockeyRewards(userId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }
 
 
@@ -993,6 +1087,10 @@ public class WalletController {
         }
     }
 
+    // [Chức năng rõ ràng]: API Nạp Tiền (Virtual Deposit)
+    // [Tác dụng]: Nhận request nạp tiền ảo (chủ yếu dùng cho test môi trường dev). Số dư ví sẽ tăng ngay lập tức.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint ở `@PostMapping("/deposit")`. Nếu sau này tích hợp cổng thanh toán thật, bạn không nên gọi trực tiếp hàm này từ frontend, mà phải để Webhook từ cổng thanh toán gọi hàm này.
     @PostMapping("/deposit")
     public ResponseEntity<?> deposit(@RequestBody DepositRequestDTO request) {
         try {
@@ -1055,6 +1153,10 @@ public class WebhookController {
     @Value("${sepay.webhook.token:MySecretToken123!}")
     private String webhookToken;
 
+    // [Chức năng rõ ràng]: API Webhook Tự động cộng tiền (SePay)
+    // [Tác dụng]: Nhận tín hiệu báo biến động số dư từ cổng thanh toán SePay. Hàm sẽ cắt chuỗi nội dung chuyển khoản để lấy ra UserID và tự động cộng tiền thật vào số dư ví của User đó.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi mã Token bảo mật ở biến `webhookToken`. Đổi format cú pháp chuyển khoản (hiện tại là `NAP{UserID}xxxx`) bằng cách sửa Regex `Pattern.compile("NAP[A-Z0-9]+")`.
     @PostMapping("/sepay")
     public ResponseEntity<?> handleSePayWebhook(@RequestHeader(value = "Authorization", required = false) String authHeader, @RequestBody SePayWebhookRequestDTO request) {
         try {
@@ -1140,6 +1242,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Lịch sử cược
+    // [Tác dụng]: Đóng gói thông tin vé cược của người dùng (tên ngựa, số tiền, trạng thái thắng/thua) để gửi về Frontend hiển thị ở trang Lịch sử.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính vào class này nếu muốn Frontend hiển thị thêm dữ liệu (ví dụ: ngày giờ cược).
 public class BetHistoryResponseDTO {
     private Integer id;
     private String raceName;
@@ -1163,27 +1269,16 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Đặt Cược
+    // [Tác dụng]: Hứng dữ liệu từ Frontend khi người chơi bấm nút "Đặt cược" (bao gồm ID ngựa, ID chặng đua và số tiền).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu Frontend gửi thêm tham số (như loại cược), hãy khai báo thêm thuộc tính tương ứng ở đây.
 public class BetRequestDTO {
     private Integer spectatorId;
     private Integer raceId;
     private Integer registrationId;
     private BigDecimal amount;
 }
-
-
-
-=========================================
-TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\dto\CompleteWithdrawalRequestDTO.java
-=========================================
-package com.swp.horseracing.dto;
-
-import lombok.Data;
-
-@Data
-public class CompleteWithdrawalRequestDTO {
-    private String proofUrl;
-}
-
 
 
 
@@ -1196,6 +1291,10 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Nạp Tiền
+    // [Tác dụng]: Hứng dữ liệu từ Frontend khi người dùng yêu cầu tạo mã QR nạp tiền hoặc nạp tiền ảo (chứa số tiền cần nạp).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Cần sửa ở đây nếu Frontend gửi thêm thông tin cổng thanh toán.
 public class DepositRequestDTO {
     private Integer userId; // Để Demo giả định lấy tài khoản người dùng
     private BigDecimal amount;
@@ -1212,6 +1311,10 @@ import com.swp.horseracing.model.HorseStatus;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Thêm/Sửa Ngựa
+    // [Tác dụng]: Đóng gói dữ liệu text từ form đăng ký ngựa (tên, tuổi, mô tả) của Chủ ngựa.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Sửa thuộc tính nếu trong CSDL bảng Ngựa có thêm cột mới.
 public class HorseRequestDTO {
     private String name;
     private Integer ownerId; // Bắt buộc để biết ngựa của ai
@@ -1241,6 +1344,10 @@ import java.util.List;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Ngựa
+    // [Tác dụng]: Chứa dữ liệu chi tiết của một chú ngựa (bao gồm tên, tuổi, hình ảnh, chỉ số) trả về cho Frontend hiển thị.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm trường dữ liệu nếu Frontend yêu cầu hiển thị thêm thông tin (ví dụ: lịch sử thắng).
 public class HorseResponseDTO {
     private Integer id;
     private String name;
@@ -1275,6 +1382,10 @@ package com.swp.horseracing.dto;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Lời mời
+    // [Tác dụng]: Hứng thông tin từ Chủ ngựa khi họ muốn gửi lời mời thuê một Nài ngựa cụ thể tham gia lái ngựa của mình.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính nếu Chủ ngựa muốn gửi kèm lời nhắn (message).
 public class InvitationRequestDTO {
     private Integer registrationId;
     private Integer jockeyId;
@@ -1294,6 +1405,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Lời mời
+    // [Tác dụng]: Đóng gói thông tin hiển thị danh sách lời mời (dành cho màn hình của Nài ngựa và Chủ ngựa).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm trường dữ liệu nếu UI cần hiển thị thời gian gửi lời mời.
 public class InvitationResponseDTO {
     private Integer id;
     private Integer registrationId;
@@ -1318,6 +1433,10 @@ import lombok.Data;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Nài ngựa (Sàn giao dịch)
+    // [Tác dụng]: Cung cấp dữ liệu tóm tắt của các Nài ngựa (tên, số trận thắng, kinh nghiệm) để Chủ ngựa xem và chọn thuê.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính tính toán (như tỷ lệ thắng %) nếu Frontend cần.
 public class JockeyMarketResponseDTO {
     private Integer id;
     private String username;
@@ -1342,6 +1461,10 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Tỷ lệ cược Trực tiếp
+    // [Tác dụng]: Chứa thông tin danh sách ngựa đang chạy và tổng số tiền cược đặt vào mỗi con, giúp Frontend tính được tỷ lệ thưởng (Odds).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Có thể thêm thuật toán tự tính Odds ngay trên Backend thay vì để Frontend tính.
 public class LiveOddsResponseDTO {
     private Integer registrationId;
     private String horseName;
@@ -1361,6 +1484,10 @@ package com.swp.horseracing.dto;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Đăng nhập
+    // [Tác dụng]: Hứng username và password từ form Đăng nhập của người dùng gửi lên.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu đổi phương thức đăng nhập (ví dụ: login bằng email), hãy sửa thuộc tính `username` thành `email`.
 public class LoginRequestDTO {
     private String email;
     private String password;
@@ -1379,6 +1506,10 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Thanh toán
+    // [Tác dụng]: Trả về URL ảnh mã QR và mã giao dịch để Frontend hiển thị màn hình quét QR nạp tiền.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu đổi nhà cung cấp QR, có thể cần đổi thuộc tính `qrUrl`.
 public class PaymentResponseDTO {
     private String transactionCode;
     private BigDecimal amount;
@@ -1402,6 +1533,10 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Tạo/Sửa Chặng đua
+    // [Tác dụng]: Hứng dữ liệu từ Admin khi tạo chặng đua mới (khoảng cách, thời gian bắt đầu, tên chặng).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm các điều kiện về thời tiết, loại đường chạy nếu có.
 public class RaceRequestDTO {
     private Integer tournamentId;
     private String name;
@@ -1429,6 +1564,10 @@ import java.math.BigDecimal;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Chặng đua
+    // [Tác dụng]: Đóng gói dữ liệu của một chặng đua để hiển thị lịch thi đấu trên Frontend.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm trường nếu cần trả về số lượng ngựa đã đăng ký vào chặng này.
 public class RaceResponseDTO {
     private Integer id;
     private Integer tournamentId;
@@ -1455,6 +1594,10 @@ package com.swp.horseracing.dto;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Báo cáo Trọng tài
+    // [Tác dụng]: Hứng nội dung text báo cáo sự cố/vi phạm từ Trọng tài gửi lên Admin.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính ảnh minh họa vi phạm (nếu cần).
 public class RefereeReportRequestDTO {
     private Integer raceId;
     private Integer refereeId;
@@ -1472,9 +1615,16 @@ package com.swp.horseracing.dto;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Kết quả thi đấu
+    // [Tác dụng]: Hứng dữ liệu bảng xếp hạng các con ngựa sau khi chặng đua kết thúc (do Trọng tài nhập).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu muốn ghi nhận thêm thời gian hoàn thành (Finish Time) của từng con ngựa, hãy thêm vào đây.
 public class RefereeResultRequestDTO {
     private Integer raceId;
     private Integer top1RegistrationId; // ID của ngựa/nài đạt top 1
+    private Integer top2RegistrationId; // ID của ngựa/nài đạt top 2
+    private Integer top3RegistrationId; // ID của ngựa/nài đạt top 3
+    private Integer refereeId;
 }
 
 
@@ -1492,6 +1642,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Đăng ký Tài khoản
+    // [Tác dụng]: Hứng toàn bộ thông tin đăng ký (text) từ Frontend, không chứa file vì dùng Multipart.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm các trường phụ như `address`, `phoneNumber` nếu DB yêu cầu.
 public class RegisterRequestDTO {
     private String username;
     private String password;
@@ -1526,6 +1680,10 @@ import com.swp.horseracing.model.RegistrationStatus;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Đăng ký Đua
+    // [Tác dụng]: Hứng dữ liệu khi Chủ/Nài ngựa chốt danh sách thi đấu (bao gồm ngựa nào, nài nào chạy trong chặng nào).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm lệ phí thi đấu nếu có thu phí tham gia.
 public class RegistrationRequestDTO {
     private Integer raceId;
     private Integer horseId;
@@ -1551,6 +1709,10 @@ import lombok.Data;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Đăng ký Đua
+    // [Tác dụng]: Trả về chi tiết một suất thi đấu (Ai cưỡi, ngựa gì, ở làn chạy số mấy).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thông tin tỷ lệ cược cá nhân cho từng suất chạy này.
 public class RegistrationResponseDTO {
     private Integer id;
     private Integer raceId;
@@ -1563,6 +1725,7 @@ public class RegistrationResponseDTO {
     private String jockeyUsername;
     private RegistrationStatus status;
     private String note;
+    private Integer finishPosition;
 }
 
 
@@ -1575,6 +1738,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO hứng Webhook SePay
+    // [Tác dụng]: Được thiết kế để map chính xác với cấu trúc JSON mà hệ thống SePay tự động bắn sang khi có người chuyển khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: KHÔNG ĐƯỢC ĐỔI TÊN THUỘC TÍNH trừ khi API của SePay có sự thay đổi.
 public class SePayWebhookRequestDTO {
 
     @JsonProperty("gateway")
@@ -1625,6 +1792,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông báo Hệ thống
+    // [Tác dụng]: Đóng gói các thông báo chung từ Admin (như bảo trì, sự kiện) để hiển thị lên bảng tin người dùng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính cờ (isRead) để biết User đã đọc hay chưa.
 public class SystemAnnouncementDTO {
     private Integer id;
     private String content;
@@ -1657,6 +1828,10 @@ import lombok.AllArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+    // [Chức năng rõ ràng]: Lớp DTO cho Bài viết/Nội dung Tĩnh
+    // [Tác dụng]: Dùng chung cho cả việc lấy và cập nhật (Admin) nội dung các trang như Luật chơi, Chính sách bảo mật (dạng HTML).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm ngôn ngữ `lang` nếu muốn hỗ trợ đa ngôn ngữ.
 public class SystemContentDTO {
     private Integer id;
     private String pageId;
@@ -1678,6 +1853,10 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Tạo Giải đấu
+    // [Tác dụng]: Hứng tên, ngày bắt đầu, ngày kết thúc và mô tả từ Admin khi tạo một Giải đấu mới.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính hình ảnh banner cho Giải đấu.
 public class TournamentRequestDTO {
     private String name;
     private LocalDateTime startDate;
@@ -1700,6 +1879,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Giải đấu
+    // [Tác dụng]: Trả về danh sách các giải đấu kèm tổng số chặng đua, để hiển thị ở Trang chủ.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm tổng số tiền thưởng giải đấu (Prize Pool).
 public class TournamentResponseDTO {
     private Integer id;
     private String name;
@@ -1726,6 +1909,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Lịch sử Giao dịch
+    // [Tác dụng]: Chứa chi tiết biến động số dư (nạp, rút, cược, trúng thưởng) để hiển thị trong Ví người dùng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm màu sắc hoặc icon tương ứng theo `type` ở Frontend, backend có thể hỗ trợ trả thêm thuộc tính `color`.
 public class TransactionHistoryResponseDTO {
     private Integer id;
     private String transactionCode;
@@ -1758,6 +1945,10 @@ import java.util.List;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin User
+    // [Tác dụng]: Đóng gói Profile của User (sau khi ẩn password) để gửi về Frontend.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Cần lọc cẩn thận, không bao giờ thêm các trường nhạy cảm như `password` hay `token` vào class này.
 public class UserResponseDTO {
     private Integer id;
     private String username;
@@ -1795,6 +1986,10 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Sửa User
+    // [Tác dụng]: Hứng thông tin text khi User muốn đổi avatar, mật khẩu hoặc cập nhật họ tên.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu thêm form liên kết ngân hàng, hãy thêm biến nhận `bankNumber`.
 public class UserUpdateRequestDTO {
     private String username;
     private RoleEnum role;
@@ -1819,6 +2014,10 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Rút tiền
+    // [Tác dụng]: Hứng yêu cầu rút tiền của User (kèm theo số tiền, tên ngân hàng, số tài khoản).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm mã PIN bảo mật cấp 2 để xác thực giao dịch rút tiền nếu cần thiết.
 public class WithdrawRequestDTO {
     private Integer userId;
     private BigDecimal amount;
@@ -1842,6 +2041,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+    // [Chức năng rõ ràng]: Bộ lọc Bắt Lỗi toàn cục (Global Exception Handler)
+    // [Tác dụng]: Tự động "tóm" tất cả các lỗi xảy ra trong quá trình API chạy (như Lỗi file quá to, Lỗi Runtime) để chuyển thành HTTP Status Code 400 Bad Request một cách gọn gàng, tránh việc lộ mã nguồn Backend cho Frontend.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu muốn bắt thêm lỗi chuyên biệt (VD: Bắt lỗi 403 Forbidden hoặc lỗi Validation), hãy thêm một hàm `@ExceptionHandler(TenLoi.class)` mới vào file này.
 public class GlobalExceptionHandler {
 
     // Tóm tất cả các lỗi RuntimeException trong hệ thống
@@ -1868,6 +2071,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Phân loại Thông báo
+    // [Tác dụng]: Định nghĩa các loại thông báo hệ thống (SYSTEM, EVENT, MAINTENANCE) để dễ dàng lọc trên UI.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm giá trị mới vào Enum này nếu hệ thống có thêm loại thông báo khác (VD: PROMOTION).
 public enum AnnouncementCategory {
     SYSTEM,
     LEGAL,
@@ -1892,6 +2099,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "audit_logs")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Nhật ký hệ thống
+    // [Tác dụng]: Ánh xạ với bảng `audit_logs` trong CSDL, dùng để lưu vết các thao tác quan trọng của Admin (duyệt ngựa, khóa tài khoản).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột vào Entity này nếu muốn lưu thêm IP Address hay Trình duyệt của người thao tác.
 public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -1945,6 +2156,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "bets")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Vé cược
+    // [Tác dụng]: Ánh xạ bảng `bets` trong CSDL. Lưu thông tin cá cược của Người chơi (Cược con ngựa nào, chặng nào, bao nhiêu tiền).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính tỷ lệ cược (odds) tại thời điểm đặt, nếu không muốn tính toán động.
 public class Bet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -1969,7 +2184,6 @@ public class Bet {
     private BigDecimal expectedOdds;
 
     @Enumerated(EnumType.STRING)
-    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
     @Builder.Default
     private BetStatus status = BetStatus.PENDING;
 
@@ -1987,6 +2201,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Vé cược
+    // [Tác dụng]: Chỉ định trạng thái của một vé cược (PENDING, WON, LOST, CANCELLED).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm trạng thái REFUNDED nếu có chính sách hoàn tiền riêng.
 public enum BetStatus {
     PENDING, WON, LOST, CANCELED, REFUNDED
 }
@@ -2010,6 +2228,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Ngựa
+    // [Tác dụng]: Ánh xạ bảng `horses` trong CSDL. Quản lý thông tin cốt lõi của một chú ngựa (Chủ sở hữu, tuổi, giống, trạng thái).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Sửa/Thêm thuộc tính nếu cần lưu trữ thêm các thông số y tế hoặc lịch sử chấn thương.
 public class Horse {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2074,6 +2296,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "horse_attachments")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Tài liệu Ngựa
+    // [Tác dụng]: Ánh xạ bảng `horse_attachments`, lưu trữ URL ảnh, giấy khai sinh, hồ sơ thú y của Ngựa.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `fileName` nếu muốn lưu cả tên file gốc do người dùng tải lên.
 public class HorseAttachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2102,6 +2328,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Loại giấy tờ Ngựa
+    // [Tác dụng]: Phân loại các tài liệu đính kèm của Ngựa (CERTIFICATE, REAL_IMAGE, VET_RECORD).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm giá trị nếu yêu cầu thêm loại giấy tờ khác (VD: DNA_TEST).
 public enum HorseDocType {
     CERTIFICATE, REAL_IMAGE, VET_RECORD
 }
@@ -2113,6 +2343,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Ngựa
+    // [Tác dụng]: Trạng thái hoạt động của ngựa (PENDING, APPROVED, REJECTED, RETIRED).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Có thể thêm INJURED (Chấn thương) để chặn đăng ký thi đấu tạm thời.
 public enum HorseStatus {
     PENDING, APPROVED, REJECTED
 }
@@ -2124,6 +2358,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Lời mời
+    // [Tác dụng]: Trạng thái của lời mời Nài ngựa (PENDING, ACCEPTED, REJECTED, CANCELLED).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Không cần thay đổi trừ khi thêm quy trình thương lượng (NEGOTIATING).
 public enum InvitationStatus {
     PENDING, ACCEPTED, REJECTED, CANCELED
 }
@@ -2138,13 +2376,15 @@ package com.swp.horseracing.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "jockey_invitations")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Lời mời Nài ngựa
+    // [Tác dụng]: Ánh xạ bảng `jockey_invitations`. Lưu trữ yêu cầu thuê Nài ngựa của Chủ ngựa cho một chặng đua cụ thể.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột giá thỏa thuận (Deal Price) nếu hệ thống cho phép thương lượng thù lao.
 public class JockeyInvitation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2159,7 +2399,6 @@ public class JockeyInvitation {
     private User jockey;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private InvitationStatus status;
 
     @CreationTimestamp
@@ -2188,6 +2427,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Cấu hình Giải thưởng
+    // [Tác dụng]: Ánh xạ bảng `prize_configs`. Lưu tỷ lệ chia tiền thưởng cho Hạng 1, 2, 3 và % phí nền tảng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính nếu chia thưởng cho cả Hạng 4 hoặc Hạng 5.
 public class PrizeConfig {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2216,8 +2459,6 @@ package com.swp.horseracing.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -2225,6 +2466,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "races")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Chặng đua
+    // [Tác dụng]: Ánh xạ bảng `races`. Quản lý thông tin một chặng đua cụ thể (Ngày giờ, khoảng cách, trạng thái) thuộc về một Giải đấu.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính về điều kiện thời tiết (Weather) hoặc độ ẩm đường đua.
 public class Race {
 
     @Id
@@ -2249,7 +2494,6 @@ public class Race {
     private BigDecimal rakePercentage = new BigDecimal("20.00");
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RaceStatus status;
 
     @Column(name = "estimated_duration")
@@ -2280,6 +2524,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Chặng đua
+    // [Tác dụng]: Quản lý vòng đời chặng đua (SCHEDULED, BETTING_OPEN, BETTING_CLOSED, IN_PROGRESS, COMPLETED, CANCELLED).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm trạng thái DELAYED nếu muốn phân biệt chặng đua bị hoãn với chặng đua chưa bắt đầu.
 public enum RaceStatus {
     REGISTRATION, BETTING, LOCK_SESSION, RUNNING, FINISHED, RESULT_CONFIRMED, COMPLETED, CANCELED
 }
@@ -2299,6 +2547,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "referee_reports")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Báo cáo Trọng tài
+    // [Tác dụng]: Ánh xạ bảng `referee_reports`. Lưu vết báo cáo kết quả và các vi phạm (nếu có) do Trọng tài ghi nhận.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột URL chứa hình ảnh/video bằng chứng (Evidence).
 public class RefereeReport {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2333,8 +2585,6 @@ package com.swp.horseracing.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 @Entity
 
@@ -2343,6 +2593,10 @@ import org.hibernate.type.SqlTypes;
         @UniqueConstraint(columnNames = {"race_id", "jockey_id"})
 })
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Đơn đăng ký tham gia Chặng đua
+    // [Tác dụng]: Ánh xạ bảng `registrations`. Lưu thông tin 1 suất thi đấu gồm: Chặng đua + Ngựa + Nài ngựa + Số báo danh.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `Final Rank` (Thứ hạng chung cuộc) để lưu trữ kết quả cuối cùng.
 public class Registration {
 
     @Id
@@ -2368,7 +2622,6 @@ public class Registration {
 
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private RegistrationStatus status;
 
     private String note;
@@ -2385,6 +2638,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Đăng ký thi đấu
+    // [Tác dụng]: Trạng thái của 1 suất thi đấu (PENDING, APPROVED, REJECTED, WITHDRAWN, FINISHED).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm DISQUALIFIED nếu ngựa bị loại do phạm luật.
 public enum RegistrationStatus {
     WAITING_JOCKEY,
     PENDING_APPROVAL,
@@ -2401,6 +2658,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Phân quyền Hệ thống (Role)
+    // [Tác dụng]: Định nghĩa quyền của User: ADMIN, REFEREE, OWNER (Chủ ngựa), JOCKEY (Nài ngựa), SPECTATOR (Khán giả).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm SUPER_ADMIN nếu cần phân cấp quản trị viên.
 public enum RoleEnum {
     ADMIN, OWNER, JOCKEY, REFEREE, SPECTATOR
 }
@@ -2422,6 +2683,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Thông báo Hệ thống
+    // [Tác dụng]: Ánh xạ bảng `system_announcements`. Lưu các thông báo chung do Admin phát ra.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Có thể liên kết N-N với User để lưu trạng thái Đã đọc/Chưa đọc (Is Read).
 public class SystemAnnouncement {
 
     @Id
@@ -2478,6 +2743,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+    // [Chức năng rõ ràng]: Entity Nội dung Tĩnh (CMS)
+    // [Tác dụng]: Ánh xạ bảng `system_contents`. Lưu trữ nội dung HTML của trang Điều khoản, Giới thiệu (để Admin có thể sửa mà không cần code).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `Version` để theo dõi lịch sử chỉnh sửa bài viết.
 public class SystemContent {
 
     @Id
@@ -2512,13 +2781,16 @@ package com.swp.horseracing.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.util.List;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tournaments")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Giải đấu
+    // [Tác dụng]: Ánh xạ bảng `tournaments`. Lưu thông tin tổng quan của một Giải đấu lớn (bao gồm nhiều Chặng đua).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm Logo hoặc Banner URL cho giải đấu.
 public class Tournament {
 
     @Id
@@ -2548,6 +2820,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Giải đấu
+    // [Tác dụng]: Xác định giải đấu đang Lên lịch, Đang diễn ra hay Đã kết thúc.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm POSTPONED nếu giải đấu bị tạm hoãn vô thời hạn.
 public enum TournamentStatus {
     UPCOMING, ONGOING, COMPLETED, CANCELED, POSTPONED
 }
@@ -2559,6 +2835,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Hướng Giao dịch (Dòng tiền)
+    // [Tác dụng]: Xác định dòng tiền là chảy vào (IN - Nạp/Thắng) hay chảy ra (OUT - Rút/Cược).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thường cố định 2 chiều, không cần thêm.
 public enum TransactionDirection {
     IN,
     OUT
@@ -2574,8 +2854,6 @@ package com.swp.horseracing.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -2585,6 +2863,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Lịch sử Giao dịch
+    // [Tác dụng]: Ánh xạ bảng `transaction_history`. Lưu lại mọi biến động số dư của ví (Nạp, Rút, Đặt cược, Trả thưởng).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `Fee` (Phí giao dịch) nếu hệ thống thu phí nạp/rút.
 public class TransactionHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2604,15 +2886,12 @@ public class TransactionHistory {
     private BigDecimal amount;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TransactionType type;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TransactionDirection direction;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private TransactionStatus status;
 
     @Column(name = "proof_url", columnDefinition = "TEXT")
@@ -2643,6 +2922,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Giao dịch
+    // [Tác dụng]: Trạng thái xử lý tiền (PENDING, COMPLETED, FAILED, REJECTED).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm trạng thái PROCESSING nếu kết nối API ngân hàng mất nhiều thời gian.
 public enum TransactionStatus {
     PENDING, COMPLETED, REJECTED
 }
@@ -2654,6 +2937,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Loại Giao dịch
+    // [Tác dụng]: Phân biệt nguyên nhân biến động số dư (DEPOSIT, WITHDRAW, BET, REWARD, CANCEL_REFUND).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm BONUS nếu hệ thống tặng tiền tân thủ.
 public enum TransactionType {
     DEPOSIT, WITHDRAW, BET, REWARD, REFUND, TAX
 }
@@ -2678,6 +2965,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Người dùng
+    // [Tác dụng]: Ánh xạ bảng `users`. Chứa thông tin đăng nhập và Profile cơ bản của mọi tài khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Có thể thiết lập thêm quan hệ One-to-One tới bảng `Settings` nếu User muốn tùy chỉnh UI.
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2762,6 +3053,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "user_attachments")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Tài liệu Người dùng
+    // [Tác dụng]: Ánh xạ bảng `user_attachments`. Lưu ảnh Avatar và hình CCCD của User phục vụ mục đích KYC.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột trạng thái Duyệt (Approved/Rejected) riêng cho từng ảnh nếu muốn.
 public class UserAttachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2790,6 +3085,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Loại giấy tờ Người dùng
+    // [Tác dụng]: Phân loại ảnh tải lên (AVATAR, ID_CARD_FRONT, ID_CARD_BACK).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm DRIVING_LICENSE hoặc PASSPORT nếu chấp nhận giấy tờ khác để KYC.
 public enum UserDocType {
     ID_CARD, PASSPORT, JOCKEY_CERT, HEALTH_CHECK, REFEREE_CERT
 }
@@ -2801,6 +3100,10 @@ TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\
 =========================================
 package com.swp.horseracing.model;
 
+    // [Chức năng rõ ràng]: Enum Trạng thái Người dùng
+    // [Tác dụng]: Quản lý trạng thái tài khoản (PENDING_APPROVAL, APPROVED, REJECTED, BANNED, SELF_EXCLUSION).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm INACTIVE nếu người dùng không đăng nhập quá 6 tháng.
 public enum UserStatus {
     PENDING, APPROVED, REJECTED, BANNED, RED_FLAG, SELF_EXCLUSION
 }
@@ -2822,6 +3125,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "wallets")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Ví tiền ảo
+    // [Tác dụng]: Ánh xạ bảng `wallets`. Lưu giữ số dư khả dụng (Balance) hiện tại của User.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nên lưu Balance dưới dạng `BigDecimal` (đã làm) để tránh sai số thập phân.
 public class Wallet {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -2855,6 +3162,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (AuditLog)
+    // [Tác dụng]: Cung cấp các hàm cơ bản (CRUD) bằng Spring Data JPA để thao tác với bảng `audit_logs`.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Định nghĩa thêm các hàm tìm kiếm theo AdminID hoặc Hành động nếu cần trích xuất báo cáo.
 public interface AuditLogRepository extends JpaRepository<AuditLog, Integer> {
 }
 
@@ -2874,6 +3185,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (Bet)
+    // [Tác dụng]: Thao tác bảng `bets`. Đã được cấu hình các Custom Query (@Query) để thống kê tiền cược, lấy danh sách cược theo UserId hoặc RaceId.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu muốn sửa công thức tính hoặc điều kiện lọc (VD: bỏ qua cược bị CANCEL), hãy sửa câu lệnh `@Query` ở đây.
 public interface BetRepository extends JpaRepository<Bet, Integer> {
 
     // Tìm các phiếu cược theo chặng đua
@@ -2907,6 +3222,10 @@ import com.swp.horseracing.model.Horse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface kết nối DB (Horse)
+    // [Tác dụng]: Thao tác bảng `horses`. Hỗ trợ tìm ngựa theo Chủ sở hữu (OwnerId) và Lấy ngựa tham gia nhiều chặng nhất.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm hàm `findByStatus` nếu muốn lọc riêng ngựa đang chờ duyệt.
 public interface HorseRepository extends JpaRepository<Horse, Integer> {
     // Hỗ trợ FE lấy danh sách ngựa của 1 chủ ngựa cụ thể
     List<Horse> findByOwnerId(Integer ownerId);
@@ -2923,6 +3242,10 @@ import com.swp.horseracing.model.JockeyInvitation;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface kết nối DB (JockeyInvitation)
+    // [Tác dụng]: Thao tác bảng `jockey_invitations`. Giúp Nài/Chủ ngựa dễ dàng truy vấn danh sách lời mời liên quan đến họ.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Có thể viết thêm hàm đếm số lượng lời mời đang chờ (PENDING) để hiển thị chấm đỏ (Badge) trên UI.
 public interface JockeyInvitationRepository extends JpaRepository<JockeyInvitation, Integer> {
     // Hỗ trợ FE lấy danh sách lời mời của 1 Nài ngựa cụ thể
     List<JockeyInvitation> findByJockeyId(Integer jockeyId);
@@ -2946,6 +3269,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (PrizeConfig)
+    // [Tác dụng]: Thao tác bảng `prize_configs`.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thường chỉ cần cấu hình chung (CRUD cơ bản), ít khi phải viết thêm hàm phức tạp.
 public interface PrizeConfigRepository extends JpaRepository<PrizeConfig, Integer> {
 }
 
@@ -2962,6 +3289,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface kết nối DB (Race)
+    // [Tác dụng]: Thao tác bảng `races`. Hỗ trợ tìm kiếm các chặng đua đang mở cược hoặc đã kết thúc, truy vấn theo Giải đấu (TournamentId).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Viết thêm `@Query` nếu muốn tìm các chặng đua diễn ra trong ngày hôm nay.
 public interface RaceRepository extends JpaRepository<Race, Integer> {
     // Hỗ trợ Frontend lấy toàn bộ chặng đua của 1 giải đấu cụ thể
     @org.springframework.data.jpa.repository.Query("SELECT r FROM Race r JOIN FETCH r.tournament LEFT JOIN FETCH r.referee WHERE r.tournament.id = :tournamentId ORDER BY r.raceTime ASC")
@@ -2987,6 +3318,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (RefereeReport)
+    // [Tác dụng]: Thao tác bảng `referee_reports`. Hỗ trợ tìm báo cáo theo Chặng đua (RaceId).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm hàm tìm kiếm theo Mã Trọng Tài (RefereeId) nếu muốn kiểm tra hiệu suất của một trọng tài cụ thể.
 public interface RefereeReportRepository extends JpaRepository<RefereeReport, Integer> {
     java.util.List<RefereeReport> findByRaceId(Integer raceId);
 }
@@ -3007,6 +3342,10 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface kết nối DB (Registration)
+    // [Tác dụng]: Thao tác bảng `registrations`. Chứa các hàm kiểm tra trùng lặp (Ngựa/Nài đã đăng ký chưa) và các Custom Query thống kê thứ hạng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Khi sửa đổi câu lệnh `@Query` thống kê Top Nài Ngựa/Chủ Ngựa, hãy cẩn thận với cấu trúc JOIN các bảng.
 public interface RegistrationRepository extends JpaRepository<Registration, Integer> {
     List<Registration> findByRaceId(Integer raceId);
 
@@ -3033,6 +3372,10 @@ import com.swp.horseracing.model.SystemAnnouncement;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface kết nối DB (SystemAnnouncement)
+    // [Tác dụng]: Thao tác bảng `system_announcements`. Sắp xếp thông báo mới nhất lên đầu nhờ OrderByCreatedAtDesc.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm hàm lọc thông báo theo Đối tượng (Roles) nếu có chức năng Gửi thông báo riêng.
 public interface SystemAnnouncementRepository extends JpaRepository<SystemAnnouncement, Integer> {
     List<SystemAnnouncement> findAllByOrderByCreatedAtDesc();
 }
@@ -3052,6 +3395,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (SystemContent)
+    // [Tác dụng]: Thao tác bảng `system_contents`. Cho phép Admin quản lý các trang bài viết (pageId) như LUAT_CHOI.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Không cần chỉnh sửa nhiều, Spring Data JPA tự lo hàm `findByPageId`.
 public interface SystemContentRepository extends JpaRepository<SystemContent, Integer> {
     Optional<SystemContent> findByPageId(String pageId);
 }
@@ -3069,6 +3416,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (Tournament)
+    // [Tác dụng]: Thao tác bảng `tournaments`.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Viết thêm hàm tìm kiếm Giải đấu có số tiền thưởng cao nhất nếu muốn làm tính năng "Hot Tournaments".
 public interface TournamentRepository extends JpaRepository<Tournament, Integer> {
     boolean existsByName(String name);
 }
@@ -3087,6 +3438,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (TransactionHistory)
+    // [Tác dụng]: Thao tác bảng `transaction_history`. Hỗ trợ lấy toàn bộ lịch sử nạp/rút/cược của một người chơi, sắp xếp theo thời gian mới nhất.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm `@Query` để tính tổng tiền Nạp hoặc tổng tiền Rút trong tháng của 1 User.
 public interface TransactionHistoryRepository extends JpaRepository<TransactionHistory, Integer> {
     
     // Tìm lịch sử giao dịch của 1 User
@@ -3111,6 +3466,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (UserAttachment)
+    // [Tác dụng]: Thao tác bảng `user_attachments`. Hỗ trợ lấy toàn bộ file đính kèm của một User cụ thể.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm hàm lấy file theo `UserDocType` nếu chỉ muốn lấy riêng biệt từng loại (VD: Chỉ lấy CCCD, không lấy Avatar).
 public interface UserAttachmentRepository extends JpaRepository<UserAttachment, Integer> {
     java.util.List<UserAttachment> findByUserId(Integer userId);
 }
@@ -3128,6 +3487,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
+    // [Chức năng rõ ràng]: Interface kết nối DB (User)
+    // [Tác dụng]: Thao tác bảng `users`. Chứa nhiều hàm quan trọng: Đăng nhập (findByUsername), kiểm tra trùng (existsByUsername), tìm kiếm theo Role.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Khi thêm form Quên mật khẩu, phải thêm hàm `findByEmail` vào đây.
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
 
@@ -3158,6 +3521,10 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (Wallet)
+    // [Tác dụng]: Thao tác bảng `wallets`. Hỗ trợ lấy Ví tiền theo ID người dùng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Sử dụng cơ chế Lock (Bi quan/Lạc quan) trên `@Query` nếu sau này hệ thống gặp lỗi tranh chấp (Race condition) khi trừ tiền.
 public interface WalletRepository extends JpaRepository<Wallet, Integer> {
     Optional<Wallet> findByUserId(Integer userId);
 
@@ -3187,6 +3554,10 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+    // [Chức năng rõ ràng]: Job chạy ngầm tự động (Cronjob)
+    // [Tác dụng]: Được Spring Boot gọi định kỳ mỗi 1 phút để tự động chuyển trạng thái chặng đua (Ví dụ: Từ SCHEDULED -> BETTING_OPEN khi đến giờ) mà không cần Admin thao tác tay.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu muốn đổi chu kỳ chạy, hãy sửa `@Scheduled(cron = "0 * * * * *")`.
 public class RaceStateScheduler {
 
     private final RaceRepository raceRepository;
@@ -3197,7 +3568,7 @@ public class RaceStateScheduler {
     public void updateRaceStates() {
         LocalDateTime now = LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
 
-        // Tự động chuyển REGISTRATION -> BETTING khi chạm mốc 12 giờ trước giờ chạy
+        // Tự động chuyển REGISTRATION -> BETTING khi còn 5 phút nữa tới giờ đua
         List<Race> registrationRaces = raceRepository.findByStatus(RaceStatus.REGISTRATION);
         for (Race race : registrationRaces) {
             if (race.getRaceTime() != null && now.plusMinutes(5).isAfter(race.getRaceTime())) {
@@ -3244,6 +3615,10 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Bộ lọc chặn Request (Middleware)
+    // [Tác dụng]: Can thiệp vào mọi API request gửi từ Frontend. Nó kiểm tra xem request có gửi kèm Token JWT hợp lệ hay không. Nếu có thì cho qua, nếu không thì chặn (401 Unauthorized).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Sửa logic bóc tách header `Authorization` nếu hệ thống đổi sang dùng Cookie.
 public class JwtFilter extends OncePerRequestFilter {
 
 
@@ -3318,6 +3693,10 @@ public class JwtUtils {
     private final String SECRET = "HorseRacingVnSuperSecretKey2026-HorseRacingVnSuperSecretKey2026!";
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
+    // [Chức năng rõ ràng]: Khởi tạo Token Đăng nhập (JWT)
+    // [Tác dụng]: Sinh ra một chuỗi mã JWT chứa thông tin userId và role. Chuỗi này dùng làm "thẻ căn cước" cho người dùng khi gọi API.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Để đổi thời gian sống của Token, hãy thay đổi số `EXPIRATION_TIME` bên dưới (mặc định đang là 86400000ms = 24 giờ). Đổi khóa bí mật ở biến `SECRET` phía trên.
     public String generateToken(Integer userId, String role) {
 
         long EXPIRATION_TIME = 86400000;
@@ -3396,6 +3775,10 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
+    // [Chức năng rõ ràng]: Phân quyền API (Spring Security)
+    // [Tác dụng]: Chặn hoặc cho phép các request (yêu cầu) đi vào Backend. Cấu hình các API được phép truy cập public (không cần token).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu bạn viết thêm 1 API mới (VD: xem tin tức) mà KHÔNG cần đăng nhập, hãy thêm `.requestMatchers("/api/news/**").permitAll()` vào khối `authorizeHttpRequests`.
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -3453,6 +3836,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Logic Quản lý Giao dịch
+    // [Tác dụng]: Xử lý các logic phức tạp khi Admin duyệt rút tiền (trừ tiền khỏi ví, cập nhật trạng thái) hoặc duyệt nạp tiền.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Khi thêm phí rút tiền (Fee), hãy sửa công thức trừ tiền trong hàm duyệt rút.
 public class AdminTransactionServiceImpl implements AdminTransactionService {
 
     private final TransactionHistoryRepository transactionRepository;
@@ -3616,6 +4003,10 @@ public class BetServiceImpl implements BetService {
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionRepository;
 
+    // [Chức năng rõ ràng]: Đặt cược (Place Bet)
+    // [Tác dụng]: Trừ tiền trong ví khán giả và tạo vé cược. Số tiền cược được cộng dồn vào Total Pool (Tổng quỹ) của chặng đua.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Để chặn đặt cược sau một khoảng thời gian nhất định (ví dụ trước 5 phút), sửa logic ở đoạn so sánh `race.getRaceTime()`.
     @Override
     @Transactional
     public Bet createBet(BetRequestDTO request) {
@@ -3625,7 +4016,7 @@ public class BetServiceImpl implements BetService {
         Race race = raceRepository.findById(request.getRaceId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
 
-        // RÀO CẢN: Chỉ được cược khi chặng đua chưa bắt đầu (PENDING)
+        // RÀO CẢN: Chỉ được cược khi chặng đua đang ở trạng thái BETTING (mở cược)
         if (race.getStatus() != RaceStatus.BETTING) {
             throw new RuntimeException("Chặng đua hiện không trong trạng thái nhận cược!");
         }
@@ -3742,6 +4133,10 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Upload File
+    // [Tác dụng]: Kết nối trực tiếp với SDK của Cloudinary để upload file Multipart, trả về đường link ảnh an toàn (Secure URL).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Đổi Folder lưu trữ trên Cloudinary (Ví dụ: `horse_racing_dev`) tại biến cấu hình.
 public class FileStorageServiceImpl implements FileStorageService {
 
     private final Cloudinary cloudinary;
@@ -3833,6 +4228,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Logic Ngựa
+    // [Tác dụng]: Kiểm tra nghiệp vụ (file đính kèm hợp lệ không) trước khi lưu ngựa mới vào Database.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu muốn tự động Reject ngựa của tài khoản đang bị Ban, hãy check status Chủ ngựa trước.
 public class HorseServiceImpl implements HorseService {
 
     private final HorseRepository horseRepository;
@@ -4001,6 +4400,10 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Lời mời
+    // [Tác dụng]: Chứa logic gửi lời mời, tự động tạo Đơn đăng ký thi đấu (Registration) khi Nài ngựa Bấm ACCEPT.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu nài ngựa Accept, có thể gọi sang Notification Service để thông báo lại cho Chủ ngựa.
 public class JockeyInvitationServiceImpl implements JockeyInvitationService {
 
     private final JockeyInvitationRepository invitationRepository;
@@ -4061,6 +4464,7 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         java.util.List<Registration> allJockeyRegs = registrationRepository.findByJockeyId(invitation.getJockey().getId());
 
         boolean isSameRace = allJockeyRegs.stream()
+                .filter(r -> r.getRace().getStatus() != com.swp.horseracing.model.RaceStatus.CANCELED)
                 .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
                 .anyMatch(r -> r.getRace().getId().equals(currentReg.getRace().getId()));
 
@@ -4069,6 +4473,7 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         }
 
         boolean isOverlapping = allJockeyRegs.stream()
+                .filter(r -> r.getRace().getStatus() != com.swp.horseracing.model.RaceStatus.CANCELED)
                 .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
                 .anyMatch(r -> {
                     if (r.getRace().getRaceTime() == null || currentReg.getRace().getRaceTime() == null) return false;
@@ -4177,6 +4582,10 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Thanh toán
+    // [Tác dụng]: Call API sang bên thứ 3 (Ví dụ: VietQR - vietqr.io) để lấy URL hình ảnh QR Code.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Đổi STK ngân hàng thụ hưởng tại URL gọi sang VietQR nếu công ty đổi tài khoản.
 public class PaymentServiceImpl implements PaymentService {
 
     private final WalletRepository walletRepository;
@@ -4293,6 +4702,10 @@ public class RaceServiceImpl implements RaceService {
         }
     }
 
+    // [Chức năng rõ ràng]: Quản lý chặng đua (Race Management)
+    // [Tác dụng]: Khởi tạo một chặng đua mới thuộc về một giải đấu cụ thể. Kiểm tra ràng buộc thời gian xuất phát phải hợp lệ.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Sửa logic thời gian (ví dụ: giới hạn không được tạo chặng đua trong quá khứ) ở phần kiểm tra `request.getRaceTime()`.
     @Override
     @Transactional
     public RaceResponseDTO createRace(RaceRequestDTO request) {
@@ -4348,6 +4761,10 @@ public class RaceServiceImpl implements RaceService {
         return mapToResponseDTO(race);
     }
 
+    // [Chức năng rõ ràng]: Cập nhật thông tin chặng đua
+    // [Tác dụng]: Chỉnh sửa các thông tin cơ bản của chặng đua (tên, giờ xuất phát, tỷ lệ phế, trọng tài, tiền thưởng).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu cần cấm thay đổi thông tin khi chặng đua đã bắt đầu, hãy thêm điều kiện check `race.getStatus()` ở đầu hàm này.
     @Override
     @Transactional
     public RaceResponseDTO updateRace(Integer id, RaceRequestDTO request) {
@@ -4389,7 +4806,8 @@ public class RaceServiceImpl implements RaceService {
             org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_REFEREE"))) {
                 // Lỗi BOLA: Chỉ trọng tài được phân công mới được đổi trạng thái chặng đua
-                User currentUser = userRepository.findByUsername(auth.getName())
+                Integer currentUserId = Integer.parseInt(auth.getName());
+                User currentUser = userRepository.findById(currentUserId)
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy user đăng nhập!"));
                 if (race.getReferee() == null || !race.getReferee().getId().equals(currentUser.getId())) {
                     throw new RuntimeException("Bạn không có quyền thao tác trên chặng đua này!");
@@ -4403,7 +4821,7 @@ public class RaceServiceImpl implements RaceService {
                                 && r.getRaceTime() != null 
                                 && race.getRaceTime() != null 
                                 && r.getRaceTime().isBefore(race.getRaceTime())) {
-                            if (r.getStatus() != RaceStatus.RESULT_CONFIRMED && r.getStatus() != RaceStatus.CANCELED) {
+                            if (r.getStatus() != RaceStatus.RESULT_CONFIRMED && r.getStatus() != RaceStatus.CANCELED && r.getStatus() != RaceStatus.COMPLETED) {
                                 throw new RuntimeException("Bạn phải ký xác nhận chặng đua trước đó (" + r.getName() + ") trước khi bắt đầu chặng mới!");
                             }
                         }
@@ -4582,6 +5000,12 @@ public class RaceServiceImpl implements RaceService {
         }
     }
 
+    // [Chức năng rõ ràng]: Xử lý thanh toán và trả thưởng (Payout)
+    // [Tác dụng]: Tính toán tổng quỹ chia thưởng (Net Pool), trả tiền thắng cược cho khán giả, và chia phần trăm cho chủ ngựa, nài ngựa.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: 
+    //   + Đổi tỷ lệ chia thưởng khán giả (hiện tại 65%): sửa `new java.math.BigDecimal("0.65")`.
+    //   + Đổi tỷ lệ thuế (hiện tại 10% cho giải > 10 củ): sửa `0.10` và `10000000`.
     @Override
     @Transactional
     public void payoutRace(Integer raceId) {
@@ -4743,7 +5167,7 @@ public class RaceServiceImpl implements RaceService {
 
         // BƯỚC 6: Chi trả Giải thưởng Cố định (Set Prize) cho Top 1, 2, 3 (Chủ ngựa)
         for (Registration reg : registrations) {
-            if (reg.getRank() == null || reg.getOwner() == null) continue;
+            if (reg.getRank() == null) continue;
 
             java.math.BigDecimal fixedPrize = java.math.BigDecimal.ZERO;
             if (reg.getRank() == 1 && race.getPrize1() != null) {
@@ -4755,19 +5179,42 @@ public class RaceServiceImpl implements RaceService {
             }
 
             if (fixedPrize.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                Wallet ownerWallet = walletRepository.findByUserIdForUpdate(reg.getOwner().getId()).orElse(null);
-                if (ownerWallet != null) {
-                    ownerWallet.setBalance(ownerWallet.getBalance().add(fixedPrize));
-                    walletRepository.save(ownerWallet);
-                    TransactionHistory txFixed = TransactionHistory.builder()
-                            .transactionCode("SETPRIZE-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
-                            .wallet(ownerWallet)
-                            .amount(fixedPrize)
-                            .type(TransactionType.REWARD)
-                            .direction(TransactionDirection.IN)
-                            .status(TransactionStatus.COMPLETED)
-                            .build();
-                    transactionHistoryRepository.save(txFixed);
+                // 70% Owner
+                java.math.BigDecimal ownerFixed = fixedPrize.multiply(new java.math.BigDecimal("0.70")).setScale(2, java.math.RoundingMode.HALF_UP);
+                if (ownerFixed.compareTo(java.math.BigDecimal.ZERO) > 0 && reg.getOwner() != null) {
+                    Wallet ownerWallet = walletRepository.findByUserIdForUpdate(reg.getOwner().getId()).orElse(null);
+                    if (ownerWallet != null) {
+                        ownerWallet.setBalance(ownerWallet.getBalance().add(ownerFixed));
+                        walletRepository.save(ownerWallet);
+                        TransactionHistory txFixed = TransactionHistory.builder()
+                                .transactionCode("SETPRIZE-OWNER-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
+                                .wallet(ownerWallet)
+                                .amount(ownerFixed)
+                                .type(TransactionType.REWARD)
+                                .direction(TransactionDirection.IN)
+                                .status(TransactionStatus.COMPLETED)
+                                .build();
+                        transactionHistoryRepository.save(txFixed);
+                    }
+                }
+
+                // 30% Jockey
+                java.math.BigDecimal jockeyFixed = fixedPrize.subtract(ownerFixed);
+                if (jockeyFixed.compareTo(java.math.BigDecimal.ZERO) > 0 && reg.getJockey() != null) {
+                    Wallet jockeyWallet = walletRepository.findByUserIdForUpdate(reg.getJockey().getId()).orElse(null);
+                    if (jockeyWallet != null) {
+                        jockeyWallet.setBalance(jockeyWallet.getBalance().add(jockeyFixed));
+                        walletRepository.save(jockeyWallet);
+                        TransactionHistory txFixedJockey = TransactionHistory.builder()
+                                .transactionCode("SETPRIZE-JOCKEY-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
+                                .wallet(jockeyWallet)
+                                .amount(jockeyFixed)
+                                .type(TransactionType.REWARD)
+                                .direction(TransactionDirection.IN)
+                                .status(TransactionStatus.COMPLETED)
+                                .build();
+                        transactionHistoryRepository.save(txFixedJockey);
+                    }
                 }
             }
         }
@@ -4777,6 +5224,7 @@ public class RaceServiceImpl implements RaceService {
         raceRepository.save(race);
     }
 }
+
 
 
 
@@ -4798,6 +5246,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Trọng tài
+    // [Tác dụng]: Nhận mảng thứ hạng (Rank) từ trọng tài, cập nhật vào bảng `registrations` để chuẩn bị cho việc trả thưởng.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm Validate để chặn trọng tài submit kết quả nếu có >= 2 con ngựa cùng thứ hạng (nếu luật không cho phép).
 public class RefereeServiceImpl implements RefereeService {
 
     private final RaceRepository raceRepository;
@@ -4825,6 +5277,39 @@ public class RefereeServiceImpl implements RefereeService {
         // Lưu hạng 1 vào database
         winningReg.setRank(1);
         registrationRepository.save(winningReg);
+
+        String resultReportStr = "Hạng 1: " + winningReg.getHorse().getName();
+
+        if (request.getTop2RegistrationId() != null) {
+            Registration top2 = registrationRepository.findById(request.getTop2RegistrationId()).orElse(null);
+            if (top2 != null) {
+                top2.setRank(2);
+                registrationRepository.save(top2);
+                resultReportStr += ", Hạng 2: " + top2.getHorse().getName();
+            }
+        }
+
+        if (request.getTop3RegistrationId() != null) {
+            Registration top3 = registrationRepository.findById(request.getTop3RegistrationId()).orElse(null);
+            if (top3 != null) {
+                top3.setRank(3);
+                registrationRepository.save(top3);
+                resultReportStr += ", Hạng 3: " + top3.getHorse().getName();
+            }
+        }
+
+        if (request.getRefereeId() != null) {
+            User referee = userRepository.findById(request.getRefereeId()).orElse(null);
+            if (referee != null) {
+                RefereeReport resultReport = RefereeReport.builder()
+                        .race(race)
+                        .registration(winningReg) // Target as winning horse
+                        .referee(referee)
+                        .violationDetails("[KẾT QUẢ THI ĐẤU] " + resultReportStr)
+                        .build();
+                refereeReportRepository.save(resultReport);
+            }
+        }
 
         // 1. Cập nhật chỉ số cho TẤT CẢ các con ngựa tham gia
         List<Registration> allRegs = registrationRepository.findByRaceId(race.getId());
@@ -4875,6 +5360,36 @@ public class RefereeServiceImpl implements RefereeService {
 
         return "Lập biên bản và truất quyền thi đấu thành công!";
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> getAllReports() {
+        return refereeReportRepository.findAll().stream().map(report -> {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", report.getId());
+            map.put("raceName", report.getRace().getName());
+            map.put("target", report.getRegistration().getHorse().getName());
+            map.put("refereeName", report.getReferee().getUsername());
+            map.put("date", report.getCreatedAt().toString());
+            
+            String details = report.getViolationDetails();
+            String penalty = "Vi phạm";
+            String reason = details;
+            
+            if (details != null && details.startsWith("[")) {
+                int closingIndex = details.indexOf("]");
+                if (closingIndex > 0) {
+                    penalty = details.substring(1, closingIndex);
+                    reason = details.substring(closingIndex + 1).trim();
+                }
+            }
+            
+            map.put("penalty", penalty);
+            map.put("reason", reason);
+            
+            return map;
+        }).sorted((a, b) -> ((String)b.get("date")).compareTo((String)a.get("date"))).toList();
+    }
 }
 
 
@@ -4899,6 +5414,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Đăng ký Thi đấu
+    // [Tác dụng]: Kiểm tra chống trùng lặp: Kiểm tra xem con ngựa hoặc nài ngựa đó đã đăng ký chặng đua hiện tại hay chưa.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Bổ sung kiểm tra cân nặng (Weight) của nài ngựa xem có khớp chuẩn của chặng không trước khi lưu.
 public class RegistrationServiceImpl implements RegistrationService {
 
     private final RegistrationRepository registrationRepository;
@@ -5066,6 +5585,18 @@ public class RegistrationServiceImpl implements RegistrationService {
 
         // Thông báo hệ thống cho Chủ Ngựa và Nài Ngựa
         String notifyMsg = "Ngựa " + reg.getHorse().getName() + " đã bị Ban Tổ Chức loại khỏi Chặng " + race.getName() + " vì lý do: " + (reason != null ? reason : "Vi phạm nội quy");
+        
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        User currentUser = null;
+        if (auth != null && auth.getName() != null) {
+            try {
+                currentUser = userRepository.findById(Integer.parseInt(auth.getName())).orElse(null);
+            } catch (NumberFormatException e) {
+                currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+            }
+        }
+        Integer adminId = currentUser != null ? currentUser.getId() : 1;
+        
         try {
             systemAnnouncementService.createAnnouncement(
                     notifyMsg,
@@ -5073,7 +5604,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     java.util.List.of("OWNER", "JOCKEY"),
                     java.util.List.of("ACTIVE"),
                     null,
-                    null,
+                    adminId,
                     "127.0.0.1"
             );
         } catch (Exception e) {
@@ -5099,7 +5630,11 @@ public class RegistrationServiceImpl implements RegistrationService {
         org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
         User currentUser = null;
         if (auth != null && auth.getName() != null) {
-            currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+            try {
+                currentUser = userRepository.findById(Integer.parseInt(auth.getName())).orElse(null);
+            } catch (NumberFormatException e) {
+                currentUser = userRepository.findByUsername(auth.getName()).orElse(null);
+            }
         }
         if (currentUser != null) {
             RefereeReport report = RefereeReport.builder()
@@ -5144,6 +5679,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .jockeyUsername(reg.getJockey() != null ? reg.getJockey().getUsername() : null)
                 .status(reg.getStatus())
                 .note(reg.getNote())
+                .finishPosition(reg.getRank())
                 .build();
     }
 }
@@ -5173,6 +5709,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Thông báo
+    // [Tác dụng]: Lưu text và file đính kèm (nếu có) thành một thông báo public, hiển thị trên trang chủ.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Cập nhật hàm này để kết nối với Web Socket / Firebase nếu muốn Push Notification Realtime.
 public class SystemAnnouncementServiceImpl implements SystemAnnouncementService {
 
     private final SystemAnnouncementRepository announcementRepository;
@@ -5261,6 +5801,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Nội dung CMS
+    // [Tác dụng]: Tìm bài viết theo PageId (LUAT_CHOI, DIEU_KHOAN), nếu chưa có thì tạo mới, nếu có rồi thì update nội dung HTML.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hệ thống Cache (Redis) ở đây để không phải chọc vào DB liên tục khi Frontend get bài viết.
 public class SystemContentServiceImpl implements SystemContentService {
 
     private final SystemContentRepository systemContentRepository;
@@ -5347,6 +5891,10 @@ public class TournamentServiceImpl implements TournamentService {
     private final RefereeReportRepository refereeReportRepository;
 
     @Override
+    // [Chức năng rõ ràng]: Quản lý Giải đấu (Tournament)
+    // [Tác dụng]: Tạo mới một giải đấu.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi tên trường dữ liệu hoặc logic khởi tạo thêm ở đây.
     @Transactional
     public TournamentResponseDTO createTournament(TournamentRequestDTO request) {
         if (tournamentRepository.existsByName(request.getName())) {
@@ -5377,6 +5925,10 @@ public class TournamentServiceImpl implements TournamentService {
         return mapToResponseDTO(tournament);
     }
 
+    // [Chức năng rõ ràng]: Cập nhật Giải đấu
+    // [Tác dụng]: Thay đổi thông tin chung của giải đấu như tên, ngày bắt đầu, ngày kết thúc và trạng thái.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu cần chặn người dùng đổi ngày bắt đầu khi giải đã "ĐANG DIỄN RA", hãy thêm if (tournament.getStatus() == TournamentStatus.ONGOING) trước khi lưu.
     @Override
     @Transactional
     public TournamentResponseDTO updateTournament(Integer id, TournamentRequestDTO request) {
@@ -5451,6 +6003,10 @@ public class TournamentServiceImpl implements TournamentService {
         tournamentRepository.deleteById(id);
     }
 
+    // [Chức năng rõ ràng]: Hủy Giải đấu
+    // [Tác dụng]: Khóa hoặc hủy giải đấu khẩn cấp. Lệnh này sẽ duyệt qua toàn bộ các chặng đua bên trong và hủy bỏ (kèm hoàn tiền cược) nếu chúng chưa bắt đầu.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi lý do hủy mặc định ở dòng `cancelRaceLogic(...)`.
     @Override
     @Transactional
     public void cancelTournament(Integer id) {
@@ -5647,6 +6203,7 @@ public class UserServiceImpl implements UserService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
+    private final com.swp.horseracing.repository.RegistrationRepository registrationRepository;
     private final com.swp.horseracing.repository.JockeyInvitationRepository jockeyInvitationRepository;
 
     @Override
@@ -5699,6 +6256,10 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
+    // [Chức năng rõ ràng]: Đăng ký Tài khoản (User Registration)
+    // [Tác dụng]: Xử lý logic tạo tài khoản mới. Kiểm tra email, username trùng lặp. Cấp sẵn một ví 0đ. Hỗ trợ tài khoản mặc định và tài khoản chờ duyệt (KYC).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi điều kiện role cấp ngay `RoleEnum.SPECTATOR` hoặc chờ duyệt `RoleEnum.PENDING_KYC` ở đoạn switch(request.getRole()).
     @Override
     @Transactional
     public UserResponseDTO registerUser(RegisterRequestDTO request) {
@@ -5805,6 +6366,10 @@ public class UserServiceImpl implements UserService {
         return mapToResponseDTO(savedUser);
     }
 
+    // [Chức năng rõ ràng]: Đăng nhập (User Login)
+    // [Tác dụng]: Xác thực thông tin người dùng và sinh ra chuỗi mã hóa JWT token nếu hợp lệ. Ngược lại báo lỗi.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Sửa đổi cách thức kiểm tra mật khẩu (ví dụ dùng BCrypt thay vì so sánh chuỗi thường) ở dòng `!user.getPassword().equals(request.getPassword())`.
     @Override
     public UserResponseDTO loginUser(LoginRequestDTO request) {
         // ĐÃ SỬA: Hỗ trợ tìm bằng cả Email hoặc Số điện thoại
@@ -5901,6 +6466,10 @@ public class UserServiceImpl implements UserService {
         return mapToResponseDTO(userRepository.save(user));
     }
 
+    // [Chức năng rõ ràng]: Phê duyệt KYC / Khóa tài khoản
+    // [Tác dụng]: Cho phép Admin thay đổi trạng thái user (từ PENDING_KYC sang APPROVED, hoặc khóa tài khoản BANNED).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Thêm điều kiện gửi email thông báo sau khi duyệt tài khoản thành công bên trong khối `if (status == UserStatus.APPROVED)`.
     @Override
     @Transactional
     public UserResponseDTO updateUserStatus(Integer id, UserStatus status) {
@@ -5928,8 +6497,7 @@ public class UserServiceImpl implements UserService {
                             .type(TransactionType.DEPOSIT)
                             .direction(TransactionDirection.IN)
                             .status(TransactionStatus.COMPLETED)
-                            // Xóa trường reason vì không tồn tại trong DB
-                            .build();
+                                            .build();
                     transactionHistoryRepository.save(tx);
                 }
             }
@@ -6026,6 +6594,45 @@ public class UserServiceImpl implements UserService {
                         .build())
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<java.util.Map<String, Object>> getMyJockeyRewards(Integer userId) {
+        List<Registration> regs = registrationRepository.findAll().stream()
+                .filter(r -> r.getJockey() != null && r.getJockey().getId().equals(userId))
+                .filter(r -> r.getRank() != null && r.getRank() <= 3)
+                .filter(r -> r.getRace().getStatus() == com.swp.horseracing.model.RaceStatus.COMPLETED)
+                .sorted((a, b) -> b.getRace().getRaceTime().compareTo(a.getRace().getRaceTime()))
+                .collect(java.util.stream.Collectors.toList());
+
+        List<java.util.Map<String, Object>> rewards = new java.util.ArrayList<>();
+        for (Registration reg : regs) {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", reg.getId());
+            map.put("raceName", reg.getRace().getName());
+            map.put("horseName", reg.getHorse().getName());
+            map.put("rank", reg.getRank());
+            map.put("date", reg.getRace().getRaceTime().toString());
+
+            java.math.BigDecimal fixedPrize = java.math.BigDecimal.ZERO;
+            if (reg.getRank() == 1 && reg.getRace().getPrize1() != null) fixedPrize = reg.getRace().getPrize1();
+            if (reg.getRank() == 2 && reg.getRace().getPrize2() != null) fixedPrize = reg.getRace().getPrize2();
+            if (reg.getRank() == 3 && reg.getRace().getPrize3() != null) fixedPrize = reg.getRace().getPrize3();
+            
+            java.math.BigDecimal jockeyFixed = fixedPrize.multiply(new java.math.BigDecimal("0.30")).setScale(2, java.math.RoundingMode.HALF_UP);
+            java.math.BigDecimal jockeyPool = java.math.BigDecimal.ZERO;
+            
+            if (reg.getRank() == 1) {
+                java.math.BigDecimal totalPool = betRepository.findByRaceId(reg.getRace().getId()).stream()
+                        .map(com.swp.horseracing.model.Bet::getAmount)
+                        .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+                jockeyPool = totalPool.multiply(new java.math.BigDecimal("0.30")).setScale(2, java.math.RoundingMode.HALF_UP);
+            }
+            
+            map.put("reward", jockeyFixed.add(jockeyPool));
+            rewards.add(map);
+        }
+        return rewards;
+    }
 }
 
 
@@ -6067,6 +6674,10 @@ public class WalletServiceImpl implements WalletService {
         });
     }
 
+    // [Chức năng rõ ràng]: Nạp tiền ảo (Deposit)
+    // [Tác dụng]: Hàm giả lập nạp tiền vào ví của user. Tự động sinh mã giao dịch (DP-...) và lưu lịch sử cộng tiền.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu sau này tích hợp VNPay/Momo, hãy thay thế logic cộng tiền trực tiếp bằng cách tạo hóa đơn Pending và chỉ cộng tiền sau khi VNPay trả về callback thành công.
     @Override
     @Transactional
     public Wallet depositMoney(Integer userId, BigDecimal amount) {
@@ -6090,6 +6701,10 @@ public class WalletServiceImpl implements WalletService {
         return savedWallet;
     }
 
+    // [Chức năng rõ ràng]: Yêu cầu Rút tiền thật (Withdraw)
+    // [Tác dụng]: Trừ tiền trong ví ngay lập tức, và tạo một bản ghi Giao Dịch ở trạng thái PENDING để chờ Admin chuyển khoản thật và duyệt.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Để thay đổi mức rút tiền tối thiểu, hãy sửa giá trị `100000` ở điều kiện check phía dưới.
     @Override
     @Transactional
     public String requestWithdrawal(Integer userId, BigDecimal amount, String bankName, String accNumber, String accName) {
@@ -6138,6 +6753,10 @@ package com.swp.horseracing.service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
+    // [Chức năng rõ ràng]: Interface Service Quản lý Giao dịch (Admin)
+    // [Tác dụng]: Định nghĩa các hàm lấy danh sách Nạp/Rút để Admin xem và phê duyệt.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm khai báo hàm xuất file Excel ở đây.
 public interface AdminTransactionService {
     String completeWithdrawal(Integer transactionId, MultipartFile proofFile);
     Map<String, Object> getFinanceDashboard();
@@ -6155,6 +6774,10 @@ package com.swp.horseracing.service;
 import com.swp.horseracing.model.Bet;
 import com.swp.horseracing.dto.BetRequestDTO;
 
+    // [Chức năng rõ ràng]: Interface Service Đặt Cược
+    // [Tác dụng]: Định nghĩa hàm tạo vé cược cho người chơi.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm hủy cược nếu cần.
 public interface BetService {
     Bet createBet(BetRequestDTO request);
 }
@@ -6168,6 +6791,10 @@ package com.swp.horseracing.service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Lưu trữ File
+    // [Tác dụng]: Định nghĩa hàm upload file (ảnh, video) lên Cloudinary.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm xóa file khỏi Cloudinary.
 public interface FileStorageService {
     String storeFile(MultipartFile file);
     String storeFile(MultipartFile file, String subFolder); // Bổ sung hàm có thư mục con
@@ -6186,6 +6813,10 @@ import com.swp.horseracing.dto.HorseRequestDTO;
 import com.swp.horseracing.dto.HorseResponseDTO;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Quản lý Ngựa
+    // [Tác dụng]: Định nghĩa các hàm CRUD ngựa, duyệt ngựa cho Admin/Chủ ngựa.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Khai báo thêm hàm tìm kiếm ngựa theo độ tuổi.
 public interface HorseService {
     HorseResponseDTO createHorse(HorseRequestDTO request);
     List<HorseResponseDTO> getAllHorses();
@@ -6206,6 +6837,10 @@ import com.swp.horseracing.dto.InvitationRequestDTO;
 import com.swp.horseracing.dto.InvitationResponseDTO;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Lời mời Nài Ngựa
+    // [Tác dụng]: Định nghĩa luồng Gửi - Nhận - Từ chối - Hủy lời mời.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm khai báo hàm đếm lời mời chưa đọc.
 public interface JockeyInvitationService {
     InvitationResponseDTO createInvitation(InvitationRequestDTO request);
     InvitationResponseDTO acceptInvitation(Integer id);
@@ -6229,6 +6864,10 @@ package com.swp.horseracing.service;
 import com.swp.horseracing.dto.DepositRequestDTO;
 import com.swp.horseracing.dto.PaymentResponseDTO;
 
+    // [Chức năng rõ ràng]: Interface Service Thanh toán
+    // [Tác dụng]: Định nghĩa hàm tạo mã QR nạp tiền (VietQR).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm tạo Request gửi sang VNPay/Momo.
 public interface PaymentService {
     PaymentResponseDTO createDepositQR(DepositRequestDTO request);
 }
@@ -6245,6 +6884,10 @@ import com.swp.horseracing.dto.RaceResponseDTO;
 
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Chặng đua
+    // [Tác dụng]: Định nghĩa hàm tạo, sửa, xóa, và kích hoạt trả thưởng chặng đua.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm cập nhật thời tiết cho chặng đua.
 public interface RaceService {
     RaceResponseDTO createRace(RaceRequestDTO request);
     List<RaceResponseDTO> getAllRaces();
@@ -6271,9 +6914,14 @@ package com.swp.horseracing.service;
 import com.swp.horseracing.dto.RefereeReportRequestDTO;
 import com.swp.horseracing.dto.RefereeResultRequestDTO;
 
+    // [Chức năng rõ ràng]: Interface Service Trọng tài
+    // [Tác dụng]: Định nghĩa hàm nộp kết quả và nộp báo cáo.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm để trọng tài sửa lại kết quả nếu nhập sai (trước khi chia thưởng).
 public interface RefereeService {
     String submitRaceResult(RefereeResultRequestDTO request);
     String submitReport(RefereeReportRequestDTO request);
+    java.util.List<java.util.Map<String, Object>> getAllReports();
 }
 
 
@@ -6288,6 +6936,10 @@ import com.swp.horseracing.dto.RegistrationRequestDTO;
 import com.swp.horseracing.dto.RegistrationResponseDTO;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Đăng ký Thi đấu
+    // [Tác dụng]: Định nghĩa hàm đăng ký suất chạy cho ngựa và nài.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm rút lui khỏi chặng đua.
 public interface RegistrationService {
     RegistrationResponseDTO createRegistration(RegistrationRequestDTO request);
     List<RegistrationResponseDTO> getAllRegistrations();
@@ -6311,6 +6963,10 @@ import com.swp.horseracing.model.AnnouncementCategory;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Thông báo
+    // [Tác dụng]: Định nghĩa hàm tạo và lấy danh sách thông báo.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm gửi thông báo qua Email.
 public interface SystemAnnouncementService {
     SystemAnnouncementDTO createAnnouncement(
             String content,
@@ -6337,6 +6993,10 @@ import com.swp.horseracing.dto.SystemContentDTO;
 
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Nội dung Tĩnh
+    // [Tác dụng]: Định nghĩa hàm lấy và cập nhật bài viết HTML.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Khai báo thêm hàm xóa bài viết.
 public interface SystemContentService {
     SystemContentDTO getContentByPageId(String pageId);
     SystemContentDTO updateContent(String pageId, SystemContentDTO request);
@@ -6355,6 +7015,10 @@ import com.swp.horseracing.dto.TournamentRequestDTO;
 import com.swp.horseracing.dto.TournamentResponseDTO;
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Giải đấu
+    // [Tác dụng]: Định nghĩa hàm CRUD giải đấu, và hàm Hủy giải hoàn tiền.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Khai báo thêm hàm sao chép giải đấu cũ.
 public interface TournamentService {
     TournamentResponseDTO createTournament(TournamentRequestDTO request);
     List<TournamentResponseDTO> getAllTournaments();
@@ -6383,6 +7047,10 @@ import com.swp.horseracing.model.UserStatus;
 
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Quản lý User
+    // [Tác dụng]: Định nghĩa các hàm CRUD User, lấy lịch sử ví, duyệt tài khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm đặt lại mật khẩu bằng Token.
 public interface UserService {
     UserResponseDTO registerUser(RegisterRequestDTO request);
 
@@ -6399,6 +7067,7 @@ public interface UserService {
 
     List<BetHistoryResponseDTO> getMyBets(Integer userId);
     List<TransactionHistoryResponseDTO> getMyTransactions(Integer userId);
+    List<java.util.Map<String, Object>> getMyJockeyRewards(Integer userId);
 
     List<com.swp.horseracing.dto.JockeyMarketResponseDTO> getJockeyMarket();
 }
@@ -6413,6 +7082,10 @@ package com.swp.horseracing.service;
 import com.swp.horseracing.model.Wallet;
 import java.math.BigDecimal;
 
+    // [Chức năng rõ ràng]: Interface Service Ví tiền
+    // [Tác dụng]: Định nghĩa hàm nạp, rút và lấy số dư ví.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm chuyển tiền nội bộ giữa các User.
 public interface WalletService {
     Wallet getWalletByUserId(Integer userId);
     Wallet depositMoney(Integer userId, BigDecimal amount);
@@ -6431,6 +7104,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @org.springframework.scheduling.annotation.EnableScheduling
+    // [Chức năng rõ ràng]: Class Khởi chạy Ứng dụng (Main Class)
+    // [Tác dụng]: Đây là trái tim của hệ thống Backend, nơi Spring Boot bắt đầu khởi động. Nó bao gồm hàm `main`, cấu hình múi giờ (Timezone) mặc định về Việt Nam và một đoạn code `CommandLineRunner` để tự động fix data cũ lúc khởi động.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu không cần chạy đoạn code tự động sửa data `initDummyAttachments` nữa, hãy comment hàm đó lại để ứng dụng khởi động nhanh hơn.
 public class HorseracingApplication {
 
 	@jakarta.annotation.PostConstruct
@@ -6526,18 +7203,15 @@ TÊN FILE: D:\SWP\horse-racing-system\frontend\src\components\layout\Footer.jsx
 =========================================
 import React from 'react';
 import { Row, Col, Typography, Space, Divider } from 'antd';
-import { 
-    SafetyCertificateOutlined, 
-    BankOutlined, 
-    CustomerServiceOutlined, 
-    WarningOutlined,
-    MailOutlined,
-    PhoneOutlined
-} from '@ant-design/icons';
+import { BankOutlined, CustomerServiceOutlined, WarningOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Component Chân trang (Footer)
+// [Tác dụng]: Hiển thị phần chân trang ở giao diện người dùng public, chứa thông tin bản quyền và liên hệ.
+// [Hướng dẫn sửa đổi]:
+// - UI/Style: Đổi màu nền ở class `bg-gray-900`, thay đổi nội dung text ở các thẻ `<p>`.
 const Footer = () => {
     return (
         <div className="bg-[#001529] text-slate-200 py-12 px-6 lg:px-20 border-t border-gray-800 mt-auto">
@@ -6660,17 +7334,21 @@ export default Footer;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\components\layout\Header.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Layout, Dropdown, Avatar, Tag, Badge, Popover, List, Typography } from 'antd';
+import { Layout, Dropdown, Avatar, Tag, Badge, Popover, List } from 'antd';
 import { UserOutlined, LogoutOutlined, WalletOutlined, BellOutlined, NotificationOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+
 import api from '../../config/api';
 import dayjs from 'dayjs';
 
 const { Header: AntHeader } = Layout;
-const { Text } = Typography;
 
+
+// [Chức năng rõ ràng]: Component Đầu trang (Header cho User Đăng nhập)
+// [Tác dụng]: Thanh điều hướng chính chứa Avatar, Số dư ví, Nút nạp tiền, Thông báo hệ thống và Menu đăng xuất.
+// [Hướng dẫn sửa đổi]:
+// - Logic/UI: Thêm menu con vào biến `profileMenuItems`. Sửa cách lấy số dư ở `fetchWalletBalance`.
 const Header = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth() || {};
@@ -6880,6 +7558,10 @@ import { useAuth } from '../../context/AuthContext';
 
 const { Content, Sider } = Layout;
 
+// [Chức năng rõ ràng]: Component Khung Giao diện chung (Layout)
+// [Tác dụng]: Bao bọc tất cả các trang bên trong. Gắn `Header` ở trên, `Footer` ở dưới và thẻ `<Outlet>` để render ruột của trang (React Router).
+// [Hướng dẫn sửa đổi]:
+// - UI: Thêm Sidebar (thanh bên) vào layout này nếu muốn đổi thiết kế.
 const MainLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const navigate = useNavigate();
@@ -6994,6 +7676,10 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const { Text } = Typography;
 
+// [Chức năng rõ ràng]: Component Đầu trang (Header Public)
+// [Tác dụng]: Hiển thị thanh điều hướng cho Khách (Guest) chưa đăng nhập, chứa nút Đăng nhập / Đăng ký.
+// [Hướng dẫn sửa đổi]:
+// - UI: Thay logo hoặc màu sắc ở class `bg-white/10`.
 const PublicHeader = () => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -7088,6 +7774,10 @@ TÊN FILE: D:\SWP\horse-racing-system\frontend\src\config\api.js
 import axios from 'axios';
 import { getToken } from '../utils/auth';
 
+// [Chức năng rõ ràng]: Cấu hình Axios gọi API (Frontend)
+// [Tác dụng]: Định nghĩa URL gốc của Backend để Frontend gọi tới, không cần phải gõ lại link dài dòng ở mỗi file.
+// [Hướng dẫn sửa đổi]:
+// - Logic/Data: Nếu Backend thay đổi domain (chuyển nhà cung cấp) hoặc bạn chạy ở Localhost, hãy sửa đường link `baseURL` này thành `http://localhost:8080/api`.
 const api = axios.create({
     // FIX: Bỏ qua biến môi trường bị cấu hình sai trên Vercel, dùng thẳng link gốc đáng tin cậy.
     baseURL: 'https://horse-racing-system-production-492c.up.railway.app/api',
@@ -7130,7 +7820,11 @@ import { createContext, useState, useContext, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
-export const AuthProvider = ({ children }) => {
+export // [Chức năng rõ ràng]: Provider Quản lý Trạng thái Đăng nhập
+// [Tác dụng]: Dùng React Context API để lưu giữ cục bộ thông tin `user` (id, role, token) và hàm `login/logout`. Giúp các Component con truy xuất dễ dàng mà không cần truyền Props liên tục.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Đổi từ lưu trữ `localStorage` sang `sessionStorage` hoặc Cookie nếu cần tăng bảo mật.
+const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -7280,6 +7974,10 @@ const AdminContentPage = () => {
         fetchContent(pageId);
     }, [pageId]);
 
+    // [Chức năng rõ ràng]: Lấy nội dung trang
+    // [Tác dụng]: Fetch API để lấy nội dung (HTML cho bài viết hoặc JSON cho FAQ) dựa vào pageId đang chọn.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint lưu trữ nội dung public, sửa URL `/public/content/${id}`.
     const fetchContent = async (id) => {
         try {
             setLoading(true);
@@ -7293,6 +7991,11 @@ const AdminContentPage = () => {
         }
     };
 
+    // [Chức năng rõ ràng]: Lưu nội dung tĩnh (CMS)
+    // [Tác dụng]: Gọi API PUT để lưu lại nội dung chỉnh sửa (từ Quill Editor hoặc mảng FAQ) vào database.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API lưu ở `api.put('/content')`. Đổi tiêu đề mặc định khi tạo mới nội dung ở `titleMap`.
+    // - UI (CSS/Style): Đổi câu thông báo thành công ở `message.success(...)`.
     const handleSave = async () => {
         try {
             setSaving(true);
@@ -7408,6 +8111,10 @@ const AdminFinancePage = () => {
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
 
+    // [Chức năng rõ ràng]: Lấy Dữ liệu Tài chính
+    // [Tác dụng]: Gọi API để lấy toàn bộ danh sách giao dịch, đồng thời lấy các chỉ số GGR (Gross Gaming Revenue), NGR (Net Gaming Revenue), Tax (Thuế).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi đường dẫn API thống kê tại `api.get('/admin/finance/dashboard')`.
     const fetchTransactions = async () => {
         setLoading(true);
         try {
@@ -7433,6 +8140,11 @@ const AdminFinancePage = () => {
         return e?.fileList;
     };
 
+    // [Chức năng rõ ràng]: Xử lý Duyệt/Từ chối Rút tiền
+    // [Tác dụng]: Gửi quyết định phê duyệt hoặc từ chối lệnh rút tiền của người dùng lên server kèm hình ảnh biên lai (nếu có).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API xử lý rút tiền ở `api.post('/admin/finance/approve-withdraw')`.
+    // - UI (CSS/Style): Cập nhật thông báo sau khi duyệt xong tại `message.success(...)`.
     const handleConfirmWithdraw = async (values) => {
         setSubmitting(true);
         try {
@@ -7595,6 +8307,10 @@ import api from "../../config/api.js";
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Duyệt Ngựa (Admin)
+// [Tác dụng]: Danh sách các chú ngựa do Chủ ngựa mới tạo (Trạng thái PENDING). Admin có thể xem giấy khai sinh, hồ sơ thú y và bấm Duyệt/Từ chối.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Bổ sung input nhập lý do từ chối (Reject Reason) khi bấm nút Từ chối.
 const RenderFilesStatus = ({ urls }) => {
     if (!urls || urls.length === 0) return <Tag color="red" className="m-0">Chưa bổ sung</Tag>;
     return <Tag color="green">Đã nộp ({urls.length} tệp)</Tag>;
@@ -7816,6 +8532,11 @@ const AdminKycApprovalPage = () => {
     }, []);
 
     // 2. Hàm gọi API Update (Chỉ gửi đúng cái Status, vì BE của sếp đã check != null)
+    // [Chức năng rõ ràng]: Xử lý Duyệt/Từ chối Hồ sơ KYC
+    // [Tác dụng]: Gửi yêu cầu cập nhật trạng thái người dùng (từ PENDING sang APPROVED hoặc REJECTED).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API xử lý trạng thái user ở `api.put('/users/${userId}/status')`.
+    // - UI (CSS/Style): Sửa câu thông báo thành công ở `message.success(...)`.
     const handleApproval = async (userId, newStatus) => {
         try {
             await api.put(`/users/${userId}`, { status: newStatus });
@@ -8001,7 +8722,11 @@ const AdminKycApprovalPage = () => {
                 />
 
                 {/* Modal Xem Ảnh Trực Tiếp */}
-                <Modal
+                {/* [Chức năng rõ ràng]: Modal Phê duyệt & Xem ảnh căn cước (KYC) */}
+            {/* [Tác dụng]: Hiển thị popup chứa ảnh CMND/CCCD to rõ ràng và 2 nút bấm Duyệt / Từ Chối. */}
+            {/* [Hướng dẫn sửa đổi]: */}
+            {/* - UI (CSS/Style): Sửa màu sắc nút Từ chối ở thuộc tính `danger`, nút Duyệt ở class `bg-green-600`. */}
+            <Modal
                     title={<span className="text-xl font-bold">Hồ sơ KYC: {currentUser?.username}</span>}
                     open={isModalVisible}
                     onCancel={() => setIsModalVisible(false)}
@@ -8038,18 +8763,17 @@ export default AdminKycApprovalPage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\admin\AdminLayout.jsx
 =========================================
 import React, { useState } from 'react';
-import { Layout, Menu, Avatar, Space, Typography, Dropdown } from 'antd';
-import {
-    TrophyOutlined, LogoutOutlined, UserOutlined, SettingOutlined,
-    FileSearchOutlined, TeamOutlined, DollarOutlined,
-    MenuFoldOutlined, MenuUnfoldOutlined,
-    NotificationOutlined, EditOutlined
-} from '@ant-design/icons';
+import { Layout, Menu, Avatar, Space, Dropdown } from 'antd';
+import { TrophyOutlined, LogoutOutlined, UserOutlined, SettingOutlined, FileSearchOutlined, TeamOutlined, DollarOutlined, NotificationOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 
 const { Header, Sider, Content } = Layout;
 
+// [Chức năng rõ ràng]: Khung Giao diện Admin (Admin Layout)
+// [Tác dụng]: Chứa Menu bên trái (Sidebar) dùng cho mọi trang Quản trị, định nghĩa các đường dẫn (Routes) của Admin.
+// [Hướng dẫn sửa đổi]:
+// - UI: Chỉnh sửa mảng `menuItems` để thêm/bớt các mục trên thanh Sidebar bên trái.
 const AdminLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const { user, logout } = useAuth();
@@ -8150,6 +8874,10 @@ const CATEGORIES = {
     WARNING: { label: 'Cảnh báo', color: 'orange' },
 };
 
+// [Chức năng rõ ràng]: Trang Quản lý Thông báo (Admin)
+// [Tác dụng]: Cho phép Admin soạn thảo văn bản, gửi Thông báo Hệ thống (System Announcement) tới tất cả người dùng hoặc một nhóm Role cụ thể.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Nếu muốn hỗ trợ soạn thảo HTML (Rich Text Editor), hãy thay `<TextArea>` bằng một thư viện như ReactQuill.
 const AdminNewsPage = () => {
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('SYSTEM');
@@ -8374,8 +9102,8 @@ export default AdminNewsPage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\admin\AdminTournamentPage.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert } from 'antd';
-import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, Avatar } from 'antd';
+import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined, CrownOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
 
@@ -8402,13 +9130,21 @@ const AdminTournamentPage = () => {
     const [withdrawReason, setWithdrawReason] = useState('');
     const [selectedRegIdForWithdraw, setSelectedRegIdForWithdraw] = useState(null);
     const [raceRegistrations, setRaceRegistrations] = useState([]);
-    const [selectedRaceForWithdraw, setSelectedRaceForWithdraw] = useState(null);
+    const [isResultModalVisible, setIsResultModalVisible] = useState(false);
+    const [selectedRaceForResults, setSelectedRaceForResults] = useState(null);
+    const [raceResults, setRaceResults] = useState([]);
 
     const fetchTournaments = async () => {
         setLoading(true);
         try {
             const response = await api.get('/tournaments');
-            setTournaments(response.data.map(tour => ({ ...tour, races: [] })));
+            const sortedTournaments = response.data.map(tour => ({ ...tour, races: [] })).sort((a, b) => {
+                const statusOrder = { ONGOING: 1, UPCOMING: 2, COMPLETED: 3, POSTPONED: 4, CANCELED: 5 };
+                const orderA = statusOrder[a.status] || 99;
+                const orderB = statusOrder[b.status] || 99;
+                return orderA - orderB;
+            });
+            setTournaments(sortedTournaments);
         } catch (error) {
             message.error('Không thể tải danh sách Giải đấu!');
         } finally {
@@ -8543,6 +9279,11 @@ const AdminTournamentPage = () => {
         setIsRaceModalVisible(true);
     };
 
+    // [Chức năng rõ ràng]: Xử lý trả thưởng (Payout)
+    // [Tác dụng]: Gửi yêu cầu lên Backend để chia tiền thưởng cho những khán giả cược trúng ngựa hạng 1.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API trả thưởng, sửa `/races/${raceId}/payout`.
+    // - UI (CSS/Style): Đổi câu thông báo thành công ở `message.success(...)`.
     const handlePayout = async (raceId) => {
         try {
             await api.post(`/races/${raceId}/payout`);
@@ -8586,6 +9327,19 @@ const AdminTournamentPage = () => {
             setRaceRegistrations(response.data);
         } catch (e) {
             message.error(extractError(e));
+        }
+    };
+
+    const handleViewResult = async (race) => {
+        try {
+            setSelectedRaceForResults(race);
+            const response = await api.get('/registrations', { params: { raceId: race.id } });
+            const finished = response.data.filter(r => r.finishPosition != null);
+            finished.sort((a, b) => a.finishPosition - b.finishPosition);
+            setRaceResults(finished);
+            setIsResultModalVisible(true);
+        } catch (e) {
+            message.error("Lỗi lấy dữ liệu kết quả!");
         }
     };
 
@@ -8637,9 +9391,16 @@ const AdminTournamentPage = () => {
                         )}
                         <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>Loại Ngựa</Button>
                         <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openEditRaceModal(record)}>Thiết Lập</Button>
+                        {(record.status === 'RESULT_CONFIRMED' || record.status === 'COMPLETED') && (
+                            <Button size="small" type="dashed" className="text-blue-600 font-bold" onClick={() => handleViewResult(record)}>🏆 XEM KẾT QUẢ</Button>
+                        )}
+                        {/* [Chức năng rõ ràng]: Nút thao tác nhanh của Trạng thái ĐÃ CÓ KẾT QUẢ */}
+                        {/* [Tác dụng]: Hiển thị nút Xác nhận trả thưởng để admin bấm chốt tiền. Nút này gọi 2 API tuần tự: trả thưởng và ép kết thúc chặng. */}
+                        {/* [Hướng dẫn sửa đổi]: */}
+                        {/* - UI (CSS/Style): Sửa màu sắc nút ở className `bg-blue-600`. Sửa chữ thông báo Popconfirm ở thuộc tính `title`. */}
                         {record.status === 'RESULT_CONFIRMED' && (
-                            <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={() => { handlePayout(record.id); handleForceTransition(record, 'COMPLETED'); }}>
-                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
+                            <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={async () => { await handlePayout(record.id); await handleForceTransition(record, 'COMPLETED'); }}>
+                                <Button size="small" type="primary" className="font-bold bg-blue-600">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
                             </Popconfirm>
                         )}
                         {(record.status === 'REGISTRATION' || record.status === 'BETTING' || record.status === 'LOCK_SESSION') && (
@@ -8679,7 +9440,6 @@ const AdminTournamentPage = () => {
                     <Col><Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => { setEditingTourId(null); tourForm.resetFields(); setIsTourModalVisible(true); }}>Tạo Giải Đấu Mới</Button></Col>
                 </Row>
                 <Table columns={[
-                    { title: 'ID', dataIndex: 'id' },
                     { title: 'Tên Giải Đấu', dataIndex: 'name', render: t => <Text strong className="text-blue-700 text-lg">{t}</Text> },
                     { title: 'Thời Gian Tổ Chức', render: (_, r) => `${dayjs(r.startDate).format('DD/MM/YYYY')} - ${dayjs(r.endDate).format('DD/MM/YYYY')}` },
                     {
@@ -8868,6 +9628,51 @@ const AdminTournamentPage = () => {
                     </Button>
                 </Form>
             </Modal>
+
+            {/* [Chức năng rõ ràng]: Modal hiển thị bảng Kết quả chặng đua */}
+            {/* [Tác dụng]: Popup mở lên khi bấm "XEM KẾT QUẢ", render danh sách ngựa xếp hạng 1, 2, 3 kèm ảnh đại diện. */}
+            {/* [Hướng dẫn sửa đổi]: */}
+            {/* - UI (CSS/Style): Để đổi icon cup vàng, thay `<TrophyOutlined />` ở thuộc tính `title`. */}
+            {/* - UI (CSS/Style): Để đổi màu sắc vòng tròn thứ hạng (Hạng 1 Vàng, 2 Bạc, 3 Đồng), tìm mảng điều kiện `item.finishPosition === 1 ? '#FBBF24' : ...` bên dưới. */}
+            <Modal
+                title={<span className="text-xl text-yellow-600 font-black tracking-wider"><TrophyOutlined /> KẾT QUẢ CHẶNG ĐUA: {selectedRaceForResults?.name}</span>}
+                open={isResultModalVisible}
+                onCancel={() => setIsResultModalVisible(false)}
+                footer={[<Button key="close" onClick={() => setIsResultModalVisible(false)}>Đóng</Button>]}
+                centered
+            >
+                {raceResults.length === 0 ? (
+                    <div className="p-8 text-center"><Text type="secondary">Chưa có kết quả hoặc lỗi hiển thị.</Text></div>
+                ) : (
+                    <List
+                        itemLayout="horizontal"
+                        dataSource={raceResults}
+                        renderItem={(item) => (
+                            <List.Item className="bg-gray-50 rounded-lg mb-2 px-4 shadow-sm border border-gray-100">
+                                <List.Item.Meta
+                                    avatar={
+                                        <div className="relative">
+                                            <Avatar size="large" src={item.horseImageUrl || 'https://joeschmoe.io/api/v1/random'} className="shadow-md" />
+                                            <div className="absolute -bottom-2 -right-2 rounded-full w-7 h-7 flex items-center justify-center text-white font-black shadow-md border-2 border-white"
+                                                style={{ backgroundColor: item.finishPosition === 1 ? '#FBBF24' : item.finishPosition === 2 ? '#9CA3AF' : item.finishPosition === 3 ? '#B45309' : '#374151' }}>
+                                                {item.finishPosition}
+                                            </div>
+                                        </div>
+                                    }
+                                    title={<Text strong className="text-lg">{item.horseName}</Text>}
+                                    description={
+                                        <div>
+                                            <Text type="secondary"><UserOutlined/> Nài: {item.jockeyUsername || 'Không rõ'}</Text>
+                                            <br/>
+                                            <Text type="secondary"><CrownOutlined/> Chủ: {item.ownerUsername}</Text>
+                                        </div>
+                                    }
+                                />
+                            </List.Item>
+                        )}
+                    />
+                )}
+            </Modal>
         </div>
     );
 };
@@ -8904,6 +9709,10 @@ const AdminUserManagementPage = () => {
     const [notifyType, setNotifyType] = useState('AUTO');
     const [customMessage, setCustomMessage] = useState('');
 
+    // [Chức năng rõ ràng]: Lấy danh sách Người Dùng
+    // [Tác dụng]: Gọi API để fetch toàn bộ người dùng từ Backend và lưu vào state `users`.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API danh sách tài khoản, sửa `/users`.
     const fetchUsers = async () => {
         setLoading(true);
         try {
@@ -8920,6 +9729,11 @@ const AdminUserManagementPage = () => {
         fetchUsers();
     }, []);
 
+    // [Chức năng rõ ràng]: Đổi trạng thái Tài Khoản
+    // [Tác dụng]: Gửi yêu cầu Khóa (BANNED) hoặc Mở khóa (APPROVED) tài khoản người dùng đang chọn.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Thay đổi API cập nhật trạng thái ở `api.put('/users/${userId}/status')`.
+    // - UI (CSS/Style): Sửa câu thông báo thành công ở `message.success(...)`.
     const handleStatusChange = async (userId, newStatus) => {
         try {
             await api.put(`/users/${userId}/status`, { status: newStatus });
@@ -9207,6 +10021,10 @@ import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quản lý Lời mời (Nài Ngựa)
+// [Tác dụng]: Hiển thị danh sách các Chủ ngựa muốn thuê Nài ngựa này. Nài ngựa có thể Bấm Chấp nhận (Accept) hoặc Từ chối (Reject).
+// [Hướng dẫn sửa đổi]:
+// - Logic: Gọi API `/jockey-invitations/{id}/accept` khi bấm nút. UI: Đổi icon/màu nút ở cột Action của Ant Design Table.
 const JockeyInvitationPage = () => {
     const { user } = useAuth();
     const [invitations, setInvitations] = useState([]);
@@ -9235,7 +10053,9 @@ const JockeyInvitationPage = () => {
             message.success(action === 'accept' ? 'Đã NHẬN lời mời thi đấu!' : 'Đã TỪ CHỐI lời mời thi đấu!');
             fetchMyInvitations();
         } catch (error) {
-            message.error(error.response?.data?.message || error.response?.data || 'Có lỗi xảy ra!');
+            const errData = error.response?.data;
+            const errorMsg = errData?.error || errData?.message || (typeof errData === 'string' ? errData : 'Có lỗi xảy ra!');
+            message.error(errorMsg);
         }
     };
 
@@ -9296,7 +10116,7 @@ export default JockeyInvitationPage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\owner\OwnerHorseManagementPage.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Input, InputNumber, Popconfirm, Row, Col, Progress, Upload } from 'antd';
+import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Input, InputNumber, Popconfirm, Row, Col, Upload } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, AppstoreAddOutlined, HistoryOutlined, UploadOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import { useAuth } from '../../context/AuthContext';
@@ -9304,6 +10124,10 @@ import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quản lý Ngựa (Chủ Ngựa)
+// [Tác dụng]: Bảng danh sách ngựa thuộc sở hữu của User này. Chứa Form Upload ảnh, giấy tờ để đăng ký ngựa mới chờ Admin duyệt.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Sửa hàm `handleUpload` nếu đổi API. UI: Thêm cột hiển thị tỷ lệ thắng của ngựa vào Table.
 const RenderFilesStatus = ({ horse }) => {
     const hasRealImage = horse?.realImageUrls?.length > 0;
     const hasCert = horse?.certDocumentUrls?.length > 0;
@@ -9514,12 +10338,16 @@ export default OwnerHorseManagementPage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\owner\OwnerJockeyDirectoryPage.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, Card, Typography, Row, Col, Avatar, message } from 'antd';
-import { TeamOutlined, UserOutlined, MessageOutlined } from '@ant-design/icons';
+import { Table, Tag, Card, Typography, Row, Col, Avatar, message } from 'antd';
+import { TeamOutlined, UserOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Danh bạ Nài Ngựa
+// [Tác dụng]: Hiển thị danh sách tất cả các Nài ngựa trong hệ thống để Chủ ngựa xem thông tin (kinh nghiệm, cân nặng) và gửi lời mời thuê.
+// [Hướng dẫn sửa đổi]:
+// - UI: Sửa giao diện dạng Card thay vì Table nếu muốn hiển thị hình ảnh Nài ngựa to hơn.
 const OwnerJockeyDirectoryPage = () => {
     const [jockeys, setJockeys] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -9587,7 +10415,7 @@ export default OwnerJockeyDirectoryPage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\owner\OwnerRaceRegistrationPage.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Alert, Tabs } from 'antd';
+import { Table, Button, Tag, message, Card, Typography, Modal, Form, Select, Row, Col, Alert, Tabs } from 'antd';
 import { FlagOutlined, UserAddOutlined, SendOutlined, HistoryOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
@@ -9597,6 +10425,10 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { TabPane } = Tabs;
 
+// [Chức năng rõ ràng]: Trang Đăng ký Thi đấu (Chủ Ngựa)
+// [Tác dụng]: Nơi Chủ ngựa chọn (Ngựa + Nài ngựa đã đồng ý) để ghép vào một Chặng đua (Race) cụ thể đang mở đăng ký.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API gọi hàm `post` tới `/registrations`. UI: Tùy chỉnh màu sắc bảng chọn ngựa.
 const OwnerRaceRegistrationPage = () => {
     const { user } = useAuth();
     const currentOwnerId = user?.id;
@@ -9856,249 +10688,11 @@ export default OwnerRaceRegistrationPage;
 
 
 =========================================
-TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\payment\PaymentQRPage.jsx
-=========================================
-import React, { useState } from 'react';
-import { Card, Typography, InputNumber, Button, Row, Col, Space, Alert, Form, Input, message, Result, Divider, Tag } from 'antd';
-import { QrcodeOutlined, CopyOutlined, CheckCircleOutlined, WalletOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { useAuth } from '../../context/AuthContext';
-import api from "../../config/api.js"; // Import axios instance cấu hình sẵn của dự án
-
-const { Title, Text } = Typography;
-
-const PaymentQRPage = () => {
-    const { user } = useAuth(); // Lấy thông tin user hiện tại đang đăng nhập
-    const [loading, setLoading] = useState(false);
-    const [submittingProof, setSubmittingProof] = useState(false);
-    const [amount, setAmount] = useState(50000); // Mặc định gợi ý nạp 50k
-    const [paymentData, setPaymentData] = useState(null); // Lưu thông tin QR trả về từ backend
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [form] = Form.useForm();
-
-    // 1. Xử lý gọi Backend sinh mã QR thanh toán
-    const handleGenerateQR = async () => {
-        if (!amount || amount < 10000) {
-            message.warning('Số tiền nạp tối thiểu là 10,000 VNĐ!');
-            return;
-        }
-        setLoading(true);
-        try {
-            const response = await api.post('/payments/create-qr', {
-                userId: user?.id,
-                amount: amount
-            });
-            setPaymentData(response.data);
-            message.success('Đã khởi tạo hóa đơn và mã chuyển khoản VietQR thành công!');
-        } catch (error) {
-            message.error(error.response?.data || 'Không thể tạo mã QR lúc này. Vui lòng thử lại!');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // 2. Tiện ích Copy mã giao dịch vào bộ nhớ tạm (Clipboard)
-    const handleCopyText = (text) => {
-        navigator.clipboard.writeText(text);
-        message.success('Đã sao chép nội dung chuyển khoản vào bộ nhớ tạm!');
-    };
-
-    // 3. Khách hàng gửi bằng chứng ảnh hóa đơn chuyển tiền thành công
-    const handleConfirmTransfer = async (values) => {
-        setSubmittingProof(true);
-        try {
-            await api.post('/payments/confirm', {
-                transactionCode: paymentData?.transactionCode,
-                proofUrl: values.proofUrl
-            });
-            setIsSuccess(true);
-            message.success('Hệ thống đã ghi nhận hóa đơn nạp tiền thành công!');
-        } catch (error) {
-            message.error(error.response?.data || 'Có lỗi xảy ra khi xác nhận hóa đơn!');
-        } finally {
-            setSubmittingProof(false);
-        }
-    };
-
-    // Giao diện khi nạp tiền hoàn tất thành công
-    if (isSuccess) {
-        return (
-            <div className="p-8 bg-gray-100 min-h-screen flex justify-center items-center">
-                <Card className="shadow-2xl rounded-2xl border-none max-w-lg text-center p-4">
-                    <Result
-                        status="success"
-                        title={<Title level={3} className="text-green-600">NẠP TIỀN HOÀN TẤT!</Title>}
-                        subTitle={`Giao dịch chuyển khoản ${amount.toLocaleString()} VNĐ đã được xử lý tự động thành công. Số dư ví của bạn đã được cập nhật.`}
-                        extra={[
-                            <Button type="primary" size="large" icon={<WalletOutlined />} onClick={() => {
-                                setPaymentData(null);
-                                setIsSuccess(false);
-                                form.resetFields();
-                            }} className="bg-gradient-to-r from-gray-900 to-blue-900 border-none rounded-xl">
-                                Tiếp Tục Giao Dịch Khác
-                            </Button>
-                        ]}
-                    />
-                </Card>
-            </div>
-        );
-    }
-
-    return (
-        <div className="p-8 bg-gray-100 min-h-screen flex justify-center items-center">
-            <Card className="shadow-xl rounded-2xl border-none max-w-4xl w-full bg-white p-4">
-
-                {/* Trạng thái 1: Nhập số tiền cần nạp */}
-                {!paymentData ? (
-                    <div className="text-center max-w-md mx-auto py-6">
-                        <WalletOutlined className="text-5xl text-blue-600 mb-4" />
-                        <Title level={2}>Nạp Tiền Vào Tài Khoản</Title>
-                        <Text type="secondary">Nhập số tiền bạn muốn nạp vào hệ thống để tham gia cá cược cuộc đua</Text>
-
-                        <div className="my-8">
-                            <Text strong className="block text-left mb-2 text-base text-gray-700">Số tiền muốn nạp (VNĐ):</Text>
-                            <InputNumber
-                                size="large"
-                                className="w-full text-xl rounded-xl font-bold text-blue-700"
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                                min={10000}
-                                max={100000000}
-                                value={amount}
-                                onChange={value => setAmount(value)}
-                            />
-                        </div>
-
-                        {/* Mấy cái nút click nhanh số tiền mượt mà */}
-                        <Row gutter={[8, 8]} className="mb-6">
-                            {[50000, 100000, 200000, 500000, 1000000].map(val => (
-                                <Col span={8} key={val}>
-                                    <Button block onClick={() => setAmount(val)} type={amount === val ? 'primary' : 'default'} className="rounded-lg font-semibold">
-                                        {val.toLocaleString()} đ
-                                    </Button>
-                                </Col>
-                            ))}
-                        </Row>
-
-                        <Button
-                            type="primary"
-                            size="large"
-                            block
-                            icon={<QrcodeOutlined />}
-                            loading={loading}
-                            onClick={handleGenerateQR}
-                            className="h-12 bg-gradient-to-r from-gray-900 to-blue-900 border-none text-lg font-bold rounded-xl shadow-md"
-                        >
-                            TẠO MÃ THANH TOÁN QR
-                        </Button>
-                    </div>
-                ) : (
-
-                    /* Trạng thái 2: Hiển thị mã QR VietQR và Nhập minh chứng */
-                    <div>
-                        <Button type="text" icon={<ArrowLeftOutlined />} onClick={() => setPaymentData(null)} className="mb-4 font-bold text-gray-500">
-                            Quay lại nhập số tiền
-                        </Button>
-
-                        <Row gutter={32} align="middle">
-                            {/* Cột trái: Hiển thị ảnh QR của VietQR */}
-                            <Col xs={24} md={11} className="text-center bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-300">
-                                <Title level={4} className="m-0 mb-4 text-blue-800">Quét Mã QR Để Thanh Toán</Title>
-                                <img
-                                    src={paymentData.qrUrl}
-                                    alt="VietQR Code"
-                                    className="w-full max-w-[280px] mx-auto shadow-lg rounded-xl mb-4 border border-gray-200"
-                                />
-                                <Alert
-                                    message="Sử dụng ứng dụng ngân hàng di động (Mobile Banking) quét mã QR để tự động điền số tiền và nội dung."
-                                    type="info"
-                                    showIcon
-                                    className="text-left"
-                                />
-                            </Col>
-
-                            {/* Cột phải: Thông tin chuyển khoản bằng chữ và form confirm */}
-                            <Col xs={24} md={13} className="mt-6 md:mt-0">
-                                <Title level={3} className="text-gray-800 mb-4">Thông Tin Chuyển Khoản</Title>
-
-                                <div className="space-y-3 bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                    <div>
-                                        <Text type="secondary" className="text-xs">NGÂN HÀNG THỤ HƯỞNG</Text>
-                                        <div className="text-base font-bold text-gray-900">{paymentData.bankId} (Ngân hàng Quân Đội)</div>
-                                    </div>
-                                    <div>
-                                        <Text type="secondary" className="text-xs">SỐ TÀI KHOẢN</Text>
-                                        <div className="text-base font-bold text-blue-700 tracking-wider">{paymentData.accountNo}</div>
-                                    </div>
-                                    <div>
-                                        <Text type="secondary" className="text-xs">TÊN TÀI KHOẢN THỤ HƯỞNG</Text>
-                                        <div className="text-base font-bold text-gray-900">{paymentData.accountName}</div>
-                                    </div>
-                                    <div>
-                                        <Text type="secondary" className="text-xs">SỐ TIỀN CHUYỂN KHOẢN</Text>
-                                        <div className="text-lg font-extrabold text-red-600">{paymentData.amount.toLocaleString()} VNĐ</div>
-                                    </div>
-                                    <Divider className="my-2 border-blue-200" />
-                                    <div>
-                                        <Text type="secondary" className="text-xs block mb-1">NỘI DUNG CHUYỂN KHOẢN BẮT BUỘC</Text>
-                                        <Space size="middle">
-                                            <Tag color="volcano" className="text-xl font-mono px-4 py-1 font-bold tracking-widest uppercase">
-                                                {paymentData.note}
-                                            </Tag>
-                                            <Button
-                                                size="small"
-                                                type="dashed"
-                                                icon={<CopyOutlined />}
-                                                onClick={() => handleCopyText(paymentData.note)}
-                                                className="border-blue-400 text-blue-600"
-                                            >
-                                                Sao chép
-                                            </Button>
-                                        </Space>
-                                    </div>
-                                </div>
-
-                                {/* Form xác thực điền link hóa đơn / chứng từ giống Admin page */}
-                                <Card className="mt-4 bg-gray-50 border-none rounded-xl shadow-inner">
-                                    <Form form={form} layout="vertical" onFinish={handleConfirmTransfer}>
-                                        <Form.Item
-                                            name="proofUrl"
-                                            label={<Text strong className="text-gray-700">Link ảnh Hóa đơn / Ủy nhiệm chi thành công</Text>}
-                                            rules={[{ required: true, message: 'Vui lòng cung cấp link hình ảnh minh chứng chuyển khoản!' }]}
-                                        >
-                                            <Input placeholder="https://drive.google.com/link-anh-hoa-don.jpg" className="h-10 rounded-lg" />
-                                        </Form.Item>
-                                        <Button
-                                            type="primary"
-                                            htmlType="submit"
-                                            block
-                                            size="large"
-                                            loading={submittingProof}
-                                            icon={<CheckCircleOutlined />}
-                                            className="h-11 bg-green-600 border-none text-base font-bold rounded-xl"
-                                        >
-                                            TÔI ĐÃ CHUYỂN TIỀN THÀNH CÔNG
-                                        </Button>
-                                    </Form>
-                                </Card>
-                            </Col>
-                        </Row>
-                    </div>
-                )}
-            </Card>
-        </div>
-    );
-};
-
-export default PaymentQRPage;
-
-
-
-=========================================
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\public\AboutPage.jsx
 =========================================
 import React from 'react';
-import { Typography, Breadcrumb } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import { Typography } from 'antd';
+
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
@@ -10107,6 +10701,10 @@ import horseRacingImg2 from '../../assets/anhgioithieu1.png';
 
 const { Title, Paragraph } = Typography;
 
+// [Chức năng rõ ràng]: Trang Giới Thiệu Công Ty
+// [Tác dụng]: Hiển thị các thông tin giới thiệu chung về trường đua, lịch sử hình thành và đội ngũ quản lý.
+// [Hướng dẫn sửa đổi]:
+// - UI: Tùy chỉnh text ở thẻ <p> hoặc thay hình ảnh banner ở thẻ <img>.
 const AboutPage = () => {
     return (
         <div className="min-h-screen bg-[#001529] font-sans flex flex-col">
@@ -10173,9 +10771,13 @@ import api from '../../config/api';
 
 const { Title, Paragraph } = Typography;
 
+// [Chức năng rõ ràng]: Trang Câu hỏi thường gặp (FAQ)
+// [Tác dụng]: Hiển thị danh sách câu hỏi và câu trả lời phổ biến dưới dạng Collapse/Accordion để người dùng dễ đọc.
+// [Hướng dẫn sửa đổi]:
+// - Data: Thêm hoặc sửa câu hỏi trực tiếp trong mảng data của Component này.
 const FAQPage = () => {
     const [faqs, setFaqs] = useState([]);
-    const [title, setTitle] = useState('CÂU HỎI THƯỜNG GẶP (FAQ)');
+    const [title] = useState('CÂU HỎI THƯỜNG GẶP (FAQ)');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -10271,9 +10873,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Hướng dẫn Tân thủ
+// [Tác dụng]: Hiển thị bài viết CMS lấy từ Backend (bảng SystemContent) về Hướng dẫn sử dụng hệ thống.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Sửa API gọi `sys-contents` hoặc đổi key `HUONG_DAN` nếu Backend đổi enum.
 const GuidePage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('HƯỚNG DẪN TÂN THỦ & NẠP/RÚT');
+    const [title] = useState('HƯỚNG DẪN TÂN THỦ & NẠP/RÚT');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -10328,14 +10934,18 @@ export default GuidePage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\public\NewsPage.jsx
 =========================================
 import React from 'react';
-import { Typography, Breadcrumb } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import { Typography } from 'antd';
+
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
 
 const { Title, Paragraph } = Typography;
 
+// [Chức năng rõ ràng]: Trang Tin tức / Thông báo
+// [Tác dụng]: Hiển thị danh sách các bài viết thông báo mới nhất của trường đua để thu hút khán giả.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Hiện tại đang Fake Data, cần nối API `/announcements` để lấy data thật từ DB.
 const NewsPage = () => {
     return (
         <div className="min-h-screen bg-[#001529] font-sans flex flex-col">
@@ -10378,9 +10988,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Chính sách Bảo mật (Privacy Policy)
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) lấy từ Backend quy định về quyền riêng tư.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `BAO_MAT`.
 const PrivacyPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('CHÍNH SÁCH BẢO MẬT & EKYC');
+    const [title] = useState('CHÍNH SÁCH BẢO MẬT & EKYC');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -10442,9 +11056,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Luật cá cược
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) giải thích chi tiết về tỷ lệ cược (Odds), luật thắng/thua.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `LUAT_CUOC`.
 const RaceRulesPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('ĐIỀU LỆ ĐUA NGỰA');
+    const [title] = useState('ĐIỀU LỆ ĐUA NGỰA');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -10508,6 +11126,10 @@ import { TrophyOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Kết quả thi đấu
+// [Tác dụng]: Hiển thị danh sách các chặng đua đã KẾT THÚC, kèm theo bảng xếp hạng thứ hạng ngựa.
+// [Hướng dẫn sửa đổi]:
+// - UI: Tùy chỉnh màu sắc các huy chương (Vàng, Bạc, Đồng) hoặc cách hiển thị thời gian về đích.
 const ResultsPage = () => {
     const [races, setRaces] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -10637,8 +11259,8 @@ const ResultsPage = () => {
                     )}
                 </div>
             </div>
-
-            <Modal
+            <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorBgContainer: '#1f2937' } }}>
+                <Modal
                 title={`Kết quả: ${selectedRaceName}`}
                 open={isModalOpen}
                 onCancel={() => setIsModalOpen(false)}
@@ -10673,8 +11295,8 @@ const ResultsPage = () => {
                         locale={{ emptyText: 'Chưa có kết quả' }}
                     />
                 )}
-            </Modal>
-
+                </Modal>
+            </ConfigProvider>
             <Footer />
         </div>
     );
@@ -10696,9 +11318,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Điều khoản chung (Terms of Service)
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) quy định chung của hệ thống.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `DIEU_KHOAN`.
 const RulesPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('THỂ LỆ ĐẶT CƯỢC');
+    const [title] = useState('THỂ LỆ ĐẶT CƯỢC');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -10762,6 +11388,10 @@ import { TeamOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Lịch Thi Đấu
+// [Tác dụng]: Hiển thị danh sách các giải đấu và chặng đua sắp diễn ra (SCHEDULED, REGISTRATION).
+// [Hướng dẫn sửa đổi]:
+// - UI: Cấu hình lại bộ lọc Calendar để chọn ngày hiển thị lịch đua dễ dàng hơn.
 const SchedulePage = () => {
     const [races, setRaces] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -10787,7 +11417,7 @@ const SchedulePage = () => {
                     race.status === 'BETTING' || 
                     race.status === 'LOCK_SESSION' || 
                     race.status === 'RUNNING'
-                ) && raceDate >= now;
+                );
             });
             setRaces(futureRaces);
         } catch (error) {
@@ -10950,9 +11580,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quy định Tham gia Đua (Dành cho Chủ/Nài)
+// [Tác dụng]: Hiển thị bài viết CMS (HTML) quy định về sức khỏe ngựa, cân nặng nài ngựa.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API đang fetch nội dung với key `LUAT_CHOI`.
 const TermsPage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('ĐIỀU KHOẢN SỬ DỤNG & MIỄN TRỪ');
+    const [title] = useState('ĐIỀU KHOẢN SỬ DỤNG & MIỄN TRỪ');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -11017,6 +11651,10 @@ import { useAuth } from '../../context/AuthContext';
 const { Title, Text } = Typography;
 const { Option, OptGroup } = Select;
 
+// [Chức năng rõ ràng]: Trang Dashboard Trọng Tài
+// [Tác dụng]: Cho phép trọng tài xem lịch đua trong ngày, báo cáo sự cố (Report) và nhập kết quả về đích (Rank) cho từng con ngựa.
+// [Hướng dẫn sửa đổi]:
+// - Logic: API gọi tới `/referees/...`. UI: Thêm tính năng kéo-thả (Drag & Drop) để sắp xếp thứ hạng ngựa thay vì nhập số.
 const RefereeDashboardPage = () => {
     const { user } = useAuth();
     const [races, setRaces] = useState([]);
@@ -11037,7 +11675,7 @@ const RefereeDashboardPage = () => {
 
     useEffect(() => {
         fetchRaces();
-        setReportsHistory(JSON.parse(localStorage.getItem('referee_reports') || '[]'));
+        fetchReports();
     }, []);
 
     const fetchRaces = async () => {
@@ -11048,6 +11686,15 @@ const RefereeDashboardPage = () => {
             setRaces(sorted);
         } catch (error) { message.error('Lỗi tải danh sách chặng đua!'); }
         finally { setLoading(false); }
+    };
+
+    const fetchReports = async () => {
+        try {
+            const response = await api.get('/referees/reports');
+            setReportsHistory(response.data);
+        } catch (error) {
+            console.error('Failed to fetch reports', error);
+        }
     };
 
     const fetchRegistrations = async (raceId) => {
@@ -11068,7 +11715,8 @@ const RefereeDashboardPage = () => {
             message.success('Đã phát lệnh bắt đầu! Tỷ lệ cược đã được chốt sổ tự động.');
             fetchRaces();
         } catch (error) {
-            message.error('Có lỗi xảy ra khi bắt đầu chặng đua!');
+            const errorMsg = error.response?.data?.error || error.response?.data?.message || error.response?.data || 'Có lỗi xảy ra khi bắt đầu chặng đua!';
+            message.error(typeof errorMsg === 'string' ? errorMsg : 'Có lỗi xảy ra khi bắt đầu chặng đua!');
         }
     };
 
@@ -11115,7 +11763,10 @@ const RefereeDashboardPage = () => {
         try {
             await api.post('/referees/results', {
                 raceId: selectedRace.id,
-                top1RegistrationId: values.top1
+                refereeId: user.id,
+                top1RegistrationId: values.top1,
+                top2RegistrationId: values.top2,
+                top3RegistrationId: values.top3
             });
             message.success('Đã Ký Xác Nhận! Hệ thống đang tự động cộng tiền cho người thắng cược. 💸');
             setIsResultModalVisible(false);
@@ -11133,17 +11784,7 @@ const RefereeDashboardPage = () => {
                 violationDetails: fullDetails
             });
 
-            const newReport = {
-                id: Date.now(),
-                raceName: selectedRace.name,
-                target: registrations.find(r => r.id === values.registrationId)?.horseName,
-                penalty: values.penaltyType,
-                reason: values.reason,
-                date: dayjs().toISOString()
-            };
-            const updatedHistory = [newReport, ...reportsHistory];
-            setReportsHistory(updatedHistory);
-            localStorage.setItem('referee_reports', JSON.stringify(updatedHistory));
+            await fetchReports();
 
             message.success('Lập biên bản vi phạm thành công! 📝');
             setIsReportModalVisible(false);
@@ -11214,7 +11855,7 @@ const RefereeDashboardPage = () => {
                 return (
                     <Space>
                         {isReadyToStart && (
-                            <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record.id)}>BẮT ĐẦU ĐUA</Button>
+                            <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record)}>BẮT ĐẦU ĐUA</Button>
                         )}
                         {isFinished && (
                             <Popconfirm title="Xác nhận kết quả cuối cùng?" onConfirm={() => handleConfirmResult(record.id)}>
@@ -11235,10 +11876,11 @@ const RefereeDashboardPage = () => {
 
     const historyColumns = [
         { title: 'Ngày Lập', dataIndex: 'date', render: d => dayjs(d).format('HH:mm DD/MM/YYYY') },
+        { title: 'Người Lập', dataIndex: 'refereeName', render: n => <Text strong className="text-blue-600">{n}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', render: t => <Text strong>{t}</Text> },
-        { title: 'Đối Tượng Phạt', dataIndex: 'target', render: t => <Tag color="blue">{t}</Tag> },
-        { title: 'Mức Phạt', dataIndex: 'penalty', render: p => <Tag color={p === 'Truất quyền thi đấu' ? 'red' : 'orange'}>{p}</Tag> },
-        { title: 'Lý Do', dataIndex: 'reason' }
+        { title: 'Nội Dung', dataIndex: 'target', render: (t, record) => record.penalty === 'KẾT QUẢ THI ĐẤU' ? <Text type="success">Xác nhận kết quả chung cuộc</Text> : t },
+        { title: 'Loại/Mức Phạt', dataIndex: 'penalty', render: p => p === 'KẾT QUẢ THI ĐẤU' ? <Tag color="green">KẾT QUẢ</Tag> : <Tag color="red">{p}</Tag> },
+        { title: 'Chi Tiết', dataIndex: 'reason' }
     ];
 
     return (
@@ -11355,8 +11997,8 @@ TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\user\BettingPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin } from 'antd';
 import { RocketOutlined, DollarOutlined, LineChartOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import api from '../../config/api';
+
+
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
@@ -11418,6 +12060,10 @@ const BettingPage = () => {
     };
 
     // 2. Mở Modal và lấy Tỷ lệ cược Live khi chọn 1 chặng đua
+    // [Chức năng rõ ràng]: Mở Popup Đặt cược
+    // [Tác dụng]: Gọi API lấy danh sách ngựa và tỷ lệ cược (Live Odds) của chặng đua được chọn, sau đó mở Modal đặt cược.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu API tỷ lệ cược đổi đường dẫn, hãy sửa `api.get('/races/${race.id}/live-odds')`.
     const handleOpenBetModal = async (race) => {
         setSelectedRace(race);
         setIsModalVisible(true);
@@ -11435,6 +12081,11 @@ const BettingPage = () => {
     };
 
     // 3. Xử lý Gửi lệnh đặt cược xuống Spring Boot
+    // [Chức năng rõ ràng]: Xử lý Xác nhận Đặt cược
+    // [Tác dụng]: Gửi lệnh đặt cược lên server với số tiền và ngựa đã chọn. Nếu thành công, làm mới lại danh sách tỷ lệ cược.
+    // [Hướng dẫn sửa đổi]:
+    // - UI (CSS/Style): Đổi câu chữ cảnh báo thành công/thất bại ở các lệnh `message.error(...)` và `message.success(...)`.
+    // - Logic/Data: Đổi mức cược tối thiểu, sửa số tiền mặc định của state `betAmount` ở phía trên (`useState(100000)`).
     const handlePlaceBet = async () => {
         if (!bettingHorseRegId) {
             message.warning('Vui lòng chọn một chiến mã để đặt cược!');
@@ -11659,7 +12310,7 @@ TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\user\LandingPage.jsx
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Typography, Carousel, Card, Row, Col, Button, Tag, Spin, Select } from 'antd';
-import { FireOutlined, TrophyOutlined, GiftOutlined } from '@ant-design/icons';
+import { TrophyOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
 import dayjs from 'dayjs';
@@ -11668,6 +12319,10 @@ import horseRacingImg from '../../assets/anhgioithieu1.png';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Chủ sau Đăng nhập
+// [Tác dụng]: Tổng hợp thông tin nhanh (Widget) như số dư ví, chặng đua nổi bật sắp diễn ra, lịch sử cá cược gần nhất.
+// [Hướng dẫn sửa đổi]:
+// - UI: Thay đổi bố cục Grid (Lưới) để chứa được nhiều Widget hơn.
 const LandingPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -11801,12 +12456,16 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber, Upload } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UploadOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
-import api from '../../config/api';
+
+
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Hồ sơ Cá nhân (Profile & KYC)
+// [Tác dụng]: Hiển thị thông tin cá nhân. Hỗ trợ Upload Avatar và tải lên mặt trước/sau CMND/CCCD để xác minh danh tính (KYC).
+// [Hướng dẫn sửa đổi]:
+// - Logic: Các hàm xử lý FormData gọi API rất phức tạp, cẩn trọng khi thêm trường dữ liệu text mới vào FormData.
 const ProfilePage = () => {
     const { user, login } = useAuth();
     const [loading, setLoading] = useState(false);
@@ -11999,168 +12658,20 @@ export default ProfilePage;
 
 
 =========================================
-TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\user\UserDashboard.jsx
-=========================================
-import React, { useState, useEffect } from 'react';
-import { Card, Statistic, Table, Tabs, Tag, message } from 'antd';
-import { WalletOutlined, HistoryOutlined, FallOutlined, RiseOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import api from '../../config/api';
-
-const UserDashboard = () => {
-    const [balance, setBalance] = useState(0);
-    const [bets, setBets] = useState([]);
-    const [transactions, setTransactions] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const userId = localStorage.getItem('userId');
-    const token = localStorage.getItem('token');
-
-    const axiosInstance = axios.create({
-        baseURL: 'https://horse-racing-system-production-492c.up.railway.app/api',
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
-
-    useEffect(() => {
-        if (!userId || !token) {
-            message.error('Vui lòng đăng nhập lại!');
-            return;
-        }
-        fetchDashboardData();
-    }, []);
-
-    const fetchDashboardData = async () => {
-        setLoading(true);
-        try {
-            const [walletRes, betsRes, transRes] = await Promise.all([
-                axiosInstance.get(`/wallets/my-wallet?userId=${userId}`),
-                axiosInstance.get(`/users/my-bets?userId=${userId}`),
-                axiosInstance.get(`/users/my-transactions?userId=${userId}`)
-            ]);
-
-            // BỌC KHIÊN THÉP
-            setBalance(walletRes.data?.balance || 0);
-            setBets(betsRes.data || []);
-            setTransactions(transRes.data || []);
-        } catch (error) {
-            console.error(error);
-            message.error('Không thể tải dữ liệu. Bạn đã gắn đúng Token chưa?');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const betColumns = [
-        { title: 'Chặng Đua', dataIndex: 'raceName', key: 'raceName' },
-        { title: 'Ngựa Đặt', dataIndex: 'horseName', key: 'horseName' },
-        {
-            title: 'Tiền Cược',
-            dataIndex: 'amount',
-            key: 'amount',
-            render: (val) => <span className="font-semibold">{Number(val || 0).toLocaleString()} đ</span>
-        },
-        { title: 'Tỷ lệ', dataIndex: 'odds', key: 'odds' },
-        {
-            title: 'Trạng Thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => {
-                let color = status === 'WON' ? 'green' : status === 'LOST' ? 'red' : 'orange';
-                const text = status === 'WON' ? 'THẮNG' : status === 'LOST' ? 'Đã thua' : 'CHỜ XỬ LÝ';
-                return <Tag color={color}>{text}</Tag>;
-            }
-        },
-        {
-            title: 'Tiền Thưởng',
-            dataIndex: 'rewardAmount',
-            key: 'rewardAmount',
-            render: (val) => <span className="text-green-600 font-bold">+{Number(val || 0).toLocaleString()} đ</span>
-        },
-    ];
-
-    const transColumns = [
-        { title: 'Mã GD', dataIndex: 'transactionCode', key: 'transactionCode' },
-        { title: 'Loại', dataIndex: 'type', key: 'type', render: (val) => {
-            const text = val === 'DEPOSIT' ? 'NẠP TIỀN' : val === 'WITHDRAW' ? 'RÚT TIỀN' : val === 'BET' ? 'ĐẶT CƯỢC' : val === 'REWARD' ? 'NHẬN THƯỞNG' : val;
-            return <Tag color="blue">{text}</Tag>;
-        } },
-        {
-            title: 'Số Tiền',
-            key: 'amount',
-            render: (record) => {
-                const isIncome = record.direction === 'IN';
-                return (
-                    <span className={isIncome ? 'text-green-600 font-bold' : 'text-red-600 font-bold'}>
-                        {isIncome ? '+' : '-'}{Number(record.amount || 0).toLocaleString()} đ
-                    </span>
-                );
-            }
-        },
-        {
-            title: 'Trạng Thái',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => {
-                let color = status === 'COMPLETED' ? 'green' : status === 'REJECTED' ? 'red' : 'gold';
-                const text = status === 'COMPLETED' ? 'ĐÃ HOÀN TẤT' : status === 'REJECTED' ? 'TỪ CHỐI' : 'CHỜ XỬ LÝ';
-                return <Tag color={color}>{text}</Tag>;
-            }
-        },
-        { title: 'Thời Gian', dataIndex: 'createdAt', key: 'createdAt', render: (val) => new Date(val).toLocaleString() },
-    ];
-
-    const tabItems = [
-        {
-            key: '1',
-            label: <span><HistoryOutlined /> Lịch sử Đặt Cược</span>,
-            children: <Table dataSource={bets} columns={betColumns} rowKey="id" loading={loading} />
-        },
-        {
-            key: '2',
-            label: <span><WalletOutlined /> Lịch sử Giao Dịch</span>,
-            children: <Table dataSource={transactions} columns={transColumns} rowKey="transactionCode" loading={loading} />
-        }
-    ];
-
-    return (
-        <div className="flex flex-col gap-6">
-            <h1 className="text-2xl font-bold text-gray-800">Tổng Quan Tài Khoản</h1>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Card className="shadow-sm border-l-4 border-blue-500 rounded-lg">
-                    <Statistic
-                        title={<span className="text-gray-500 font-medium text-base">Số dư ví hiện tại</span>}
-                        value={Number(balance || 0)}
-                        precision={0}
-                        suffix="VNĐ"
-                        prefix={<WalletOutlined className="text-blue-500 mr-2" />}
-                        valueStyle={{ color: '#1d4ed8', fontWeight: 'bold' }}
-                    />
-                </Card>
-            </div>
-            <Card className="shadow-sm rounded-lg">
-                <Tabs defaultActiveKey="1" items={tabItems} />
-            </Card>
-        </div>
-    );
-};
-
-export default UserDashboard;
-
-
-
-=========================================
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\user\WalletPage.jsx
 =========================================
 import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Form, Input, Row, Col, Space, Divider, Result, Tag, Tooltip, Select } from 'antd';
-import { WalletOutlined, BankOutlined, ExportOutlined, ArrowLeftOutlined, CopyOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { WalletOutlined, BankOutlined, ExportOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quản lý Ví
+// [Tác dụng]: Hiển thị số dư hiện tại, Lịch sử giao dịch (Nạp/Rút/Cược). Chứa Form tạo lệnh Rút Tiền (Withdraw) về tài khoản ngân hàng.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Bắt Validation (Không cho rút tiền nếu số dư khả dụng nhỏ hơn số tiền muốn rút) trực tiếp trên Client thay vì chờ Backend báo lỗi.
 const WalletPage = () => {
     const { user } = useAuth();
     const userId = user?.id;
@@ -12173,7 +12684,7 @@ const WalletPage = () => {
     const initialBalanceRef = useRef(null);
 
     const [withdrawForm] = Form.useForm();
-    const [submittingProof, setSubmittingProof] = useState(false);
+    
     const [isSuccess, setIsSuccess] = useState(false);
     const [form] = Form.useForm();
     const [banks, setBanks] = useState([]);
@@ -12239,22 +12750,6 @@ const WalletPage = () => {
             message.error(error.response?.data || "Lỗi tạo mã QR!");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleConfirmTransfer = async (values) => {
-        setSubmittingProof(true);
-        try {
-            await api.post('/payments/confirm', {
-                transactionCode: paymentData?.transactionCode,
-                proofUrl: values.proofUrl
-            });
-            setIsSuccess(true);
-            message.success('Hệ thống đã ghi nhận hóa đơn nạp tiền thành công!');
-        } catch (error) {
-            message.error(error.response?.data || 'Có lỗi xảy ra khi xác nhận hóa đơn!');
-        } finally {
-            setSubmittingProof(false);
         }
     };
 
@@ -12498,12 +12993,7 @@ TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\CorporateLandingPage.js
 =========================================
 import React from 'react';
 import { Typography, Row, Col, Button, Card } from 'antd';
-import { 
-    SafetyCertificateOutlined, 
-    GlobalOutlined, 
-    BankOutlined,
-    LoginOutlined
-} from '@ant-design/icons';
+import { SafetyCertificateOutlined, GlobalOutlined, BankOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import Footer from '../components/layout/Footer';
 import PublicHeader from '../components/layout/PublicHeader';
@@ -12511,6 +13001,10 @@ import horseRacingImg from '../assets/anhgioithieu.jpg';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Landing Page Doanh nghiệp (Corporate)
+// [Tác dụng]: Trang giới thiệu cực kỳ bắt mắt dành cho nhà đầu tư hoặc đối tác lớn, sử dụng Framer Motion để tạo hiệu ứng cuộn (Scroll Animation) ấn tượng.
+// [Hướng dẫn sửa đổi]:
+// - UI: Tùy chỉnh các khối `motion.div` để sửa tốc độ và kiểu Animation.
 const CorporateLandingPage = () => {
     const navigate = useNavigate();
 
@@ -12668,11 +13162,11 @@ export default CorporateLandingPage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\HomePage.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Card, Statistic, Table, Tabs, Tag, Typography } from 'antd';
+import { Card, Statistic, Table, Tabs, Tag, Typography, Space } from 'antd';
 import { WalletOutlined, HistoryOutlined, TrophyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
-import api from '../config/api';
+
+
 import dayjs from 'dayjs';
 
 const { Title, Text, Paragraph } = Typography;
@@ -12696,6 +13190,10 @@ const HomePage = () => {
         }
     }, [userId, token]);
 
+    // [Chức năng rõ ràng]: Lấy Dữ liệu Tổng quan (Dashboard)
+    // [Tác dụng]: Fetch API để lấy số dư ví, danh sách lịch sử cược, lịch sử giao dịch và lịch sử nhận giải (nếu là nài ngựa/chủ ngựa).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API lấy số dư ví ở `api.get('/wallets/my-wallet?userId=${userId}')`.
     const fetchDashboardData = async () => {
         setLoading(true);
         try {
@@ -12715,10 +13213,8 @@ const HomePage = () => {
             setTransactions(transRes.data || []);
 
             if (user?.role === 'JOCKEY') {
-                setJockeyRewards([
-                    { id: 1, raceName: 'Siêu giải đấu XUKA', horseName: 'Xích Thố', rank: 1, reward: 15000000, date: dayjs().subtract(1, 'day').toISOString() },
-                    { id: 2, raceName: 'Cúp FPT Mùa Hè 2026', horseName: 'Ngựa Lạc Hồng', rank: 2, reward: 5000000, date: dayjs().subtract(3, 'day').toISOString() }
-                ]);
+                const rewardsRes = await api.get(`/users/my-jockey-rewards?userId=${userId}`);
+                setJockeyRewards(rewardsRes.data || []);
             }
         } catch (error) {
             // Chỉ im lặng thôi
@@ -12823,6 +13319,10 @@ const HomePage = () => {
         children: <Table dataSource={transactions} columns={transColumns} rowKey="transactionCode" loading={loading} className="border rounded-xl" />
     });
 
+    // [Chức năng rõ ràng]: Render Giao diện Tổng quan
+    // [Tác dụng]: Render giao diện chính của trang chủ gồm Số dư khả dụng và các Tabs hiển thị bảng lịch sử.
+    // [Hướng dẫn sửa đổi]:
+    // - UI (CSS/Style): Đổi layout tổng thể của trang ở class `flex flex-col gap-6 max-w-6xl mx-auto`.
     return (
         <div className="flex flex-col gap-6 max-w-6xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-wide border-b pb-2">
@@ -12884,6 +13384,10 @@ import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Đăng Nhập
+// [Tác dụng]: Cung cấp Form nhập Username/Password, gọi API `/auth/login`, nhận JWT Token và lưu vào AuthContext/LocalStorage.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Nếu sau này hỗ trợ Login bằng Google, hãy gọi SDK Google tại màn hình này.
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [isBanModalVisible, setIsBanModalVisible] = useState(false);
@@ -13056,7 +13560,7 @@ export default LoginPage;
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\RegisterPage.jsx
 =========================================
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, DatePicker, Select, Typography, message, Row, Col, ConfigProvider, theme, Upload, Checkbox, Modal, Space } from 'antd';
+import { Form, Input, Button, DatePicker, Select, Typography, message, Row, Col, ConfigProvider, theme, Upload, Checkbox, Modal } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, CalendarOutlined, InboxOutlined, TrophyOutlined, FireOutlined, SafetyCertificateOutlined, PhoneOutlined, IdcardOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -13065,6 +13569,10 @@ import horseBg from '../assets/horseracing2.png';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Đăng Ký Tài Khoản
+// [Tác dụng]: Form điền thông tin dài (Họ tên, SĐT, User/Pass, Role). Bắt buộc người dùng tích chọn 4 ô Đồng ý Điều khoản trước khi Submit.
+// [Hướng dẫn sửa đổi]:
+// - UI/Logic: Chia Form thành nhiều bước (Multi-step Wizard) nếu thấy Form quá dài.
 const RegisterPage = () => {
     const [loading, setLoading] = useState(false);
     const [checkAll, setCheckAll] = useState(false);
@@ -13538,6 +14046,11 @@ TÊN FILE: D:\SWP\horse-racing-system\frontend\src\styles\App.css
 =========================================
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\utils\auth.js
 =========================================
+// [Chức năng rõ ràng]: Hàm Tiện ích (Utility) Xác thực
+// [Tác dụng]: Cung cấp các hàm dùng chung để lưu, xóa và lấy Token từ LocalStorage.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Sửa lại hàm này nếu dự án chuyển sang dùng Cookie thay vì LocalStorage để chống XSS.
+
 // Lưu chìa khóa vào kho trình duyệt (LocalStorage)
 export const setToken = (token) => {
     localStorage.setItem('accessToken', token);
@@ -13612,6 +14125,10 @@ const OwnerRaceRegistrationPage = lazy(() => import('./pages/owner/OwnerRaceRegi
 const OwnerHorseManagementPage = lazy(() => import('./pages/owner/OwnerHorseManagementPage'));
 
 // 0. COMPONENT CUỘN LÊN ĐẦU TRANG
+// [Chức năng rõ ràng]: Component Gốc (Root Component) & Routing
+// [Tác dụng]: Khai báo tất cả các đường dẫn (Routes) của hệ thống bằng React Router DOM. Có cấu hình các Route bảo vệ (ProtectedRoute) kiểm tra Role trước khi cho vào.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Khai báo thêm `<Route>` ở đây nếu tạo thêm trang mới. Chú ý đặt đúng vào nhóm Layout tương ứng (AdminLayout/MainLayout/PublicLayout).
 const ScrollToTop = () => {
     const { pathname } = useLocation();
     useEffect(() => {
@@ -13639,7 +14156,6 @@ const RootRedirect = () => {
     if (user.role === 'OWNER') return <Navigate to="/my-horses" replace />;
     if (user.role === 'JOCKEY') return <Navigate to="/jockey/invitations" replace />;
     if (user.role === 'REFEREE') return <Navigate to="/referee/dashboard" replace />;
-    if (user.role === 'ADMIN') return <Navigate to="/admin/users" replace />;
 
     // Các role khác thì cho ra trang chủ
     return <Navigate to="/home" replace />;
@@ -13906,6 +14422,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+// [Chức năng rõ ràng]: Điểm khởi chạy React (Entry Point)
+// [Tác dụng]: Nơi React lấy Component `<App />` và render vào thẻ `<div id="root">` trong file index.html.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Thường không cần sửa, trừ khi muốn bọc thêm Provider toàn cục (như Redux Provider hoặc Theme Provider).
+
 // 1. Nhập khẩu cái Phích cắm (AuthProvider)
 import { AuthProvider } from './context/AuthContext.jsx'
 

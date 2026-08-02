@@ -5,6 +5,10 @@ import com.swp.horseracing.dto.RaceResponseDTO;
 
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Chặng đua
+    // [Tác dụng]: Định nghĩa hàm tạo, sửa, xóa, và kích hoạt trả thưởng chặng đua.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm cập nhật thời tiết cho chặng đua.
 public interface RaceService {
     RaceResponseDTO createRace(RaceRequestDTO request);
     List<RaceResponseDTO> getAllRaces();

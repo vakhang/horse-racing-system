@@ -14,6 +14,10 @@ public class RaceController {
 
     private final RaceService raceService;
 
+    // [Chức năng rõ ràng]: API Tạo Chặng Đua
+    // [Tác dụng]: Nhận request từ Admin/Ban Tổ Chức để tạo một chặng đua mới thuộc về 1 Giải đấu.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API tạo chặng đua, hãy sửa `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createRace(@RequestBody RaceRequestDTO request) {
         try {
@@ -71,6 +75,10 @@ public class RaceController {
         }
     }
 
+    // [Chức năng rõ ràng]: API Trả thưởng Chặng đua
+    // [Tác dụng]: Gọi hàm trả thưởng khi chặng đua kết thúc. Hàm này chia tiền cho những người đoán trúng và Nài/Chủ ngựa thắng giải.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint bằng cách sửa `@PostMapping("/{id}/payout")`.
     @PostMapping("/{id}/payout")
     public ResponseEntity<?> payoutRace(@PathVariable Integer id) {
         try {

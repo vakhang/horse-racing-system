@@ -15,6 +15,10 @@ public class JwtUtils {
     private final String SECRET = "HorseRacingVnSuperSecretKey2026-HorseRacingVnSuperSecretKey2026!";
     private final Key key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
+    // [Chức năng rõ ràng]: Khởi tạo Token Đăng nhập (JWT)
+    // [Tác dụng]: Sinh ra một chuỗi mã JWT chứa thông tin userId và role. Chuỗi này dùng làm "thẻ căn cước" cho người dùng khi gọi API.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Để đổi thời gian sống của Token, hãy thay đổi số `EXPIRATION_TIME` bên dưới (mặc định đang là 86400000ms = 24 giờ). Đổi khóa bí mật ở biến `SECRET` phía trên.
     public String generateToken(Integer userId, String role) {
 
         long EXPIRATION_TIME = 86400000;

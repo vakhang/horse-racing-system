@@ -22,6 +22,10 @@ public class WalletController {
         }
     }
 
+    // [Chức năng rõ ràng]: API Nạp Tiền (Virtual Deposit)
+    // [Tác dụng]: Nhận request nạp tiền ảo (chủ yếu dùng cho test môi trường dev). Số dư ví sẽ tăng ngay lập tức.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint ở `@PostMapping("/deposit")`. Nếu sau này tích hợp cổng thanh toán thật, bạn không nên gọi trực tiếp hàm này từ frontend, mà phải để Webhook từ cổng thanh toán gọi hàm này.
     @PostMapping("/deposit")
     public ResponseEntity<?> deposit(@RequestBody DepositRequestDTO request) {
         try {

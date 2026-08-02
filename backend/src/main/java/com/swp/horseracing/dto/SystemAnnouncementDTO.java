@@ -7,6 +7,10 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông báo Hệ thống
+    // [Tác dụng]: Đóng gói các thông báo chung từ Admin (như bảo trì, sự kiện) để hiển thị lên bảng tin người dùng.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính cờ (isRead) để biết User đã đọc hay chưa.
 public class SystemAnnouncementDTO {
     private Integer id;
     private String content;

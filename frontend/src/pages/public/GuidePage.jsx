@@ -6,9 +6,13 @@ import api from '../../config/api';
 
 const { Title } = Typography;
 
+// [Chức năng rõ ràng]: Trang Hướng dẫn Tân thủ
+// [Tác dụng]: Hiển thị bài viết CMS lấy từ Backend (bảng SystemContent) về Hướng dẫn sử dụng hệ thống.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Sửa API gọi `sys-contents` hoặc đổi key `HUONG_DAN` nếu Backend đổi enum.
 const GuidePage = () => {
     const [content, setContent] = useState('');
-    const [title, setTitle] = useState('HƯỚNG DẪN TÂN THỦ & NẠP/RÚT');
+    const [title] = useState('HƯỚNG DẪN TÂN THỦ & NẠP/RÚT');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {

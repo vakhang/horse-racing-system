@@ -12,6 +12,10 @@ import { useAuth } from '../../context/AuthContext';
 
 const { Content, Sider } = Layout;
 
+// [Chức năng rõ ràng]: Component Khung Giao diện chung (Layout)
+// [Tác dụng]: Bao bọc tất cả các trang bên trong. Gắn `Header` ở trên, `Footer` ở dưới và thẻ `<Outlet>` để render ruột của trang (React Router).
+// [Hướng dẫn sửa đổi]:
+// - UI: Thêm Sidebar (thanh bên) vào layout này nếu muốn đổi thiết kế.
 const MainLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const navigate = useNavigate();

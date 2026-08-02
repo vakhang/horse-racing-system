@@ -86,6 +86,10 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
+    // [Chức năng rõ ràng]: Đăng ký Tài khoản (User Registration)
+    // [Tác dụng]: Xử lý logic tạo tài khoản mới. Kiểm tra email, username trùng lặp. Cấp sẵn một ví 0đ. Hỗ trợ tài khoản mặc định và tài khoản chờ duyệt (KYC).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi điều kiện role cấp ngay `RoleEnum.SPECTATOR` hoặc chờ duyệt `RoleEnum.PENDING_KYC` ở đoạn switch(request.getRole()).
     @Override
     @Transactional
     public UserResponseDTO registerUser(RegisterRequestDTO request) {
@@ -192,6 +196,10 @@ public class UserServiceImpl implements UserService {
         return mapToResponseDTO(savedUser);
     }
 
+    // [Chức năng rõ ràng]: Đăng nhập (User Login)
+    // [Tác dụng]: Xác thực thông tin người dùng và sinh ra chuỗi mã hóa JWT token nếu hợp lệ. Ngược lại báo lỗi.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Sửa đổi cách thức kiểm tra mật khẩu (ví dụ dùng BCrypt thay vì so sánh chuỗi thường) ở dòng `!user.getPassword().equals(request.getPassword())`.
     @Override
     public UserResponseDTO loginUser(LoginRequestDTO request) {
         // ĐÃ SỬA: Hỗ trợ tìm bằng cả Email hoặc Số điện thoại
@@ -288,6 +296,10 @@ public class UserServiceImpl implements UserService {
         return mapToResponseDTO(userRepository.save(user));
     }
 
+    // [Chức năng rõ ràng]: Phê duyệt KYC / Khóa tài khoản
+    // [Tác dụng]: Cho phép Admin thay đổi trạng thái user (từ PENDING_KYC sang APPROVED, hoặc khóa tài khoản BANNED).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Thêm điều kiện gửi email thông báo sau khi duyệt tài khoản thành công bên trong khối `if (status == UserStatus.APPROVED)`.
     @Override
     @Transactional
     public UserResponseDTO updateUserStatus(Integer id, UserStatus status) {
@@ -315,8 +327,7 @@ public class UserServiceImpl implements UserService {
                             .type(TransactionType.DEPOSIT)
                             .direction(TransactionDirection.IN)
                             .status(TransactionStatus.COMPLETED)
-                            // Xóa trường reason vì không tồn tại trong DB
-                            .build();
+                                            .build();
                     transactionHistoryRepository.save(tx);
                 }
             }

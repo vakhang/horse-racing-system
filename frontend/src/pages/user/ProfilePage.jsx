@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber, Upload } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UploadOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
-import api from '../../config/api';
+
+
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Hồ sơ Cá nhân (Profile & KYC)
+// [Tác dụng]: Hiển thị thông tin cá nhân. Hỗ trợ Upload Avatar và tải lên mặt trước/sau CMND/CCCD để xác minh danh tính (KYC).
+// [Hướng dẫn sửa đổi]:
+// - Logic: Các hàm xử lý FormData gọi API rất phức tạp, cẩn trọng khi thêm trường dữ liệu text mới vào FormData.
 const ProfilePage = () => {
     const { user, login } = useAuth();
     const [loading, setLoading] = useState(false);

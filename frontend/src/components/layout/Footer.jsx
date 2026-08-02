@@ -1,17 +1,14 @@
 import React from 'react';
 import { Row, Col, Typography, Space, Divider } from 'antd';
-import { 
-    SafetyCertificateOutlined, 
-    BankOutlined, 
-    CustomerServiceOutlined, 
-    WarningOutlined,
-    MailOutlined,
-    PhoneOutlined
-} from '@ant-design/icons';
+import { BankOutlined, CustomerServiceOutlined, WarningOutlined, MailOutlined, PhoneOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Component Chân trang (Footer)
+// [Tác dụng]: Hiển thị phần chân trang ở giao diện người dùng public, chứa thông tin bản quyền và liên hệ.
+// [Hướng dẫn sửa đổi]:
+// - UI/Style: Đổi màu nền ở class `bg-gray-900`, thay đổi nội dung text ở các thẻ `<p>`.
 const Footer = () => {
     return (
         <div className="bg-[#001529] text-slate-200 py-12 px-6 lg:px-20 border-t border-gray-800 mt-auto">

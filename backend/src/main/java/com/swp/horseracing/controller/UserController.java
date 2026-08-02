@@ -21,7 +21,10 @@ public class UserController {
     private final UserService userService;
     private final UserRepository userRepository;
 
-    // Lấy danh sách tất cả Users (Dành cho Admin)
+    // [Chức năng rõ ràng]: API Lấy danh sách Users (Cho Admin)
+    // [Tác dụng]: Trả về danh sách tất cả người dùng trong hệ thống (gồm cả Người chơi, Chủ ngựa, Nài ngựa) để Admin quản lý.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Có thể thêm các biến truyền vào `@GetMapping` để hỗ trợ lọc theo Role nếu cần (VD: `?role=OWNER`).
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -57,7 +60,10 @@ public class UserController {
         }
     }
 
-    // API CHUYÊN BIỆT CHO ADMIN DUYỆT/KHÓA TÀI KHOẢN (Chỉ nhận JSON)
+    // [Chức năng rõ ràng]: API Đổi trạng thái Tài Khoản
+    // [Tác dụng]: Admin gọi API này để Duyệt (APPROVED), Từ chối (REJECTED), hoặc Khóa (BANNED) tài khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint ở `@PutMapping("/{id}/status")`. Chỉ nhận tham số JSON là `status`.
     @PutMapping("/{id}/status")
     public ResponseEntity<UserResponseDTO> updateUserStatus(
             @PathVariable Integer id,

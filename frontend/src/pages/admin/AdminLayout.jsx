@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
-import { Layout, Menu, Avatar, Space, Typography, Dropdown } from 'antd';
-import {
-    TrophyOutlined, LogoutOutlined, UserOutlined, SettingOutlined,
-    FileSearchOutlined, TeamOutlined, DollarOutlined,
-    MenuFoldOutlined, MenuUnfoldOutlined,
-    NotificationOutlined, EditOutlined
-} from '@ant-design/icons';
+import { Layout, Menu, Avatar, Space, Dropdown } from 'antd';
+import { TrophyOutlined, LogoutOutlined, UserOutlined, SettingOutlined, FileSearchOutlined, TeamOutlined, DollarOutlined, NotificationOutlined, EditOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 
 const { Header, Sider, Content } = Layout;
 
+// [Chức năng rõ ràng]: Khung Giao diện Admin (Admin Layout)
+// [Tác dụng]: Chứa Menu bên trái (Sidebar) dùng cho mọi trang Quản trị, định nghĩa các đường dẫn (Routes) của Admin.
+// [Hướng dẫn sửa đổi]:
+// - UI: Chỉnh sửa mảng `menuItems` để thêm/bớt các mục trên thanh Sidebar bên trái.
 const AdminLayout = ({ children }) => {
     const [collapsed, setCollapsed] = useState(false);
     const { user, logout } = useAuth();

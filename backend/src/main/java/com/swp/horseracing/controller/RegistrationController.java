@@ -13,6 +13,10 @@ public class RegistrationController {
 
     private final RegistrationService registrationService;
 
+    // [Chức năng rõ ràng]: API Đăng ký tham gia Chặng Đua
+    // [Tác dụng]: Nhận request từ Chủ Ngựa (hoặc Nài ngựa) để đăng ký một con ngựa tham gia vào 1 chặng đua cụ thể.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu muốn chặn đăng ký khi chặng đua đã bắt đầu, hãy thêm logic kiểm tra `race.getStatus()` bên trong RegistrationService.
     @PostMapping
     public ResponseEntity<?> createRegistration(@RequestBody RegistrationRequestDTO request) {
         try {

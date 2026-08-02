@@ -10,6 +10,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DatabaseInitializer {
 
+    // [Chức năng rõ ràng]: Khởi tạo Bảng (Table) tự động
+    // [Tác dụng]: Chạy một lần duy nhất lúc server khởi động để tạo bảng `system_contents` (chứa dữ liệu bài viết) nếu nó chưa tồn tại trong PostgreSQL, giúp Admin có thể đăng bài.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu bạn muốn tự động tạo thêm một bảng mới nào đó, hãy copy cụm `jdbcTemplate.execute(...)` và dán câu lệnh SQL tạo bảng của bạn vào.
     @Bean
     public CommandLineRunner initDatabase(JdbcTemplate jdbcTemplate) {
         return args -> {

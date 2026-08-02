@@ -18,6 +18,10 @@ const AdminFinancePage = () => {
     const [form] = Form.useForm();
     const [submitting, setSubmitting] = useState(false);
 
+    // [Chức năng rõ ràng]: Lấy Dữ liệu Tài chính
+    // [Tác dụng]: Gọi API để lấy toàn bộ danh sách giao dịch, đồng thời lấy các chỉ số GGR (Gross Gaming Revenue), NGR (Net Gaming Revenue), Tax (Thuế).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi đường dẫn API thống kê tại `api.get('/admin/finance/dashboard')`.
     const fetchTransactions = async () => {
         setLoading(true);
         try {
@@ -43,6 +47,11 @@ const AdminFinancePage = () => {
         return e?.fileList;
     };
 
+    // [Chức năng rõ ràng]: Xử lý Duyệt/Từ chối Rút tiền
+    // [Tác dụng]: Gửi quyết định phê duyệt hoặc từ chối lệnh rút tiền của người dùng lên server kèm hình ảnh biên lai (nếu có).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API xử lý rút tiền ở `api.post('/admin/finance/approve-withdraw')`.
+    // - UI (CSS/Style): Cập nhật thông báo sau khi duyệt xong tại `message.success(...)`.
     const handleConfirmWithdraw = async (values) => {
         setSubmitting(true);
         try {

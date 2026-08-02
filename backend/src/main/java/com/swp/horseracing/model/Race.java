@@ -2,8 +2,6 @@ package com.swp.horseracing.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -11,6 +9,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "races")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Chặng đua
+    // [Tác dụng]: Ánh xạ bảng `races`. Quản lý thông tin một chặng đua cụ thể (Ngày giờ, khoảng cách, trạng thái) thuộc về một Giải đấu.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thuộc tính về điều kiện thời tiết (Weather) hoặc độ ẩm đường đua.
 public class Race {
 
     @Id

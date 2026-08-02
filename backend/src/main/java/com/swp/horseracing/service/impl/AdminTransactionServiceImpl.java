@@ -20,6 +20,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Logic Quản lý Giao dịch
+    // [Tác dụng]: Xử lý các logic phức tạp khi Admin duyệt rút tiền (trừ tiền khỏi ví, cập nhật trạng thái) hoặc duyệt nạp tiền.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Khi thêm phí rút tiền (Fee), hãy sửa công thức trừ tiền trong hàm duyệt rút.
 public class AdminTransactionServiceImpl implements AdminTransactionService {
 
     private final TransactionHistoryRepository transactionRepository;

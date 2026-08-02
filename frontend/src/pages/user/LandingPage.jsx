@@ -1,7 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { Typography, Carousel, Card, Row, Col, Button, Tag, Spin, Select } from 'antd';
-import { FireOutlined, TrophyOutlined, GiftOutlined } from '@ant-design/icons';
+import { TrophyOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api.js';
 import dayjs from 'dayjs';
@@ -10,6 +10,10 @@ import horseRacingImg from '../../assets/anhgioithieu1.png';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Chủ sau Đăng nhập
+// [Tác dụng]: Tổng hợp thông tin nhanh (Widget) như số dư ví, chặng đua nổi bật sắp diễn ra, lịch sử cá cược gần nhất.
+// [Hướng dẫn sửa đổi]:
+// - UI: Thay đổi bố cục Grid (Lưới) để chứa được nhiều Widget hơn.
 const LandingPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();

@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+    // [Chức năng rõ ràng]: Entity Nội dung Tĩnh (CMS)
+    // [Tác dụng]: Ánh xạ bảng `system_contents`. Lưu trữ nội dung HTML của trang Điều khoản, Giới thiệu (để Admin có thể sửa mà không cần code).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `Version` để theo dõi lịch sử chỉnh sửa bài viết.
 public class SystemContent {
 
     @Id

@@ -10,6 +10,10 @@ import com.swp.horseracing.model.UserStatus;
 
 import java.util.List;
 
+    // [Chức năng rõ ràng]: Interface Service Quản lý User
+    // [Tác dụng]: Định nghĩa các hàm CRUD User, lấy lịch sử ví, duyệt tài khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hàm đặt lại mật khẩu bằng Token.
 public interface UserService {
     UserResponseDTO registerUser(RegisterRequestDTO request);
 

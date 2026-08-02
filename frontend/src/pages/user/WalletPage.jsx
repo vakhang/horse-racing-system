@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Typography, Card, Button, InputNumber, message, Alert, Modal, Tabs, Form, Input, Row, Col, Space, Divider, Result, Tag, Tooltip, Select } from 'antd';
-import { WalletOutlined, BankOutlined, ExportOutlined, ArrowLeftOutlined, CopyOutlined, CheckCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { WalletOutlined, BankOutlined, ExportOutlined, CopyOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import api from '../../config/api';
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Quản lý Ví
+// [Tác dụng]: Hiển thị số dư hiện tại, Lịch sử giao dịch (Nạp/Rút/Cược). Chứa Form tạo lệnh Rút Tiền (Withdraw) về tài khoản ngân hàng.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Bắt Validation (Không cho rút tiền nếu số dư khả dụng nhỏ hơn số tiền muốn rút) trực tiếp trên Client thay vì chờ Backend báo lỗi.
 const WalletPage = () => {
     const { user } = useAuth();
     const userId = user?.id;
@@ -18,7 +22,7 @@ const WalletPage = () => {
     const initialBalanceRef = useRef(null);
 
     const [withdrawForm] = Form.useForm();
-    const [submittingProof, setSubmittingProof] = useState(false);
+    
     const [isSuccess, setIsSuccess] = useState(false);
     const [form] = Form.useForm();
     const [banks, setBanks] = useState([]);
@@ -84,22 +88,6 @@ const WalletPage = () => {
             message.error(error.response?.data || "Lỗi tạo mã QR!");
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleConfirmTransfer = async (values) => {
-        setSubmittingProof(true);
-        try {
-            await api.post('/payments/confirm', {
-                transactionCode: paymentData?.transactionCode,
-                proofUrl: values.proofUrl
-            });
-            setIsSuccess(true);
-            message.success('Hệ thống đã ghi nhận hóa đơn nạp tiền thành công!');
-        } catch (error) {
-            message.error(error.response?.data || 'Có lỗi xảy ra khi xác nhận hóa đơn!');
-        } finally {
-            setSubmittingProof(false);
         }
     };
 

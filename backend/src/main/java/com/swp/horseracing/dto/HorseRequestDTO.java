@@ -4,6 +4,10 @@ import com.swp.horseracing.model.HorseStatus;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Thêm/Sửa Ngựa
+    // [Tác dụng]: Đóng gói dữ liệu text từ form đăng ký ngựa (tên, tuổi, mô tả) của Chủ ngựa.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Sửa thuộc tính nếu trong CSDL bảng Ngựa có thêm cột mới.
 public class HorseRequestDTO {
     private String name;
     private Integer ownerId; // Bắt buộc để biết ngựa của ai

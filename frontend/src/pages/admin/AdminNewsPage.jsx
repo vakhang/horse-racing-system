@@ -28,6 +28,10 @@ const CATEGORIES = {
     WARNING: { label: 'Cảnh báo', color: 'orange' },
 };
 
+// [Chức năng rõ ràng]: Trang Quản lý Thông báo (Admin)
+// [Tác dụng]: Cho phép Admin soạn thảo văn bản, gửi Thông báo Hệ thống (System Announcement) tới tất cả người dùng hoặc một nhóm Role cụ thể.
+// [Hướng dẫn sửa đổi]:
+// - Logic: Nếu muốn hỗ trợ soạn thảo HTML (Rich Text Editor), hãy thay `<TextArea>` bằng một thư viện như ReactQuill.
 const AdminNewsPage = () => {
     const [content, setContent] = useState('');
     const [category, setCategory] = useState('SYSTEM');

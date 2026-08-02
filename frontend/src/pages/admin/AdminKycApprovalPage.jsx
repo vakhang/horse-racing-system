@@ -34,6 +34,11 @@ const AdminKycApprovalPage = () => {
     }, []);
 
     // 2. Hàm gọi API Update (Chỉ gửi đúng cái Status, vì BE của sếp đã check != null)
+    // [Chức năng rõ ràng]: Xử lý Duyệt/Từ chối Hồ sơ KYC
+    // [Tác dụng]: Gửi yêu cầu cập nhật trạng thái người dùng (từ PENDING sang APPROVED hoặc REJECTED).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi API xử lý trạng thái user ở `api.put('/users/${userId}/status')`.
+    // - UI (CSS/Style): Sửa câu thông báo thành công ở `message.success(...)`.
     const handleApproval = async (userId, newStatus) => {
         try {
             await api.put(`/users/${userId}`, { status: newStatus });
@@ -219,7 +224,11 @@ const AdminKycApprovalPage = () => {
                 />
 
                 {/* Modal Xem Ảnh Trực Tiếp */}
-                <Modal
+                {/* [Chức năng rõ ràng]: Modal Phê duyệt & Xem ảnh căn cước (KYC) */}
+            {/* [Tác dụng]: Hiển thị popup chứa ảnh CMND/CCCD to rõ ràng và 2 nút bấm Duyệt / Từ Chối. */}
+            {/* [Hướng dẫn sửa đổi]: */}
+            {/* - UI (CSS/Style): Sửa màu sắc nút Từ chối ở thuộc tính `danger`, nút Duyệt ở class `bg-green-600`. */}
+            <Modal
                     title={<span className="text-xl font-bold">Hồ sơ KYC: {currentUser?.username}</span>}
                     open={isModalVisible}
                     onCancel={() => setIsModalVisible(false)}

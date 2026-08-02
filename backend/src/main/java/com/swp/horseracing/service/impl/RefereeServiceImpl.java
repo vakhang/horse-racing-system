@@ -13,6 +13,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Trọng tài
+    // [Tác dụng]: Nhận mảng thứ hạng (Rank) từ trọng tài, cập nhật vào bảng `registrations` để chuẩn bị cho việc trả thưởng.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm Validate để chặn trọng tài submit kết quả nếu có >= 2 con ngựa cùng thứ hạng (nếu luật không cho phép).
 public class RefereeServiceImpl implements RefereeService {
 
     private final RaceRepository raceRepository;

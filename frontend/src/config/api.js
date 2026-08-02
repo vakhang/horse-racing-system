@@ -1,6 +1,10 @@
 import axios from 'axios';
 import { getToken } from '../utils/auth';
 
+// [Chức năng rõ ràng]: Cấu hình Axios gọi API (Frontend)
+// [Tác dụng]: Định nghĩa URL gốc của Backend để Frontend gọi tới, không cần phải gõ lại link dài dòng ở mỗi file.
+// [Hướng dẫn sửa đổi]:
+// - Logic/Data: Nếu Backend thay đổi domain (chuyển nhà cung cấp) hoặc bạn chạy ở Localhost, hãy sửa đường link `baseURL` này thành `http://localhost:8080/api`.
 const api = axios.create({
     // FIX: Bỏ qua biến môi trường bị cấu hình sai trên Vercel, dùng thẳng link gốc đáng tin cậy.
     baseURL: 'https://horse-racing-system-production-492c.up.railway.app/api',

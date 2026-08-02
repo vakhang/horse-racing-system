@@ -9,6 +9,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "audit_logs")
 @Data @NoArgsConstructor @AllArgsConstructor @Builder
+    // [Chức năng rõ ràng]: Entity Nhật ký hệ thống
+    // [Tác dụng]: Ánh xạ với bảng `audit_logs` trong CSDL, dùng để lưu vết các thao tác quan trọng của Admin (duyệt ngựa, khóa tài khoản).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột vào Entity này nếu muốn lưu thêm IP Address hay Trình duyệt của người thao tác.
 public class AuditLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

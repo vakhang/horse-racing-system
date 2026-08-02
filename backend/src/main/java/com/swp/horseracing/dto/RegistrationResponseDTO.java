@@ -6,6 +6,10 @@ import lombok.Data;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin Đăng ký Đua
+    // [Tác dụng]: Trả về chi tiết một suất thi đấu (Ai cưỡi, ngựa gì, ở làn chạy số mấy).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm thông tin tỷ lệ cược cá nhân cho từng suất chạy này.
 public class RegistrationResponseDTO {
     private Integer id;
     private Integer raceId;

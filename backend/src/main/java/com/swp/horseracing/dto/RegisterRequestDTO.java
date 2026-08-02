@@ -7,6 +7,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO nhận Request Đăng ký Tài khoản
+    // [Tác dụng]: Hứng toàn bộ thông tin đăng ký (text) từ Frontend, không chứa file vì dùng Multipart.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm các trường phụ như `address`, `phoneNumber` nếu DB yêu cầu.
 public class RegisterRequestDTO {
     private String username;
     private String password;

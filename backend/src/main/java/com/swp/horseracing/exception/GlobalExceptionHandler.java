@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
+    // [Chức năng rõ ràng]: Bộ lọc Bắt Lỗi toàn cục (Global Exception Handler)
+    // [Tác dụng]: Tự động "tóm" tất cả các lỗi xảy ra trong quá trình API chạy (như Lỗi file quá to, Lỗi Runtime) để chuyển thành HTTP Status Code 400 Bad Request một cách gọn gàng, tránh việc lộ mã nguồn Backend cho Frontend.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu muốn bắt thêm lỗi chuyên biệt (VD: Bắt lỗi 403 Forbidden hoặc lỗi Validation), hãy thêm một hàm `@ExceptionHandler(TenLoi.class)` mới vào file này.
 public class GlobalExceptionHandler {
 
     // Tóm tất cả các lỗi RuntimeException trong hệ thống

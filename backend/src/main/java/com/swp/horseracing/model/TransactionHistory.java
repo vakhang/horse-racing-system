@@ -3,8 +3,6 @@ package com.swp.horseracing.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -14,6 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Lịch sử Giao dịch
+    // [Tác dụng]: Ánh xạ bảng `transaction_history`. Lưu lại mọi biến động số dư của ví (Nạp, Rút, Đặt cược, Trả thưởng).
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Thêm cột `Fee` (Phí giao dịch) nếu hệ thống thu phí nạp/rút.
 public class TransactionHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

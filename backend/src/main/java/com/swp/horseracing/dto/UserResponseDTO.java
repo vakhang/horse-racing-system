@@ -11,6 +11,10 @@ import java.util.List;
 
 @Data
 @Builder
+    // [Chức năng rõ ràng]: Lớp DTO trả về Thông tin User
+    // [Tác dụng]: Đóng gói Profile của User (sau khi ẩn password) để gửi về Frontend.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Cần lọc cẩn thận, không bao giờ thêm các trường nhạy cảm như `password` hay `token` vào class này.
 public class UserResponseDTO {
     private Integer id;
     private String username;

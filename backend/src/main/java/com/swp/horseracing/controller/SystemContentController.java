@@ -13,7 +13,10 @@ public class SystemContentController {
 
     private final SystemContentService systemContentService;
 
-    // Public API for visitors
+    // [Chức năng rõ ràng]: API Lấy bài viết (Public)
+    // [Tác dụng]: Cho phép Frontend (dù người dùng chưa đăng nhập) lấy nội dung HTML của các bài viết (như Giới thiệu, Luật chơi) để hiển thị lên màn hình.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu đổi endpoint API lấy bài viết, hãy sửa `@GetMapping("/public/content/{pageId}")`. Đảm bảo URL này đã được `permitAll` trong `SecurityConfig.java`.
     @GetMapping("/public/content/{pageId}")
     public ResponseEntity<?> getPublicContent(@PathVariable String pageId) {
         try {

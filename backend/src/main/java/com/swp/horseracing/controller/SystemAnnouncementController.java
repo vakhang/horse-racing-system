@@ -20,6 +20,10 @@ public class SystemAnnouncementController {
     private final SystemAnnouncementService announcementService;
     private final JwtUtils jwtUtils;
 
+    // [Chức năng rõ ràng]: API Tạo thông báo hệ thống (Admin)
+    // [Tác dụng]: Nhận request từ Admin (gồm nội dung, ảnh đính kèm, đối tượng nhận) để phát thông báo tới tất cả user.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Có thể bỏ đoạn `MultipartFile file` nếu không muốn cho admin gửi kèm ảnh.
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<?> createAnnouncement(
             @RequestParam("content") String content,

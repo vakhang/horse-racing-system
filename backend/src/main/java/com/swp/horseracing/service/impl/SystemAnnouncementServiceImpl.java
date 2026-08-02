@@ -18,6 +18,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Thông báo
+    // [Tác dụng]: Lưu text và file đính kèm (nếu có) thành một thông báo public, hiển thị trên trang chủ.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Cập nhật hàm này để kết nối với Web Socket / Firebase nếu muốn Push Notification Realtime.
 public class SystemAnnouncementServiceImpl implements SystemAnnouncementService {
 
     private final SystemAnnouncementRepository announcementRepository;

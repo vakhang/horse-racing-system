@@ -3,6 +3,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
+    // [Chức năng rõ ràng]: Lớp DTO hứng Webhook SePay
+    // [Tác dụng]: Được thiết kế để map chính xác với cấu trúc JSON mà hệ thống SePay tự động bắn sang khi có người chuyển khoản.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: KHÔNG ĐƯỢC ĐỔI TÊN THUỘC TÍNH trừ khi API của SePay có sự thay đổi.
 public class SePayWebhookRequestDTO {
 
     @JsonProperty("gateway")

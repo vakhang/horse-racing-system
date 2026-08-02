@@ -10,6 +10,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+    // [Chức năng rõ ràng]: Entity Thông báo Hệ thống
+    // [Tác dụng]: Ánh xạ bảng `system_announcements`. Lưu các thông báo chung do Admin phát ra.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Có thể liên kết N-N với User để lưu trạng thái Đã đọc/Chưa đọc (Is Read).
 public class SystemAnnouncement {
 
     @Id

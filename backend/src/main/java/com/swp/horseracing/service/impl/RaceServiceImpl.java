@@ -67,6 +67,10 @@ public class RaceServiceImpl implements RaceService {
         }
     }
 
+    // [Chức năng rõ ràng]: Quản lý chặng đua (Race Management)
+    // [Tác dụng]: Khởi tạo một chặng đua mới thuộc về một giải đấu cụ thể. Kiểm tra ràng buộc thời gian xuất phát phải hợp lệ.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Sửa logic thời gian (ví dụ: giới hạn không được tạo chặng đua trong quá khứ) ở phần kiểm tra `request.getRaceTime()`.
     @Override
     @Transactional
     public RaceResponseDTO createRace(RaceRequestDTO request) {
@@ -122,6 +126,10 @@ public class RaceServiceImpl implements RaceService {
         return mapToResponseDTO(race);
     }
 
+    // [Chức năng rõ ràng]: Cập nhật thông tin chặng đua
+    // [Tác dụng]: Chỉnh sửa các thông tin cơ bản của chặng đua (tên, giờ xuất phát, tỷ lệ phế, trọng tài, tiền thưởng).
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Nếu cần cấm thay đổi thông tin khi chặng đua đã bắt đầu, hãy thêm điều kiện check `race.getStatus()` ở đầu hàm này.
     @Override
     @Transactional
     public RaceResponseDTO updateRace(Integer id, RaceRequestDTO request) {
@@ -357,6 +365,12 @@ public class RaceServiceImpl implements RaceService {
         }
     }
 
+    // [Chức năng rõ ràng]: Xử lý thanh toán và trả thưởng (Payout)
+    // [Tác dụng]: Tính toán tổng quỹ chia thưởng (Net Pool), trả tiền thắng cược cho khán giả, và chia phần trăm cho chủ ngựa, nài ngựa.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: 
+    //   + Đổi tỷ lệ chia thưởng khán giả (hiện tại 65%): sửa `new java.math.BigDecimal("0.65")`.
+    //   + Đổi tỷ lệ thuế (hiện tại 10% cho giải > 10 củ): sửa `0.10` và `10000000`.
     @Override
     @Transactional
     public void payoutRace(Integer raceId) {

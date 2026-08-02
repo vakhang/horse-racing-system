@@ -9,6 +9,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
+    // [Chức năng rõ ràng]: Interface kết nối DB (Bet)
+    // [Tác dụng]: Thao tác bảng `bets`. Đã được cấu hình các Custom Query (@Query) để thống kê tiền cược, lấy danh sách cược theo UserId hoặc RaceId.
+    // [Hướng dẫn sửa đổi]:
+    // - Data: Nếu muốn sửa công thức tính hoặc điều kiện lọc (VD: bỏ qua cược bị CANCEL), hãy sửa câu lệnh `@Query` ở đây.
 public interface BetRepository extends JpaRepository<Bet, Integer> {
 
     // Tìm các phiếu cược theo chặng đua

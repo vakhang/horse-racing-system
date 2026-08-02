@@ -1,6 +1,6 @@
 import React from 'react';
-import { Typography, Breadcrumb } from 'antd';
-import { HomeOutlined } from '@ant-design/icons';
+import { Typography } from 'antd';
+
 import { Link } from 'react-router-dom';
 import Footer from '../../components/layout/Footer';
 import PublicHeader from '../../components/layout/PublicHeader';
@@ -9,6 +9,10 @@ import horseRacingImg2 from '../../assets/anhgioithieu1.png';
 
 const { Title, Paragraph } = Typography;
 
+// [Chức năng rõ ràng]: Trang Giới Thiệu Công Ty
+// [Tác dụng]: Hiển thị các thông tin giới thiệu chung về trường đua, lịch sử hình thành và đội ngũ quản lý.
+// [Hướng dẫn sửa đổi]:
+// - UI: Tùy chỉnh text ở thẻ <p> hoặc thay hình ảnh banner ở thẻ <img>.
 const AboutPage = () => {
     return (
         <div className="min-h-screen bg-[#001529] font-sans flex flex-col">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, DatePicker, Select, Typography, message, Row, Col, ConfigProvider, theme, Upload, Checkbox, Modal, Space } from 'antd';
+import { Form, Input, Button, DatePicker, Select, Typography, message, Row, Col, ConfigProvider, theme, Upload, Checkbox, Modal } from 'antd';
 import { UserOutlined, MailOutlined, LockOutlined, CalendarOutlined, InboxOutlined, TrophyOutlined, FireOutlined, SafetyCertificateOutlined, PhoneOutlined, IdcardOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -8,6 +8,10 @@ import horseBg from '../assets/horseracing2.png';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Đăng Ký Tài Khoản
+// [Tác dụng]: Form điền thông tin dài (Họ tên, SĐT, User/Pass, Role). Bắt buộc người dùng tích chọn 4 ô Đồng ý Điều khoản trước khi Submit.
+// [Hướng dẫn sửa đổi]:
+// - UI/Logic: Chia Form thành nhiều bước (Multi-step Wizard) nếu thấy Form quá dài.
 const RegisterPage = () => {
     const [loading, setLoading] = useState(false);
     const [checkAll, setCheckAll] = useState(false);

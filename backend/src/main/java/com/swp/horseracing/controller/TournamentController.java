@@ -13,6 +13,10 @@ public class TournamentController {
 
     private final TournamentService tournamentService;
 
+    // [Chức năng rõ ràng]: API Tạo Giải Đấu
+    // [Tác dụng]: Nhận request từ Admin/Ban Tổ Chức để tạo một giải đấu mới.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic/Data: Đổi endpoint bằng cách sửa `@PostMapping`.
     @PostMapping
     public ResponseEntity<?> createTournament(@RequestBody TournamentRequestDTO request) {
         try {

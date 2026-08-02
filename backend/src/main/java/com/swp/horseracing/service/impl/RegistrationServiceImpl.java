@@ -15,6 +15,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Đăng ký Thi đấu
+    // [Tác dụng]: Kiểm tra chống trùng lặp: Kiểm tra xem con ngựa hoặc nài ngựa đó đã đăng ký chặng đua hiện tại hay chưa.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Bổ sung kiểm tra cân nặng (Weight) của nài ngựa xem có khớp chuẩn của chặng không trước khi lưu.
 public class RegistrationServiceImpl implements RegistrationService {
 
     private final RegistrationRepository registrationRepository;

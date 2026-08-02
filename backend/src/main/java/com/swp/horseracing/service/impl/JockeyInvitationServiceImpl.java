@@ -13,6 +13,10 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Lời mời
+    // [Tác dụng]: Chứa logic gửi lời mời, tự động tạo Đơn đăng ký thi đấu (Registration) khi Nài ngựa Bấm ACCEPT.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Nếu nài ngựa Accept, có thể gọi sang Notification Service để thông báo lại cho Chủ ngựa.
 public class JockeyInvitationServiceImpl implements JockeyInvitationService {
 
     private final JockeyInvitationRepository invitationRepository;

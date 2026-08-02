@@ -12,6 +12,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+    // [Chức năng rõ ràng]: Class Triển khai Nội dung CMS
+    // [Tác dụng]: Tìm bài viết theo PageId (LUAT_CHOI, DIEU_KHOAN), nếu chưa có thì tạo mới, nếu có rồi thì update nội dung HTML.
+    // [Hướng dẫn sửa đổi]:
+    // - Logic: Thêm hệ thống Cache (Redis) ở đây để không phải chọc vào DB liên tục khi Frontend get bài viết.
 public class SystemContentServiceImpl implements SystemContentService {
 
     private final SystemContentRepository systemContentRepository;
