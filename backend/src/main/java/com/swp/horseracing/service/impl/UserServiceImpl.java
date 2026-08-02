@@ -33,8 +33,7 @@ public class UserServiceImpl implements UserService {
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final JwtUtils jwtUtils;
     private final FileStorageService fileStorageService;
-    private final RegistrationRepository registrationRepository;
-    private final BetRepository betRepository;
+    private final com.swp.horseracing.repository.RegistrationRepository registrationRepository;
     private final com.swp.horseracing.repository.JockeyInvitationRepository jockeyInvitationRepository;
 
     @Override
@@ -445,7 +444,7 @@ public class UserServiceImpl implements UserService {
                 java.math.BigDecimal totalPool = betRepository.findByRaceId(reg.getRace().getId()).stream()
                         .map(com.swp.horseracing.model.Bet::getAmount)
                         .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-                jockeyPool = totalPool.multiply(reg.getRace().getTournament().getPrizeConfig().getJockeyPercentage()).setScale(2, java.math.RoundingMode.HALF_UP);
+                jockeyPool = totalPool.multiply(new java.math.BigDecimal("0.30")).setScale(2, java.math.RoundingMode.HALF_UP);
             }
             
             map.put("reward", jockeyFixed.add(jockeyPool));
