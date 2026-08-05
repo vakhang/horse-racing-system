@@ -61,4 +61,14 @@ public class Horse {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+
+    @jakarta.persistence.Column(name = "rating")
+    @lombok.Builder.Default
+    private Integer rating = 40;
+
+    @jakarta.persistence.Column(name = "class_level")
+    @lombok.Builder.Default
+    private Integer classLevel = 4;
+
 }

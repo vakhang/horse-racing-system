@@ -32,4 +32,9 @@ public class Tournament {
 
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
+
+
+    @jakarta.persistence.Column(name = "required_class")
+    private Integer requiredClass;
+
 }

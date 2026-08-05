@@ -13,4 +13,7 @@ public class BetRequestDTO {
     private Integer raceId;
     private Integer registrationId;
     private BigDecimal amount;
+
+    private com.swp.horseracing.model.BetType betType;
+    private Integer registrationId2;
 }

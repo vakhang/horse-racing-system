@@ -82,4 +82,15 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private java.util.List<UserAttachment> attachments = new java.util.ArrayList<>();
+
+
+    @jakarta.persistence.Version
+    @jakarta.persistence.Column(name = "version")
+    @lombok.Builder.Default
+    private Integer version = 0;
+
+    @jakarta.persistence.Column(name = "is_busy")
+    @lombok.Builder.Default
+    private Boolean isBusy = false;
+
 }

@@ -45,4 +45,21 @@ public class Bet {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    @jakarta.persistence.Column(name = "bet_type")
+    @lombok.Builder.Default
+    private BetType betType = BetType.WIN;
+
+    @jakarta.persistence.ManyToOne
+    @jakarta.persistence.JoinColumn(name = "registration_id_2")
+    private Registration registration2;
+
+    @jakarta.persistence.Column(name = "gross_payout", precision = 15, scale = 2)
+    private java.math.BigDecimal grossPayout;
+
+    @jakarta.persistence.Column(name = "net_payout", precision = 15, scale = 2)
+    private java.math.BigDecimal netPayout;
+
 }

@@ -10,5 +10,6 @@ public enum RegistrationStatus {
     APPROVED_BY_ADMIN,
     REJECTED_BY_ADMIN,
     WITHDRAWN,
-    DISQUALIFIED
+    DISQUALIFIED,
+    SCRATCH, NON_STARTER
 }

@@ -5,5 +5,6 @@ package com.swp.horseracing.model;
     // [Hướng dẫn sửa đổi]:
     // - Data: Thêm trạng thái DELAYED nếu muốn phân biệt chặng đua bị hoãn với chặng đua chưa bắt đầu.
 public enum RaceStatus {
-    REGISTRATION, BETTING, LOCK_SESSION, RUNNING, FINISHED, RESULT_CONFIRMED, COMPLETED, CANCELED
+    REGISTRATION, BETTING, LOCK_SESSION, RUNNING, FINISHED, RESULT_CONFIRMED, COMPLETED, CANCELED,
+    PROVISIONAL_RESULT
 }

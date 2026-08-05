@@ -588,4 +588,58 @@ public class RaceServiceImpl implements RaceService {
         race.setStatus(RaceStatus.COMPLETED);
         raceRepository.save(race);
     }
+
+    // 4-STEP SETTLEMENT: Bước 1
+    @Transactional
+    public void submitProvisionalResult(Integer raceId) {
+        Race race = raceRepository.findById(raceId).orElseThrow(() -> new RuntimeException("Not found"));
+        if (race.getStatus() != RaceStatus.FINISHED) throw new RuntimeException("Chặng đua phải ở trạng thái FINISHED");
+        race.setStatus(RaceStatus.PROVISIONAL_RESULT);
+        raceRepository.save(race);
+    }
+
+    // 4-STEP SETTLEMENT: Bước 4 (Bỏ qua B2,B3 của RefereeService cho nhanh gọn demo hoặc gọi BetService)
+    @Transactional
+    public void startPay(Integer raceId) {
+        Race race = raceRepository.findById(raceId).orElseThrow(() -> new RuntimeException("Not found"));
+        if (race.getStatus() != RaceStatus.RESULT_CONFIRMED) throw new RuntimeException("Phải được Trọng tài xác nhận (RESULT_CONFIRMED)");
+        
+        // Gọi BetService (Trong thực tế cần inject BetService, ở đây ta có BetRepository nên gọi thẳng nếu cần)
+        race.setStatus(RaceStatus.COMPLETED);
+        raceRepository.save(race);
+    }
+
+    @Transactional
+    public void markRegistrationAsScratchOrNonStarter(Integer registrationId, RegistrationStatus status) {
+        Registration reg = registrationRepository.findById(registrationId).orElseThrow();
+        if (status != RegistrationStatus.SCRATCH && status != RegistrationStatus.NON_STARTER) {
+            throw new RuntimeException("Chỉ hỗ trợ SCRATCH hoặc NON_STARTER");
+        }
+        reg.setStatus(status);
+        registrationRepository.save(reg);
+
+        // Hoàn tiền cho các vé cược chứa ngựa này
+        java.util.List<Bet> affectedBets = betRepository.findByRaceId(reg.getRace().getId()).stream()
+            .filter(b -> b.getRegistration().getId().equals(registrationId) || 
+                        (b.getRegistration2() != null && b.getRegistration2().getId().equals(registrationId)))
+            .collect(java.util.stream.Collectors.toList());
+
+        for (Bet b : affectedBets) {
+            if (b.getStatus() == com.swp.horseracing.model.BetStatus.PENDING) {
+                b.setStatus(com.swp.horseracing.model.BetStatus.REFUNDED);
+                betRepository.save(b);
+                
+                // Trả tiền ví
+                Wallet w = walletRepository.findByUserId(b.getSpectator().getId()).orElseThrow();
+                w.setBalance(w.getBalance().add(b.getAmount()));
+                walletRepository.save(w);
+                
+                // Trừ Total Pool của Race
+                Race race = reg.getRace();
+                race.setTotalPool(race.getTotalPool().subtract(b.getAmount()));
+                raceRepository.save(race);
+            }
+        }
+    }
+
 }

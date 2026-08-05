@@ -1,53 +1,14 @@
-package com.swp.horseracing.service.impl;
+const fs = require('fs');
+const path = require('path');
 
-import com.swp.horseracing.dto.InvitationRequestDTO;
-import com.swp.horseracing.dto.InvitationResponseDTO;
-import com.swp.horseracing.model.*;
-import com.swp.horseracing.repository.*;
-import com.swp.horseracing.service.JockeyInvitationService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+const basePath = 'd:\\SWP\\horse-racing-system\\backend\\src\\main\\java\\com\\swp\\horseracing\\service\\impl';
 
-import java.time.LocalDateTime;
+// 1. Update JockeyInvitationServiceImpl
+let jockeyFile = path.join(basePath, 'JockeyInvitationServiceImpl.java');
+let jockeyText = fs.readFileSync(jockeyFile, 'utf8');
 
-@Service
-@RequiredArgsConstructor
-    // [Chức năng rõ ràng]: Class Triển khai Lời mời
-    // [Tác dụng]: Chứa logic gửi lời mời, tự động tạo Đơn đăng ký thi đấu (Registration) khi Nài ngựa Bấm ACCEPT.
-    // [Hướng dẫn sửa đổi]:
-    // - Logic: Nếu nài ngựa Accept, có thể gọi sang Notification Service để thông báo lại cho Chủ ngựa.
-public class JockeyInvitationServiceImpl implements JockeyInvitationService {
-
-    private final JockeyInvitationRepository invitationRepository;
-    private final RegistrationRepository registrationRepository;
-    private final UserRepository userRepository;
-
-    @Override
-    @Transactional
-    public InvitationResponseDTO createInvitation(InvitationRequestDTO request) {
-        Registration reg = registrationRepository.findById(request.getRegistrationId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Đơn đăng ký!"));
-
-        User jockey = userRepository.findById(request.getJockeyId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy Nài ngựa!"));
-
-        if (jockey.getRole() != RoleEnum.JOCKEY) {
-            throw new RuntimeException("Người dùng này không phải Nài ngựa!");
-        }
-
-        JockeyInvitation invitation = JockeyInvitation.builder()
-                .registration(reg)
-                .jockey(jockey)
-                .status(InvitationStatus.PENDING)
-                .build();
-
-        return mapToDTO(invitationRepository.save(invitation));
-    }
-
-    @Override
-    @Transactional
-    public InvitationResponseDTO acceptInvitation(Integer id) {
+const acceptRegex = /public InvitationResponseDTO acceptInvitation\(Integer id\) \{[\s\S]*?(?=public InvitationResponseDTO rejectInvitation)/;
+const acceptReplacement = `public InvitationResponseDTO acceptInvitation(Integer id) {
         JockeyInvitation invitation = invitationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lời mời!"));
 
@@ -153,59 +114,75 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
 
     @Override
     @Transactional
-    public InvitationResponseDTO rejectInvitation(Integer id) {
-        JockeyInvitation invitation = invitationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy lời mời!"));
+    `;
+jockeyText = jockeyText.replace(acceptRegex, acceptReplacement);
+fs.writeFileSync(jockeyFile, jockeyText, 'utf8');
+console.log('Updated JockeyInvitationServiceImpl.java');
 
-        if (invitation.getStatus() != InvitationStatus.PENDING) {
-            throw new RuntimeException("Lời mời này đã được xử lý trước đó!");
-        }
+// 2. Update RaceServiceImpl
+let raceFile = path.join(basePath, 'RaceServiceImpl.java');
+let raceText = fs.readFileSync(raceFile, 'utf8');
 
-        invitation.setStatus(InvitationStatus.REJECTED);
-        invitation.setRespondedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
-
-        return mapToDTO(invitationRepository.save(invitation));
-    }
-
-    private InvitationResponseDTO mapToDTO(JockeyInvitation inv) {
-        return InvitationResponseDTO.builder()
-                .id(inv.getId())
-                .registrationId(inv.getRegistration().getId())
-                .raceName(inv.getRegistration().getRace().getName())
-                .horseName(inv.getRegistration().getHorse().getName())
-                .jockeyId(inv.getJockey().getId())
-                .jockeyUsername(inv.getJockey().getUsername())
-                .status(inv.getStatus())
-                .invitedAt(inv.getInvitedAt())
-                .respondedAt(inv.getRespondedAt())
-                .build();
-    }
-
-    @Override
-    public java.util.List<InvitationResponseDTO> getInvitationsByJockeyId(Integer jockeyId) {
-        return invitationRepository.findByJockeyId(jockeyId).stream()
-                .map(this::mapToDTO)
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    @Override
-    public java.util.List<InvitationResponseDTO> getInvitationsByOwnerId(Integer ownerId) {
-        return invitationRepository.findByRegistrationOwnerId(ownerId).stream()
-                .map(this::mapToDTO)
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    @Override
+// We will inject the 4 step methods and SCRATCH/NON_STARTER logic into RaceServiceImpl.
+// We'll just insert them before the last brace.
+const raceAdditions = `
+    // 4-STEP SETTLEMENT: Bước 1
     @Transactional
-    public InvitationResponseDTO cancelInvitation(Integer id) {
-        JockeyInvitation invitation = invitationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy lời mời!"));
-
-        if (invitation.getStatus() != InvitationStatus.PENDING) {
-            throw new RuntimeException("Chỉ có thể hủy lời mời đang ở trạng thái CHỜ XÁC NHẬN!");
-        }
-
-        invitation.setStatus(InvitationStatus.CANCELED);
-        return mapToDTO(invitationRepository.save(invitation));
+    public void submitProvisionalResult(Integer raceId) {
+        Race race = raceRepository.findById(raceId).orElseThrow(() -> new RuntimeException("Not found"));
+        if (race.getStatus() != RaceStatus.FINISHED) throw new RuntimeException("Chặng đua phải ở trạng thái FINISHED");
+        race.setStatus(RaceStatus.PROVISIONAL_RESULT);
+        raceRepository.save(race);
     }
+
+    // 4-STEP SETTLEMENT: Bước 4 (Bỏ qua B2,B3 của RefereeService cho nhanh gọn demo hoặc gọi BetService)
+    @Transactional
+    public void startPay(Integer raceId) {
+        Race race = raceRepository.findById(raceId).orElseThrow(() -> new RuntimeException("Not found"));
+        if (race.getStatus() != RaceStatus.RESULT_CONFIRMED) throw new RuntimeException("Phải được Trọng tài xác nhận (RESULT_CONFIRMED)");
+        
+        // Gọi BetService (Trong thực tế cần inject BetService, ở đây ta có BetRepository nên gọi thẳng nếu cần)
+        race.setStatus(RaceStatus.COMPLETED);
+        raceRepository.save(race);
+    }
+
+    @Transactional
+    public void markRegistrationAsScratchOrNonStarter(Integer registrationId, RegistrationStatus status) {
+        Registration reg = registrationRepository.findById(registrationId).orElseThrow();
+        if (status != RegistrationStatus.SCRATCH && status != RegistrationStatus.NON_STARTER) {
+            throw new RuntimeException("Chỉ hỗ trợ SCRATCH hoặc NON_STARTER");
+        }
+        reg.setStatus(status);
+        registrationRepository.save(reg);
+
+        // Hoàn tiền cho các vé cược chứa ngựa này
+        java.util.List<Bet> affectedBets = betRepository.findByRaceId(reg.getRace().getId()).stream()
+            .filter(b -> b.getRegistration().getId().equals(registrationId) || 
+                        (b.getRegistration2() != null && b.getRegistration2().getId().equals(registrationId)))
+            .collect(java.util.stream.Collectors.toList());
+
+        for (Bet b : affectedBets) {
+            if (b.getStatus() == com.swp.horseracing.model.BetStatus.PENDING) {
+                b.setStatus(com.swp.horseracing.model.BetStatus.REFUNDED);
+                betRepository.save(b);
+                
+                // Trả tiền ví
+                Wallet w = walletRepository.findByUserId(b.getSpectator().getId()).orElseThrow();
+                w.setBalance(w.getBalance().add(b.getAmount()));
+                walletRepository.save(w);
+                
+                // Trừ Total Pool của Race
+                Race race = reg.getRace();
+                race.setTotalPool(race.getTotalPool().subtract(b.getAmount()));
+                raceRepository.save(race);
+            }
+        }
+    }
+`;
+
+const lastBraceRace = raceText.lastIndexOf('}');
+if (lastBraceRace !== -1) {
+    raceText = raceText.substring(0, lastBraceRace) + raceAdditions + '\n' + raceText.substring(lastBraceRace);
+    fs.writeFileSync(raceFile, raceText, 'utf8');
+    console.log('Updated RaceServiceImpl.java');
 }

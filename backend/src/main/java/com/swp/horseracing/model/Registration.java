@@ -46,4 +46,22 @@ public class Registration {
     
     @Column(name = "rank")
     private Integer rank;
+
+
+    @jakarta.persistence.Column(name = "assigned_weight")
+    private Double assignedWeight;
+
+    @jakarta.persistence.Column(name = "actual_weight")
+    private Double actualWeight;
+
+    @jakarta.persistence.Column(name = "lead_weight")
+    private Double leadWeight;
+
+    @jakarta.persistence.Column(name = "is_weighed_in")
+    @lombok.Builder.Default
+    private Boolean isWeighedIn = false;
+
+    @jakarta.persistence.Column(name = "gate_number")
+    private Integer gateNumber;
+
 }

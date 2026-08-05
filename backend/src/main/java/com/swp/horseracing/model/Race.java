@@ -58,4 +58,10 @@ public class Race {
             this.status = RaceStatus.REGISTRATION;
         }
     }
+
+
+    @jakarta.persistence.Column(name = "minus_pool_deficit", precision = 15, scale = 2)
+    @lombok.Builder.Default
+    private java.math.BigDecimal minusPoolDeficit = java.math.BigDecimal.ZERO;
+
 }
