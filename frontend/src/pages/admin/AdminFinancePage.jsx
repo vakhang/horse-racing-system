@@ -31,7 +31,7 @@ const AdminFinancePage = () => {
             setNgr(res.data?.ngr || 0);
             setTax(res.data?.taxCollected || 0);
         } catch (error) {
-            message.error('Lỗi tải dữ liệu sổ cái!');
+            message.error(error.response?.data?.error || error.response?.data?.message || 'Lỗi tải dữ liệu sổ cái!');
             setTransactions([]);
         } finally {
             setLoading(false);

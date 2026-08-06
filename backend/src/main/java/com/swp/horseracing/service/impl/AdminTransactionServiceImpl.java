@@ -71,8 +71,11 @@ public class AdminTransactionServiceImpl implements AdminTransactionService {
                 .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         BigDecimal ngr = races.stream()
-                .map(r -> (r.getTotalPool() != null ? r.getTotalPool() : BigDecimal.ZERO)
-                        .multiply(r.getRakePercentage()).divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP))
+                .map(r -> {
+                    BigDecimal pool = r.getTotalPool() != null ? r.getTotalPool() : BigDecimal.ZERO;
+                    BigDecimal rake = r.getRakePercentage() != null ? r.getRakePercentage() : new BigDecimal("20.00");
+                    return pool.multiply(rake).divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
+                })
                 .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
         List<TransactionHistory> allTxs = transactionRepository.findAll();
@@ -81,7 +84,12 @@ public class AdminTransactionServiceImpl implements AdminTransactionService {
                 .map(t -> t.getTaxAmount() != null ? t.getTaxAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
 
-        allTxs.sort((t1, t2) -> t2.getCreatedAt().compareTo(t1.getCreatedAt()));
+        allTxs.sort((t1, t2) -> {
+            if (t1.getCreatedAt() == null && t2.getCreatedAt() == null) return 0;
+            if (t1.getCreatedAt() == null) return 1;
+            if (t2.getCreatedAt() == null) return -1;
+            return t2.getCreatedAt().compareTo(t1.getCreatedAt());
+        });
 
         // Ánh xạ ra DTO để FE lấy được Bank Info
         List<TransactionHistoryResponseDTO> dtoList = allTxs.stream().map(tx -> TransactionHistoryResponseDTO.builder()
