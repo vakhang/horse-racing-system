@@ -33,4 +33,6 @@ public class HorseResponseDTO {
     
     private String microchipCode;
     private java.time.LocalDateTime lastHealthCheck;
+    private Integer classLevel;
+    private Integer rating;
 }

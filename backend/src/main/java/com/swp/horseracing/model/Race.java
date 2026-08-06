@@ -52,6 +52,9 @@ public class Race {
     private BigDecimal prize2;
     private BigDecimal prize3;
 
+    @Column(name = "race_class")
+    private Integer raceClass; // Hạng/Class quy định của chặng đua (Ví dụ: Class 1, 2, 3, 4, 5)
+
     @PrePersist
     public void prePersist() {
         if (this.status == null) {

@@ -152,6 +152,7 @@ const AdminTournamentPage = () => {
                 prize1: values.prize1,
                 prize2: values.prize2,
                 prize3: values.prize3,
+                raceClass: values.raceClass || 4,
                 rakePercentage: 35
             };
 
@@ -202,6 +203,7 @@ const AdminTournamentPage = () => {
             prize1: record.prize1,
             prize2: record.prize2,
             prize3: record.prize3,
+            raceClass: record.raceClass || 4,
         });
         setIsRaceModalVisible(true);
     };
@@ -302,6 +304,7 @@ const AdminTournamentPage = () => {
     const expandedRowRender = (tournament) => {
         const columns = [
             { title: 'Tên Chặng', dataIndex: 'name', key: 'name', render: t => <Text strong>{t}</Text> },
+            { title: 'Class Quy Định', dataIndex: 'raceClass', render: v => <Tag color="magenta" className="font-bold">CLASS {v || 4}</Tag> },
             { title: 'Giờ Xuất Phát', dataIndex: 'raceTime', render: v => v ? dayjs(v).format('DD/MM/YYYY HH:mm') : 'Chưa định' },
             { title: 'Live Pool', dataIndex: 'totalPool', render: v => <Text strong className="text-green-600">{v ? v.toLocaleString() + ' đ' : '0 đ'}</Text> },
             { title: 'Takeout Rate', dataIndex: 'rakePercentage', render: v => <Text strong className="text-yellow-600">{v || 20}%</Text> },
@@ -514,8 +517,19 @@ const AdminTournamentPage = () => {
                 <Form form={raceForm} layout="vertical" onFinish={handleSaveRace}>
                     <Divider orientation="left" className="border-blue-500"><Text className="text-blue-600 font-bold">1. Thông Tin Cơ Bản</Text></Divider>
                     <Row gutter={16}>
-                        <Col span={12}><Form.Item name="name" label={<Text strong>Tên Chặng Đua</Text>} rules={[{ required: true, message: 'Nhập tên chặng đua' }]}><Input size="large" placeholder="VD: Chặng 1 - Khởi động" /></Form.Item></Col>
-                        <Col span={12}>
+                        <Col span={8}><Form.Item name="name" label={<Text strong>Tên Chặng Đua</Text>} rules={[{ required: true, message: 'Nhập tên chặng đua' }]}><Input size="large" placeholder="VD: Chặng 1 - Khởi động" /></Form.Item></Col>
+                        <Col span={8}>
+                            <Form.Item name="raceClass" label={<Text strong>Class Quy Định</Text>} initialValue={4} rules={[{ required: true, message: 'Chọn Class!' }]}>
+                                <Select size="large">
+                                    <Option value={1}><Tag color="gold">Class 1 (Hạng Đỉnh Cao)</Tag></Option>
+                                    <Option value={2}><Tag color="purple">Class 2 (Hạng Cao Cấp)</Tag></Option>
+                                    <Option value={3}><Tag color="blue">Class 3 (Hạng Trung Cấp)</Tag></Option>
+                                    <Option value={4}><Tag color="green">Class 4 (Hạng Tiêu Chuẩn)</Tag></Option>
+                                    <Option value={5}><Tag color="orange">Class 5 (Hạng Khởi Đầu)</Tag></Option>
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                        <Col span={8}>
                             <Form.Item
                                 name="raceTime"
                                 label={<Text strong>Giờ Xuất Phát</Text>}

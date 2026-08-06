@@ -170,6 +170,8 @@ public class HorseServiceImpl implements HorseService {
                 .healthStatus(horse.getHealthStatus())
                 .microchipCode(horse.getMicrochipCode())
                 .lastHealthCheck(horse.getLastHealthCheck())
+                .classLevel(horse.getClassLevel())
+                .rating(horse.getRating())
                 .build();
     }
 }
