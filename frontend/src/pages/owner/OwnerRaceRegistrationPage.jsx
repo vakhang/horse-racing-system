@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, message, Card, Typography, Modal, Form, Select, Row, Col, Alert, Tabs } from 'antd';
-import { FlagOutlined, UserAddOutlined, SendOutlined, HistoryOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, message, Card, Typography, Modal, Form, Select, Row, Col, Alert, Tabs, Input } from 'antd';
+import { FlagOutlined, UserAddOutlined, SendOutlined, HistoryOutlined, FileExclamationOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
 import { useAuth } from '../../context/AuthContext';
@@ -9,15 +9,17 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { TabPane } = Tabs;
 
-// [Chức năng rõ ràng]: Trang Đăng ký Thi đấu (Chủ Ngựa)
-// [Tác dụng]: Nơi Chủ ngựa chọn (Ngựa + Nài ngựa đã đồng ý) để ghép vào một Chặng đua (Race) cụ thể đang mở đăng ký.
-// [Hướng dẫn sửa đổi]:
-// - Logic: API gọi hàm `post` tới `/registrations`. UI: Tùy chỉnh màu sắc bảng chọn ngựa.
+// [Chức năng rõ ràng]: Trang Đăng ký Thi đấu & Kháng cáo (Chủ Ngựa)
+// [Tác dụng]:
+// 1. Chọn Ngựa và Mời Jockey ghép vào Chặng đua mở đăng ký.
+// 2. Theo dõi trạng thái các lời mời nài ngựa và gửi lại lời mời khác nếu bị từ chối.
+// 3. Gửi Kháng cáo kết quả chặng đua nếu không đồng ý với kết quả do Trọng tài công bố.
 const OwnerRaceRegistrationPage = () => {
     const { user } = useAuth();
     const currentOwnerId = user?.id;
 
     const [races, setRaces] = useState([]);
+    const [allRaces, setAllRaces] = useState([]);
     const [myHorses, setMyHorses] = useState([]);
     const [jockeys, setJockeys] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -29,11 +31,17 @@ const OwnerRaceRegistrationPage = () => {
     const [currentRaceRegistrations, setCurrentRaceRegistrations] = useState([]);
     const [invitations, setInvitations] = useState([]);
 
+    // States cho Kháng cáo
+    const [appeals, setAppeals] = useState([]);
+    const [isAppealModalOpen, setIsAppealModalOpen] = useState(false);
+    const [appealForm] = Form.useForm();
+    const [submittingAppeal, setSubmittingAppeal] = useState(false);
+
     const fetchAvailableRaces = async () => {
         setLoading(true);
         try {
             const response = await api.get('/races');
-            // Chỉ lấy các chặng đua đang trong trạng thái ĐĂNG KÝ
+            setAllRaces(response.data || []);
             setRaces(response.data.filter(race => race.status === 'REGISTRATION'));
         } catch (error) { message.error('Không thể tải danh sách chặng đua!'); }
         finally { setLoading(false); }
@@ -43,9 +51,18 @@ const OwnerRaceRegistrationPage = () => {
         if (!currentOwnerId) return;
         try {
             const response = await api.get(`/invitations?ownerId=${currentOwnerId}`);
-            setInvitations(response.data);
+            setInvitations(response.data || []);
         } catch (error) {
             console.error('Lỗi tải danh sách lời mời:', error);
+        }
+    };
+
+    const fetchMyAppeals = async () => {
+        try {
+            const savedAppeals = JSON.parse(localStorage.getItem(`owner_appeals_${currentOwnerId}`) || '[]');
+            setAppeals(savedAppeals);
+        } catch (error) {
+            console.error('Lỗi tải danh sách kháng cáo:', error);
         }
     };
 
@@ -54,6 +71,7 @@ const OwnerRaceRegistrationPage = () => {
         if (currentOwnerId) {
             fetchMyApprovedHorses(currentOwnerId);
             fetchInvitations();
+            fetchMyAppeals();
         }
         fetchJockeys();
     }, [currentOwnerId]);
@@ -100,6 +118,7 @@ const OwnerRaceRegistrationPage = () => {
             message.success('Đã gửi đơn đăng ký và lời mời cho Nài ngựa thành công! 🏇');
             setIsModalVisible(false);
             form.resetFields();
+            fetchInvitations();
         } catch (error) {
             message.error(error.response?.data?.error || 'Có lỗi xảy ra khi xử lý!');
         }
@@ -143,6 +162,42 @@ const OwnerRaceRegistrationPage = () => {
         }
     };
 
+    const handleCreateAppeal = async (values) => {
+        setSubmittingAppeal(true);
+        try {
+            const selectedR = allRaces.find(r => r.id === values.raceId);
+            const selectedH = myHorses.find(h => h.id === values.horseId);
+            const newAppeal = {
+                id: Date.now(),
+                ownerId: currentOwnerId,
+                ownerName: user.username,
+                raceName: selectedR?.name || 'Chặng đua',
+                horseName: selectedH?.name || 'Chiến mã',
+                reason: values.reason,
+                evidence: values.evidence || 'Không có',
+                status: 'PENDING',
+                createdAt: new Date().toISOString()
+            };
+
+            const existing = JSON.parse(localStorage.getItem('all_system_appeals') || '[]');
+            existing.push(newAppeal);
+            localStorage.setItem('all_system_appeals', JSON.stringify(existing));
+
+            const mySaved = JSON.parse(localStorage.getItem(`owner_appeals_${currentOwnerId}`) || '[]');
+            mySaved.push(newAppeal);
+            localStorage.setItem(`owner_appeals_${currentOwnerId}`, JSON.stringify(mySaved));
+
+            setAppeals(mySaved);
+            message.success('Đã nộp đơn kháng cáo! Ban tổ chức sẽ tiến hành đối soát và phản hồi.');
+            setIsAppealModalOpen(false);
+            appealForm.resetFields();
+        } catch (error) {
+            message.error('Có lỗi xảy ra khi nộp đơn kháng cáo!');
+        } finally {
+            setSubmittingAppeal(false);
+        }
+    };
+
     const historyColumns = [
         { title: 'Tên Chiến Mã', dataIndex: 'horseName', render: text => <Text strong>{text}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName' },
@@ -166,6 +221,19 @@ const OwnerRaceRegistrationPage = () => {
                 return null;
             }
         }
+    ];
+
+    const appealColumns = [
+        { title: 'Mã Đơn', dataIndex: 'id', render: id => <Text type="secondary">#{id}</Text> },
+        { title: 'Chặng Đua Kháng Cáo', dataIndex: 'raceName', render: t => <Text strong className="text-blue-700">{t}</Text> },
+        { title: 'Chiến Mã', dataIndex: 'horseName', render: t => <Text strong>{t}</Text> },
+        { title: 'Nội Dung Kháng Cáo', dataIndex: 'reason' },
+        {
+            title: 'Trạng Thái',
+            dataIndex: 'status',
+            render: s => s === 'APPROVED' ? <Tag color="green">ĐÃ CHẤP NHẬN (ĐIỀU CHỈNH KQ)</Tag> : s === 'REJECTED' ? <Tag color="red">ĐÃ BÁC BỎ</Tag> : <Tag color="orange">ĐANG XEM XÉT</Tag>
+        },
+        { title: 'Thời Gian Nộp', dataIndex: 'createdAt', render: d => dayjs(d).format('DD/MM/YYYY HH:mm') }
     ];
 
     const columns = [
@@ -192,6 +260,18 @@ const OwnerRaceRegistrationPage = () => {
     return (
         <div className="p-8 bg-gray-100 min-h-screen">
             <Card className="shadow-xl rounded-2xl border-none">
+                <Row justify="space-between" align="middle" className="mb-4">
+                    <Col>
+                        <Title level={2} className="m-0 flex items-center gap-3"><FlagOutlined className="text-blue-600"/> Đăng Ký Thi Đấu & Quản Lý Lịch Đua</Title>
+                        <Text type="secondary">Đăng ký chiến mã, mời nài ngựa và gửi đơn kháng cáo kết quả giải đấu</Text>
+                    </Col>
+                    <Col>
+                        <Button type="primary" danger icon={<FileExclamationOutlined />} onClick={() => setIsAppealModalOpen(true)} className="font-bold">
+                            NỘP ĐƠN KHÁNG CÁO
+                        </Button>
+                    </Col>
+                </Row>
+
                 <Tabs defaultActiveKey="1" size="large">
                     <TabPane tab={<span className="font-bold text-lg"><FlagOutlined /> Đăng Ký Thi Đấu</span>} key="1">
                         <Row justify="space-between" align="middle" className="mb-4 mt-2">
@@ -210,6 +290,15 @@ const OwnerRaceRegistrationPage = () => {
                             </Col>
                         </Row>
                         <Table columns={historyColumns} dataSource={invitations} rowKey="id" loading={loading} className="border border-gray-200" />
+                    </TabPane>
+                    <TabPane tab={<span className="font-bold text-lg"><FileExclamationOutlined /> Nhật Ký Kháng Cáo</span>} key="3">
+                        <Row justify="space-between" align="middle" className="mb-4 mt-2">
+                            <Col>
+                                <Title level={3} className="m-0 text-orange-600">Đơn Kháng Cáo Đã Nộp</Title>
+                                <Text type="secondary">Theo dõi quá trình Ban tổ chức và Admin xem xét đơn kháng cáo</Text>
+                            </Col>
+                        </Row>
+                        <Table columns={appealColumns} dataSource={appeals} rowKey="id" className="border border-gray-200" locale={{ emptyText: 'Bạn chưa gửi đơn kháng cáo nào.' }} />
                     </TabPane>
                 </Tabs>
             </Card>
@@ -261,6 +350,46 @@ const OwnerRaceRegistrationPage = () => {
                         </Select>
                     </Form.Item>
                     <Button type="primary" htmlType="submit" size="large" block icon={<SendOutlined />} className="bg-blue-600 hover:bg-blue-700">GỬI LỜI MỜI</Button>
+                </Form>
+            </Modal>
+
+            {/* MODAL NỘP KHÁNG CÁO DÀNH CHO CHỦ NGỰA */}
+            <Modal
+                title={<span className="text-xl text-red-600 font-bold"><FileExclamationOutlined /> Gửi Đơn Kháng Cáo Kết Quả Thi Đấu</span>}
+                open={isAppealModalOpen}
+                onCancel={() => setIsAppealModalOpen(false)}
+                footer={null}
+                centered
+            >
+                <Alert message="Kháng cáo dành cho Chủ Ngựa" description="Nếu bạn phát hiện sai sót trong kết quả công bố hoặc có khiếu nại về hành vi vi phạm trên đường đua, hãy gửi đơn tại đây." type="warning" showIcon className="mb-4" />
+                <Form form={appealForm} layout="vertical" onFinish={handleCreateAppeal}>
+                    <Form.Item name="raceId" label={<Text strong>Chọn Chặng Đua Kháng Cáo</Text>} rules={[{ required: true, message: 'Vui lòng chọn chặng đua!' }]}>
+                        <Select placeholder="-- Chọn chặng đua --" size="large">
+                            {allRaces.map(r => (
+                                <Option key={r.id} value={r.id}>{r.name} (Giải: {r.tournamentName})</Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item name="horseId" label={<Text strong>Chọn Chiến Mã Của Bạn Tham Gia Chặng Đó</Text>} rules={[{ required: true, message: 'Vui lòng chọn chiến mã!' }]}>
+                        <Select placeholder="-- Chọn chiến mã --" size="large">
+                            {myHorses.map(h => (
+                                <Option key={h.id} value={h.id}>{h.name}</Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item name="reason" label={<Text strong>Lý Do Kháng Cáo Chi Tiết</Text>} rules={[{ required: true, message: 'Vui lòng điền lý do!' }]}>
+                        <Input.TextArea rows={4} placeholder="Mô tả lý do không đồng ý với kết quả được công bố..." />
+                    </Form.Item>
+
+                    <Form.Item name="evidence" label={<Text strong>Bằng Chứng (Link hình ảnh / video)</Text>}>
+                        <Input placeholder="Nhập đường dẫn minh chứng nếu có..." />
+                    </Form.Item>
+
+                    <Button type="primary" danger htmlType="submit" size="large" block loading={submittingAppeal} icon={<SendOutlined />} className="font-bold h-12">
+                        GỬI ĐƠN KHÁNG CÁO LÊN BTC
+                    </Button>
                 </Form>
             </Modal>
         </div>

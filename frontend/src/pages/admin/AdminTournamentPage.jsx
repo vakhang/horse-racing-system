@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, Avatar } from 'antd';
-import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined, CrownOutlined } from '@ant-design/icons';
+import { Table, Button, Tag, Space, message, Card, Typography, Row, Col, Modal, Form, Input, DatePicker, Select, InputNumber, Popconfirm, Divider, Badge, Alert, List, Avatar, Tabs } from 'antd';
+import { TrophyOutlined, PlusOutlined, EditOutlined, FlagOutlined, StopOutlined, UserOutlined, DeleteOutlined, CloseCircleOutlined, CrownOutlined, FileExclamationOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+// [Chức năng rõ ràng]: Trang Quản Lý Giải Đấu, Chặng Đua & Kháng Cáo dành cho Admin
+// [Tác dụng]:
+// 1. Tạo mới và quản lý Giải đấu, Chặng đua, Bảng giải thưởng (Hạng 1, 2, 3...).
+// 2. Phân công Trọng tài phụ trách từng chặng đua. Hủy chặng đua (hoàn tiền 100%).
+// 3. Phê duyệt hoặc Bác bỏ các đơn Kháng cáo từ Chủ Ngựa và Nài Ngựa.
 const AdminTournamentPage = () => {
     const [tournaments, setTournaments] = useState([]);
     const [referees, setReferees] = useState([]);
@@ -31,6 +36,9 @@ const AdminTournamentPage = () => {
     const [isResultModalVisible, setIsResultModalVisible] = useState(false);
     const [selectedRaceForResults, setSelectedRaceForResults] = useState(null);
     const [raceResults, setRaceResults] = useState([]);
+
+    // State Kháng cáo
+    const [systemAppeals, setSystemAppeals] = useState([]);
 
     const fetchTournaments = async () => {
         setLoading(true);
@@ -59,10 +67,31 @@ const AdminTournamentPage = () => {
         }
     };
 
+    const fetchSystemAppeals = () => {
+        try {
+            const saved = JSON.parse(localStorage.getItem('all_system_appeals') || '[]');
+            setSystemAppeals(saved);
+        } catch (error) {
+            console.error('Lỗi lấy danh sách kháng cáo hệ thống:', error);
+        }
+    };
+
     useEffect(() => {
         fetchTournaments();
         fetchReferees();
+        fetchSystemAppeals();
     }, []);
+
+    const handleResolveAppeal = (appealId, newStatus) => {
+        try {
+            const updated = systemAppeals.map(app => app.id === appealId ? { ...app, status: newStatus } : app);
+            setSystemAppeals(updated);
+            localStorage.setItem('all_system_appeals', JSON.stringify(updated));
+            message.success(newStatus === 'APPROVED' ? 'Đã CHẤP NHẬN đơn kháng cáo (Hội đồng sẽ rà soát kết quả)!' : 'Đã BÁC BỎ đơn kháng cáo!');
+        } catch (e) {
+            message.error('Có lỗi xảy ra!');
+        }
+    };
 
     const fetchRacesForTournament = async (tournamentId) => {
         try {
@@ -80,7 +109,7 @@ const AdminTournamentPage = () => {
                 startDate: values.dates[0].format('YYYY-MM-DDTHH:mm:ss'),
                 endDate: values.dates[1].format('YYYY-MM-DDTHH:mm:ss'),
                 status: values.status,
-                reason: values.reason // Nhật ký khi Hủy / Hoãn
+                reason: values.reason
             };
             if (editingTourId) await api.put(`/tournaments/${editingTourId}`, payload);
             else await api.post('/tournaments', payload);
@@ -123,7 +152,7 @@ const AdminTournamentPage = () => {
                 prize1: values.prize1,
                 prize2: values.prize2,
                 prize3: values.prize3,
-                rakePercentage: 35 // Mặc định hệ thống
+                rakePercentage: 35
             };
 
             if (editingRaceId) {
@@ -177,11 +206,6 @@ const AdminTournamentPage = () => {
         setIsRaceModalVisible(true);
     };
 
-    // [Chức năng rõ ràng]: Xử lý trả thưởng (Payout)
-    // [Tác dụng]: Gửi yêu cầu lên Backend để chia tiền thưởng cho những khán giả cược trúng ngựa hạng 1.
-    // [Hướng dẫn sửa đổi]:
-    // - Logic/Data: Nếu đổi endpoint API trả thưởng, sửa `/races/${raceId}/payout`.
-    // - UI (CSS/Style): Đổi câu thông báo thành công ở `message.success(...)`.
     const handlePayout = async (raceId) => {
         try {
             await api.post(`/races/${raceId}/payout`);
@@ -191,7 +215,6 @@ const AdminTournamentPage = () => {
         }
     };
 
-    // QUẢN LÝ NGỰA TRONG CHẶNG (RÚT LUI)
     const openWithdrawModal = async (race) => {
         setSelectedRaceForWithdraw(race);
         try {
@@ -245,6 +268,37 @@ const AdminTournamentPage = () => {
         return current && current < dayjs().startOf('day');
     };
 
+    const appealColumns = [
+        { title: 'Mã Đơn', dataIndex: 'id', render: id => <Text type="secondary">#{id}</Text> },
+        { title: 'Người Kháng Cáo', render: (_, r) => <Text strong className="text-blue-700">{r.jockeyName || r.ownerName || 'Người dùng'} ({r.jockeyName ? 'Nài Ngựa' : 'Chủ Ngựa'})</Text> },
+        { title: 'Chặng Đua', dataIndex: 'raceName', render: t => <Text strong>{t}</Text> },
+        { title: 'Chiến Mã', dataIndex: 'horseName' },
+        { title: 'Nội Dung Kháng Cáo', dataIndex: 'reason' },
+        { title: 'Minh Chứng', dataIndex: 'evidence', render: e => <Text type="secondary" italic>{e}</Text> },
+        {
+            title: 'Trạng Thái',
+            dataIndex: 'status',
+            render: s => s === 'APPROVED' ? <Tag color="green">ĐÃ DUYỆT (ĐIỀU CHỈNH KQ)</Tag> : s === 'REJECTED' ? <Tag color="red">ĐÃ BÁC BỎ</Tag> : <Tag color="orange">CHỜ KẾT QUẢ RÀ SOÁT</Tag>
+        },
+        {
+            title: 'Hành Động Admin',
+            align: 'right',
+            render: (_, record) => {
+                if (record.status !== 'PENDING') return <Text type="secondary">Đã xử lý</Text>;
+                return (
+                    <Space>
+                        <Popconfirm title="Chấp nhận đơn và điều chỉnh kết quả?" onConfirm={() => handleResolveAppeal(record.id, 'APPROVED')}>
+                            <Button type="primary" size="small" className="bg-green-600 border-none" icon={<CheckOutlined />}>Chấp Nhận</Button>
+                        </Popconfirm>
+                        <Popconfirm title="Bác bỏ đơn kháng cáo này?" onConfirm={() => handleResolveAppeal(record.id, 'REJECTED')}>
+                            <Button danger size="small" icon={<CloseOutlined />}>Bác Bỏ</Button>
+                        </Popconfirm>
+                    </Space>
+                );
+            }
+        }
+    ];
+
     const expandedRowRender = (tournament) => {
         const columns = [
             { title: 'Tên Chặng', dataIndex: 'name', key: 'name', render: t => <Text strong>{t}</Text> },
@@ -292,13 +346,9 @@ const AdminTournamentPage = () => {
                         {(record.status === 'RESULT_CONFIRMED' || record.status === 'COMPLETED') && (
                             <Button size="small" type="dashed" className="text-blue-600 font-bold" onClick={() => handleViewResult(record)}>🏆 XEM KẾT QUẢ</Button>
                         )}
-                        {/* [Chức năng rõ ràng]: Nút thao tác nhanh của Trạng thái ĐÃ CÓ KẾT QUẢ */}
-                        {/* [Tác dụng]: Hiển thị nút Xác nhận trả thưởng để admin bấm chốt tiền. Nút này gọi 2 API tuần tự: trả thưởng và ép kết thúc chặng. */}
-                        {/* [Hướng dẫn sửa đổi]: */}
-                        {/* - UI (CSS/Style): Sửa màu sắc nút ở className `bg-blue-600`. Sửa chữ thông báo Popconfirm ở thuộc tính `title`. */}
                         {record.status === 'RESULT_CONFIRMED' && (
                             <Popconfirm title="Thực hiện trả thưởng cho khán giả và kết thúc chặng?" onConfirm={async () => { await handlePayout(record.id); await handleForceTransition(record, 'COMPLETED'); }}>
-                                <Button size="small" type="primary" className="font-bold bg-blue-600">💸 XÁC NHẬN TRẢ THƯỞNG</Button>
+                                <Button size="small" type="primary" className="font-bold bg-blue-600">💸 XÁC NHẬN TRẢ THƯỢC</Button>
                             </Popconfirm>
                         )}
                         {(record.status === 'REGISTRATION' || record.status === 'BETTING' || record.status === 'LOCK_SESSION') && (
@@ -333,35 +383,51 @@ const AdminTournamentPage = () => {
                 <Row justify="space-between" className="mb-6">
                     <Col>
                         <Title level={2}><TrophyOutlined className="text-yellow-500" /> Quản Lý Giải Đấu & Chặng Đua</Title>
-                        <Text type="secondary">Tạo giải, lên lịch chặng, phân công trọng tài và treo thưởng.</Text>
+                        <Text type="secondary">Tạo giải, lên lịch chặng, phân công trọng tài, treo thưởng và giải quyết kháng cáo.</Text>
                     </Col>
                     <Col><Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => { setEditingTourId(null); tourForm.resetFields(); setIsTourModalVisible(true); }}>Tạo Giải Đấu Mới</Button></Col>
                 </Row>
-                <Table columns={[
-                    { title: 'Tên Giải Đấu', dataIndex: 'name', render: t => <Text strong className="text-blue-700 text-lg">{t}</Text> },
-                    { title: 'Thời Gian Tổ Chức', render: (_, r) => `${dayjs(r.startDate).format('DD/MM/YYYY')} - ${dayjs(r.endDate).format('DD/MM/YYYY')}` },
+
+                <Tabs size="large" items={[
                     {
-                        title: 'Trạng Thái', dataIndex: 'status', render: s => {
-                            if (s === 'POSTPONED') return <Tag color="warning" className="font-bold">ĐÃ DỜI LỊCH</Tag>;
-                            if (s === 'CANCELED') return <Tag color="error" className="font-bold">ĐÃ HỦY</Tag>;
-                            if (s === 'ONGOING') return <Tag color="success" className="font-bold">ĐANG DIỄN RA</Tag>;
-                            if (s === 'UPCOMING') return <Tag color="blue" className="font-bold">SẮP DIỄN RA</Tag>;
-                            if (s === 'COMPLETED') return <Tag color="default" className="font-bold">ĐÃ KẾT THÚC</Tag>;
-                            return <Tag color="blue" className="font-bold">{s}</Tag>;
-                        }
+                        key: 'tournaments',
+                        label: <span className="font-bold"><TrophyOutlined /> Danh Sách Giải Đấu & Chặng Đua</span>,
+                        children: (
+                            <Table columns={[
+                                { title: 'Tên Giải Đấu', dataIndex: 'name', render: t => <Text strong className="text-blue-700 text-lg">{t}</Text> },
+                                { title: 'Thời Gian Tổ Chức', render: (_, r) => `${dayjs(r.startDate).format('DD/MM/YYYY')} - ${dayjs(r.endDate).format('DD/MM/YYYY')}` },
+                                {
+                                    title: 'Trạng Thái', dataIndex: 'status', render: s => {
+                                        if (s === 'POSTPONED') return <Tag color="warning" className="font-bold">ĐÃ DỜI LỊCH</Tag>;
+                                        if (s === 'CANCELED') return <Tag color="error" className="font-bold">ĐÃ HỦY</Tag>;
+                                        if (s === 'ONGOING') return <Tag color="success" className="font-bold">ĐANG DIỄN RA</Tag>;
+                                        if (s === 'UPCOMING') return <Tag color="blue" className="font-bold">SẮP DIỄN RA</Tag>;
+                                        if (s === 'COMPLETED') return <Tag color="default" className="font-bold">ĐÃ KẾT THÚC</Tag>;
+                                        return <Tag color="blue" className="font-bold">{s}</Tag>;
+                                    }
+                                },
+                                {
+                                    title: 'Thao Tác',
+                                    align: 'right',
+                                    render: (_, r) => <Space>
+                                        <Button type="dashed" className="font-bold" icon={<FlagOutlined />} onClick={() => { setSelectedTourId(r.id); setEditingRaceId(null); raceForm.resetFields(); setIsRaceModalVisible(true); }}>Thêm Chặng Đua</Button>
+                                        <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({ name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status, reason: '' }); setIsTourModalVisible(true); }} />
+                                        <Popconfirm title="Xác nhận xóa hoàn toàn giải đấu này?" onConfirm={() => handleDeleteTournament(r.id)} okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy">
+                                            <Button danger icon={<DeleteOutlined />} />
+                                        </Popconfirm>
+                                    </Space>
+                                }
+                            ]} dataSource={tournaments} rowKey="id" loading={loading} expandable={{ expandedRowRender, onExpand: (exp, rec) => exp && fetchRacesForTournament(rec.id) }} className="border rounded-xl" />
+                        )
                     },
                     {
-                        title: 'Thao Tác',
-                        align: 'right',
-                        render: (_, r) => <Space>
-                            <Button type="dashed" className="font-bold" icon={<FlagOutlined />} onClick={() => { setSelectedTourId(r.id); setEditingRaceId(null); raceForm.resetFields(); setIsRaceModalVisible(true); }}>Thêm Chặng Đua</Button>
-                            <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({ name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status, reason: '' }); setIsTourModalVisible(true); }} />
-                            <Popconfirm title="Xác nhận xóa hoàn toàn giải đấu này?" onConfirm={() => handleDeleteTournament(r.id)} okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy">
-                                <Button danger icon={<DeleteOutlined />} />
-                            </Popconfirm>
-                        </Space>
+                        key: 'appeals',
+                        label: <span className="font-bold"><FileExclamationOutlined /> Xử Lý Kháng Cáo ({systemAppeals.filter(a => a.status === 'PENDING').length})</span>,
+                        children: (
+                            <Table columns={appealColumns} dataSource={systemAppeals} rowKey="id" className="border rounded-xl" locale={{ emptyText: 'Hiện chưa có đơn kháng cáo nào.' }} />
+                        )
                     }
-                ]} dataSource={tournaments} rowKey="id" loading={loading} expandable={{ expandedRowRender, onExpand: (exp, rec) => exp && fetchRacesForTournament(rec.id) }} className="border rounded-xl" />
+                ]} />
             </Card>
 
             {/* MODAL QUẢN LÝ GIẢI ĐẤU */}
@@ -387,7 +453,6 @@ const AdminTournamentPage = () => {
                         <DatePicker.RangePicker showTime={{ format: 'HH:mm' }} format="YYYY-MM-DD HH:mm" disabledDate={disabledDate} size="large" className="w-full" />
                     </Form.Item>
 
-                    {/* HIỂN THỊ CÁC TRẠNG THÁI NGOẠI LỆ CHO PHÉP ADMIN CAN THIỆP */}
                     {editingTourId && (
                         <>
                             <Form.Item name="status" label={<Text strong>Trạng Thái Nhanh (Ngoại Lệ Can Thiệp)</Text>}>
@@ -527,11 +592,6 @@ const AdminTournamentPage = () => {
                 </Form>
             </Modal>
 
-            {/* [Chức năng rõ ràng]: Modal hiển thị bảng Kết quả chặng đua */}
-            {/* [Tác dụng]: Popup mở lên khi bấm "XEM KẾT QUẢ", render danh sách ngựa xếp hạng 1, 2, 3 kèm ảnh đại diện. */}
-            {/* [Hướng dẫn sửa đổi]: */}
-            {/* - UI (CSS/Style): Để đổi icon cup vàng, thay `<TrophyOutlined />` ở thuộc tính `title`. */}
-            {/* - UI (CSS/Style): Để đổi màu sắc vòng tròn thứ hạng (Hạng 1 Vàng, 2 Bạc, 3 Đồng), tìm mảng điều kiện `item.finishPosition === 1 ? '#FBBF24' : ...` bên dưới. */}
             <Modal
                 title={<span className="text-xl text-yellow-600 font-black tracking-wider"><TrophyOutlined /> KẾT QUẢ CHẶNG ĐUA: {selectedRaceForResults?.name}</span>}
                 open={isResultModalVisible}

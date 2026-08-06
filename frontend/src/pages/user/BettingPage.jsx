@@ -1,19 +1,24 @@
 import api from '../../config/api.js';
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin } from 'antd';
-import { RocketOutlined, DollarOutlined, LineChartOutlined } from '@ant-design/icons';
-
+import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin, Alert } from 'antd';
+import { RocketOutlined, DollarOutlined, LineChartOutlined, InfoCircleOutlined } from '@ant-design/icons';
 
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
 
+// [Chức năng rõ ràng]: Trang Đặt Cược Trực Tuyến dành cho Khán Giả
+// [Tác dụng]:
+// 1. Xem danh sách chặng đua đang mở cược (BETTING).
+// 2. Hiển thị tỷ lệ cược biến động thời gian thực (Parimutuel Pool).
+// 3. Đặt cược và kiểm tra số dư ví tự động trước khi xác nhận.
 const BettingPage = () => {
     const { user } = useAuth();
-    const token = user?.token || localStorage.getItem('token');
-
     const [races, setRaces] = useState([]);
     const [loadingRaces, setLoadingRaces] = useState(true);
+
+    // Wallet balance
+    const [walletBalance, setWalletBalance] = useState(0);
 
     if (user?.role === 'OWNER' || user?.role === 'JOCKEY' || user?.role === 'REFEREE') {
         return (
@@ -34,7 +39,7 @@ const BettingPage = () => {
 
     // State cho việc submit Cược
     const [bettingHorseRegId, setBettingHorseRegId] = useState(null);
-    const [betAmount, setBetAmount] = useState(100000); // Mặc định cược 100k
+    const [betAmount, setBetAmount] = useState(100000);
     const [submittingBet, setSubmittingBet] = useState(false);
 
     // Thời gian hiện tại để so sánh khóa cược
@@ -45,16 +50,24 @@ const BettingPage = () => {
         return () => clearInterval(timer);
     }, []);
 
-    // 1. Lấy danh sách Chặng đua khi vào trang
     useEffect(() => {
         fetchPendingRaces();
-    }, []);
+        if (user?.id) fetchUserWallet();
+    }, [user?.id]);
+
+    const fetchUserWallet = async () => {
+        try {
+            const res = await api.get(`/wallets/my-wallet?userId=${user.id}`);
+            setWalletBalance(res.data?.balance || 0);
+        } catch (e) {
+            console.error('Lỗi lấy số dư ví:', e);
+        }
+    };
 
     const fetchPendingRaces = async () => {
         setLoadingRaces(true);
         try {
             const response = await api.get('/races');
-            // Chỉ hiển thị các chặng đua đang mở cược (BETTING) cho Spectator cược
             const availableRaces = response.data.filter(race => race.status === 'BETTING');
             setRaces(availableRaces);
         } catch (error) {
@@ -64,16 +77,12 @@ const BettingPage = () => {
         }
     };
 
-    // 2. Mở Modal và lấy Tỷ lệ cược Live khi chọn 1 chặng đua
-    // [Chức năng rõ ràng]: Mở Popup Đặt cược
-    // [Tác dụng]: Gọi API lấy danh sách ngựa và tỷ lệ cược (Live Odds) của chặng đua được chọn, sau đó mở Modal đặt cược.
-    // [Hướng dẫn sửa đổi]:
-    // - Logic/Data: Nếu API tỷ lệ cược đổi đường dẫn, hãy sửa `api.get('/races/${race.id}/live-odds')`.
     const handleOpenBetModal = async (race) => {
         setSelectedRace(race);
         setIsModalVisible(true);
         setLoadingOdds(true);
-        setBettingHorseRegId(null); // Reset lựa chọn ngựa
+        setBettingHorseRegId(null);
+        fetchUserWallet();
 
         try {
             const response = await api.get(`/races/${race.id}/live-odds`);
@@ -85,12 +94,6 @@ const BettingPage = () => {
         }
     };
 
-    // 3. Xử lý Gửi lệnh đặt cược xuống Spring Boot
-    // [Chức năng rõ ràng]: Xử lý Xác nhận Đặt cược
-    // [Tác dụng]: Gửi lệnh đặt cược lên server với số tiền và ngựa đã chọn. Nếu thành công, làm mới lại danh sách tỷ lệ cược.
-    // [Hướng dẫn sửa đổi]:
-    // - UI (CSS/Style): Đổi câu chữ cảnh báo thành công/thất bại ở các lệnh `message.error(...)` và `message.success(...)`.
-    // - Logic/Data: Đổi mức cược tối thiểu, sửa số tiền mặc định của state `betAmount` ở phía trên (`useState(100000)`).
     const handlePlaceBet = async () => {
         if (!bettingHorseRegId) {
             message.warning('Vui lòng chọn một chiến mã để đặt cược!');
@@ -98,6 +101,12 @@ const BettingPage = () => {
         }
         if (betAmount <= 0) {
             message.warning('Số tiền cược phải lớn hơn 0!');
+            return;
+        }
+
+        // Kiểm tra số dư ví trước khi chốt vé
+        if (betAmount > walletBalance) {
+            message.error(`Số dư ví (${Number(walletBalance).toLocaleString()} VNĐ) không đủ để đặt cược số tiền ${Number(betAmount).toLocaleString()} VNĐ! Vui lòng nạp thêm tiền.`);
             return;
         }
 
@@ -111,13 +120,15 @@ const BettingPage = () => {
             };
 
             await api.post('/bets', betRequest);
-            message.success('Đặt cược thành công! Chúc bạn may mắn!');
+            message.success('Đặt cược thành công! Chúc bạn may mắn! 🏇');
 
-            // Cập nhật lại Live Odds sau khi cược xong để thấy tỷ lệ thay đổi
+            fetchUserWallet();
+
+            // Cập nhật lại Live Odds sau khi cược xong
             const oddsRes = await api.get(`/races/${selectedRace.id}/live-odds`);
             setLiveOdds(oddsRes.data);
 
-            setBettingHorseRegId(null); // Reset lại form
+            setBettingHorseRegId(null);
         } catch (error) {
             message.error(error.response?.data?.error || 'Đặt cược thất bại!');
         } finally {
@@ -125,13 +136,12 @@ const BettingPage = () => {
         }
     };
 
-    // Cấu hình Cột cho bảng Live Odds
     const oddsColumns = [
         {
             title: <div className="text-center">Tên Chiến Mã</div>,
             dataIndex: 'horseName',
             key: 'horseName',
-            align: 'left', // Nội dung căn trái
+            align: 'left',
             render: (text, record) => (
                 <div className="flex flex-col">
                     <span className="font-bold text-blue-700 text-lg">{text}</span>
@@ -152,7 +162,7 @@ const BettingPage = () => {
             title: <div className="text-center">Tỷ Lệ Cược (Live)</div>,
             dataIndex: 'calculatedOdds',
             key: 'calculatedOdds',
-            align: 'center', // Tiêu đề và nội dung căn giữa
+            align: 'center',
             render: (val, record) => {
                 if (record.status === 'DISQUALIFIED' || record.status === 'WITHDRAWN') {
                     return <Tag color="default" className="text-base px-3 py-1">Đã đóng</Tag>;
@@ -167,7 +177,7 @@ const BettingPage = () => {
         {
             title: <div className="text-center">Thao Tác</div>,
             key: 'action',
-            align: 'center', // Căn giữa toàn bộ cột thao tác
+            align: 'center',
             render: (_, record) => {
                 const isDisabled = record.status === 'DISQUALIFIED' || record.status === 'WITHDRAWN';
                 return (
@@ -185,15 +195,25 @@ const BettingPage = () => {
     ];
 
     return (
-        <div className="max-w-5xl mx-auto">
-            {/* Tiêu đề in đập to, đồng bộ với các trang khác */}
-            <Title level={3} className="mb-6 border-b pb-2">
-                <RocketOutlined className="text-blue-500 mr-2" /> Cá Cược Trực Tuyến
+        <div className="max-w-5xl mx-auto p-4">
+            <Title level={3} className="mb-6 border-b pb-2 flex justify-between items-center">
+                <span><RocketOutlined className="text-blue-500 mr-2" /> Cá Cược Trực Tuyến (Parimutuel Pool)</span>
+                <span className="text-sm font-normal bg-blue-50 text-blue-700 px-4 py-2 rounded-xl border border-blue-200">
+                    💰 Số dư ví: <b>{Number(walletBalance).toLocaleString()} VNĐ</b>
+                </span>
             </Title>
+
+            <Alert
+                message="Quy tắc tính tỷ lệ cược Parimutuel"
+                description="Tỷ lệ cược thay đổi liên tục theo tổng tiền cược chung (Pool). Ban tổ chức lấy % phế cố định, phần còn lại chia đều cho những người cược vào chiến mã thắng theo tỷ lệ số tiền đặt. Tỷ lệ cược được chốt chính thức khi chặng đua bắt đầu."
+                type="info"
+                showIcon
+                icon={<InfoCircleOutlined />}
+                className="mb-6 rounded-xl"
+            />
 
             <Spin spinning={loadingRaces}>
                 {races.length === 0 ? (
-                    // Hiển thị trạng thái "Trống" chuẩn Ant Design
                     <Card className="shadow-sm rounded-xl py-10">
                         <Empty
                             image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -205,7 +225,6 @@ const BettingPage = () => {
                         />
                     </Card>
                 ) : (
-                    // Hiển thị danh sách các chặng đua
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {races.map(race => (
                             <Card key={race.id} className="shadow-md hover:shadow-lg transition-shadow border-t-4 border-blue-600 rounded-xl">
@@ -250,7 +269,6 @@ const BettingPage = () => {
                 )}
             </Spin>
 
-            {/* Modal hiển thị bảng cược cho 1 chặng đua */}
             <Modal
                 title={<span className="text-xl font-bold">Bảng Kèo: {selectedRace?.name}</span>}
                 open={isModalVisible}
@@ -259,6 +277,11 @@ const BettingPage = () => {
                 width={700}
                 centered
             >
+                <div className="mb-4 bg-gray-50 p-3 rounded-lg flex justify-between items-center border">
+                    <Text>Số dư ví hiện tại:</Text>
+                    <Text className="font-bold text-green-600 text-base">{Number(walletBalance).toLocaleString()} VNĐ</Text>
+                </div>
+
                 <Table
                     dataSource={liveOdds}
                     columns={oddsColumns}
@@ -268,10 +291,9 @@ const BettingPage = () => {
                     size="middle"
                     scroll={{ y: '50vh' }}
                     rowClassName={(record, index) => index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                    className="mt-4 border rounded-lg"
+                    className="mt-2 border rounded-lg"
                 />
 
-                {/* Khu vực nhập tiền cược hiện ra khi đã chọn 1 con ngựa */}
                 {bettingHorseRegId && (
                     <div className="mt-6 p-5 bg-blue-50 border border-blue-200 rounded-xl">
                         <Title level={5} className="mb-4">Số tiền muốn cược (VNĐ):</Title>
