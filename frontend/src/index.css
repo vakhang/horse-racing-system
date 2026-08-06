@@ -2,21 +2,205 @@
 @import "react-quill-new/dist/quill.snow.css";
 
 @theme {
-  --font-sans: "Lexend", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Lexend", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* --- Tùy chỉnh thêm cho Ant Design --- */
-/* Thêm bóng đổ (shadow) cho mấy cái nút bấm chính màu xanh để nhìn nổi và lung linh hơn */
-.ant-btn-primary {
-    @apply shadow-lg;
+/* ==========================================
+   BET365 DESIGN SYSTEM THEME VARIABLES
+   ========================================== */
+:root {
+  --b365-bg-dark: #121212;
+  --b365-bg-card: #1e1e1e;
+  --b365-bg-card-alt: #242424;
+  --b365-bg-header: #005c44;
+  --b365-bg-header-dark: #004633;
+  --b365-green-accent: #007355;
+  --b365-green-light: #00b37e;
+  --b365-gold: #fcc200;
+  --b365-gold-hover: #e5b100;
+  --b365-text-light: #e0e0e0;
+  --b365-text-muted: #a0a0a0;
+  --b365-border: #333333;
+  --b365-border-light: #282828;
 }
 
-/* Đảm bảo body không bị lề mặc định làm xấu giao diện */
 body {
     margin: 0;
     padding: 0;
-    background-color: #f3f4f6; /* Màu nền xám nhạt của Tailwind */
+    background-color: #121212 !important;
+    color: #e0e0e0 !important;
     font-family: "Lexend", sans-serif;
+}
+
+/* --- OVERRIDE TAILWIND DEFAULT LIGHT BACKGROUNDS TO BET365 DARK THEME --- */
+.bg-gray-100, .bg-gray-200, .bg-gray-50 {
+    background-color: #121212 !important;
+}
+
+.bg-white {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+
+.bg-blue-50 {
+    background-color: #162a22 !important;
+    border-color: #007355 !important;
+}
+
+.bg-gray-900, .bg-\[\#001529\] {
+    background-color: #005c44 !important;
+}
+
+/* Text Overrides for Dark Theme */
+.text-gray-800, .text-gray-900, .text-black {
+    color: #f0f0f0 !important;
+}
+
+.text-gray-600, .text-gray-500, .text-gray-700 {
+    color: #a0a0a0 !important;
+}
+
+.text-blue-600, .text-blue-700 {
+    color: #00b37e !important;
+}
+
+.border-gray-200, .border-gray-300, .border-gray-100 {
+    border-color: #2c2c2c !important;
+}
+
+/* --- BET365 ODDS BUTTON STYLE --- */
+.b365-odds-btn {
+    background-color: #262626 !important;
+    color: #fcc200 !important;
+    border: 1px solid #383838 !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.b365-odds-btn:hover {
+    background-color: #007355 !important;
+    color: #ffffff !important;
+    border-color: #00b37e !important;
+    transform: translateY(-1px);
+}
+
+.b365-odds-btn.selected {
+    background-color: #fcc200 !important;
+    color: #000000 !important;
+    border-color: #fcc200 !important;
+    box-shadow: 0 0 10px rgba(252, 194, 0, 0.4);
+}
+
+/* --- BET365 PRIMARY CTA BUTTON --- */
+.b365-cta-btn {
+    background-color: #fcc200 !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(252, 194, 0, 0.3) !important;
+}
+
+.b365-cta-btn:hover {
+    background-color: #e5b100 !important;
+    color: #000000 !important;
+    transform: scale(1.02);
+}
+
+/* --- ANT DESIGN OVERRIDES FOR BET365 EMERALD & DARK THEME --- */
+.ant-card {
+    background-color: #1e1e1e !important;
+    border-color: #2a2a2a !important;
+    color: #e0e0e0 !important;
+}
+
+.ant-card-head {
+    border-bottom-color: #2a2a2a !important;
+    color: #fcc200 !important;
+}
+
+.ant-table {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+
+.ant-table-thead > tr > th {
+    background-color: #262626 !important;
+    color: #fcc200 !important;
+    border-bottom: 1px solid #333333 !important;
+    font-weight: 700 !important;
+}
+
+.ant-table-tbody > tr > td {
+    border-bottom: 1px solid #282828 !important;
+    color: #e0e0e0 !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+    background-color: #282828 !important;
+}
+
+.ant-modal-content {
+    background-color: #1e1e1e !important;
+    border: 1px solid #333333 !important;
+    color: #e0e0e0 !important;
+}
+
+.ant-modal-header {
+    background-color: #1e1e1e !important;
+    border-bottom: 1px solid #2c2c2c !important;
+}
+
+.ant-modal-title {
+    color: #fcc200 !important;
+}
+
+.ant-tabs-nav::before {
+    border-bottom-color: #2c2c2c !important;
+}
+
+.ant-tabs-tab-btn {
+    color: #a0a0a0 !important;
+}
+
+.ant-tabs-tab.ant-tabs-tab-active .ant-tabs-tab-btn {
+    color: #fcc200 !important;
+    font-weight: 700;
+}
+
+.ant-tabs-ink-bar {
+    background: #fcc200 !important;
+}
+
+.ant-select-selector {
+    background-color: #242424 !important;
+    border-color: #383838 !important;
+    color: #e0e0e0 !important;
+}
+
+.ant-input, .ant-input-number {
+    background-color: #242424 !important;
+    border-color: #383838 !important;
+    color: #e0e0e0 !important;
+}
+
+.ant-input::placeholder {
+    color: #777777 !important;
+}
+
+.ant-layout-sider,
+.ant-layout-sider-children,
+.ant-layout-sider-trigger {
+    background-color: #181818 !important;
+    border-right: 1px solid #282828;
+}
+
+.ant-menu-dark {
+    background-color: #181818 !important;
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+    background-color: #007355 !important;
+    color: #fcc200 !important;
 }
 
 /* Định dạng HTML từ ReactQuill (CKEditor) cho các trang public */
@@ -26,7 +210,6 @@ body {
     counter-reset: my-ol-counter;
 }
 
-/* Use counter-set (modern) and counter-reset (fallback) to forcefully restart numbering when encountering headings or paragraphs (to start a new section like Điều 1, Điều 2) */
 .content-html-container h1,
 .content-html-container h2,
 .content-html-container h3,
@@ -38,12 +221,11 @@ body {
     counter-reset: my-ol-counter;
 }
 
-/* Khôi phục lại bullet list (ul) bị quill.snow.css ẩn mất */
 .content-html-container.ql-editor ul {
     list-style-type: disc !important;
     padding-left: 2.5rem !important;
     margin-bottom: 1rem;
-    color: #d1d5db;
+    color: #a0a0a0;
 }
 .content-html-container.ql-editor ul > li {
     list-style-type: disc !important;
@@ -54,12 +236,11 @@ body {
     content: none !important;
 }
 
-/* Khôi phục ordered list (ol) và dùng CSS counter để fix lỗi 1, 1, 1 */
 .content-html-container.ql-editor ol {
     list-style-type: none !important;
     padding-left: 2.5rem !important;
     margin-bottom: 1rem;
-    color: #d1d5db;
+    color: #a0a0a0;
 }
 .content-html-container.ql-editor ol > li {
     list-style-type: none !important;
@@ -76,14 +257,13 @@ body {
     color: inherit;
 }
 
-/* Override padding của ql-editor để không bị dư khoảng trắng */
 .content-html-container.ql-editor {
     padding: 0;
     overflow-y: visible;
 }
 
 .content-html-container h1, .content-html-container h2, .content-html-container h3, .content-html-container h4 {
-    color: #facc15;
+    color: #fcc200;
     font-weight: bold;
     margin-top: 1.5rem;
     margin-bottom: 1rem;
@@ -94,7 +274,7 @@ body {
 
 .content-html-container p {
     margin-bottom: 1rem;
-    color: #d1d5db;
+    color: #a0a0a0;
 }
 
 .content-html-container strong, .content-html-container b {
@@ -103,21 +283,14 @@ body {
 }
 
 .content-html-container a {
-    color: #3b82f6;
+    color: #00b37e;
     text-decoration: underline;
 }
 
 .content-html-container blockquote {
-    border-left: 4px solid #facc15;
+    border-left: 4px solid #fcc200;
     padding-left: 1rem;
-    color: #9ca3af;
+    color: #a0a0a0;
     font-style: italic;
     margin-bottom: 1rem;
-}
-
-/* Ép cứng nền tối cho Sidebar Admin để tránh lỗi hiển thị khối trắng (Lag) */
-.ant-layout-sider,
-.ant-layout-sider-children,
-.ant-layout-sider-trigger {
-    background-color: #001529 !important;
 }

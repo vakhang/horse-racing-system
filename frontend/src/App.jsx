@@ -39,18 +39,12 @@ const FAQPage = lazy(() => import('./pages/public/FAQPage'));
 // Các trang của Admin
 const AdminKycApprovalPage = lazy(() => import('./pages/admin/AdminKycApprovalPage'));
 const AdminTournamentPage = lazy(() => import('./pages/admin/AdminTournamentPage'));
-// --- ĐÃ THÊM: IMPORT COMPONENT DUYỆT NGỰA ---
 const AdminHorseApprovalPage = lazy(() => import('./pages/admin/AdminHorseApprovalPage'));
 
 // Các trang của Owner
 const OwnerRaceRegistrationPage = lazy(() => import('./pages/owner/OwnerRaceRegistrationPage'));
 const OwnerHorseManagementPage = lazy(() => import('./pages/owner/OwnerHorseManagementPage'));
 
-// 0. COMPONENT CUỘN LÊN ĐẦU TRANG
-// [Chức năng rõ ràng]: Component Gốc (Root Component) & Routing
-// [Tác dụng]: Khai báo tất cả các đường dẫn (Routes) của hệ thống bằng React Router DOM. Có cấu hình các Route bảo vệ (ProtectedRoute) kiểm tra Role trước khi cho vào.
-// [Hướng dẫn sửa đổi]:
-// - Logic: Khai báo thêm `<Route>` ở đây nếu tạo thêm trang mới. Chú ý đặt đúng vào nhóm Layout tương ứng (AdminLayout/MainLayout/PublicLayout).
 const ScrollToTop = () => {
     const { pathname } = useLocation();
     useEffect(() => {
@@ -59,27 +53,23 @@ const ScrollToTop = () => {
     return null;
 };
 
-// 1. COMPONENT BẢO VỆ ROUTE CHUNG
 const ProtectedRoute = ({ children }) => {
     const { user, loading } = useAuth();
-    if (loading) return <div className="flex h-screen items-center justify-center"><Spin size="large"/></div>;
+    if (loading) return <div className="flex h-screen items-center justify-center bg-[#121212]"><Spin size="large"/></div>;
     if (!user) return <Navigate to="/login" />;
     return children;
 };
 
-// 2. TRẠM KIỂM SOÁT GIAO THÔNG
 const RootRedirect = () => {
     const { user, loading } = useAuth();
-    if (loading) return <div className="flex h-screen items-center justify-center"><Spin size="large"/></div>;
+    if (loading) return <div className="flex h-screen items-center justify-center bg-[#121212]"><Spin size="large"/></div>;
     if (!user) return <CorporateLandingPage />;
 
-    // Phân luồng đăng nhập
     if (user.role === 'ADMIN') return <Navigate to="/admin/kyc" replace />;
     if (user.role === 'OWNER') return <Navigate to="/my-horses" replace />;
     if (user.role === 'JOCKEY') return <Navigate to="/jockey/invitations" replace />;
     if (user.role === 'REFEREE') return <Navigate to="/referee/dashboard" replace />;
 
-    // Các role khác thì cho ra trang chủ
     return <Navigate to="/home" replace />;
 };
 
@@ -87,31 +77,86 @@ function App() {
     return (
         <ConfigProvider
             theme={{
-                algorithm: theme.defaultAlgorithm,
+                algorithm: theme.darkAlgorithm,
                 token: {
-                    colorPrimary: '#1677ff',
-                    borderRadius: 8,
+                    colorPrimary: '#007355',
+                    colorLink: '#fcc200',
+                    colorSuccess: '#00b37e',
+                    colorWarning: '#fcc200',
+                    colorError: '#ff4d4f',
+                    colorInfo: '#008264',
+                    colorBgBase: '#121212',
+                    colorBgContainer: '#1e1e1e',
+                    colorBgElevated: '#242424',
+                    colorBgLayout: '#121212',
+                    colorText: '#e0e0e0',
+                    colorTextSecondary: '#a0a0a0',
+                    colorBorder: '#333333',
+                    colorBorderSecondary: '#262626',
+                    borderRadius: 6,
+                    fontFamily: '"Lexend", "Roboto", sans-serif',
                 },
                 components: {
                     Layout: {
-                        colorBgSider: '#001529',
+                        colorBgHeader: '#005c44',
+                        colorBgSider: '#181818',
+                        colorBgBody: '#121212',
                     },
                     Menu: {
-                        darkItemColor: 'rgba(255, 255, 255, 0.85)',
+                        darkItemBg: '#181818',
+                        darkSubMenuItemBg: '#1e1e1e',
+                        darkItemSelectedBg: '#007355',
+                        darkItemColor: '#a0a0a0',
+                        darkItemSelectedColor: '#fcc200',
+                    },
+                    Card: {
+                        colorBgContainer: '#1e1e1e',
+                        colorBorderSecondary: '#2c2c2c',
+                    },
+                    Table: {
+                        colorBgContainer: '#1e1e1e',
+                        colorHeaderBg: '#262626',
+                        colorHeaderColor: '#fcc200',
+                        colorRowHover: '#2a2a2a',
+                    },
+                    Modal: {
+                        colorBgElevated: '#1e1e1e',
+                        colorBgMask: 'rgba(0, 0, 0, 0.8)',
+                    },
+                    Button: {
+                        colorPrimary: '#fcc200',
+                        colorPrimaryHover: '#e5b100',
+                        colorPrimaryActive: '#c69900',
+                        colorTextLightSolid: '#000000',
+                    },
+                    Tabs: {
+                        colorBorderSecondary: '#333333',
+                        itemSelectedColor: '#fcc200',
+                        itemHoverColor: '#00b37e',
+                        inkBarColor: '#fcc200',
+                    },
+                    Select: {
+                        colorBgContainer: '#242424',
+                        colorBgElevated: '#2a2a2a',
+                        colorBorder: '#3a3a3a',
+                    },
+                    Input: {
+                        colorBgContainer: '#242424',
+                        colorBorder: '#3a3a3a',
                     },
                 },
             }}
         >
             <Router>
                 <ScrollToTop />
-                <Suspense fallback={<div className="flex h-screen items-center justify-center"><Spin size="large"/></div>}>
+                <Suspense fallback={<div className="flex h-screen items-center justify-center bg-[#121212]"><Spin size="large"/></div>}>
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
                         <Route path="/register" element={<RegisterPage />} />
 
                         <Route path="/" element={<RootRedirect />} />
 
-                        {/* NHÓM PUBLIC: Các trang không yêu cầu đăng nhập */}
+                        {/* NHÓM PUBLIC */}
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/schedule" element={<SchedulePage />} />
                         <Route path="/results" element={<ResultsPage />} />
@@ -123,9 +168,7 @@ function App() {
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/faq" element={<FAQPage />} />
 
-                        {/* ========================================================= */}
-                        {/* NHÓM 1: CÁC TRANG CỦA KHÁN GIẢ & CHỦ NGỰA (Bọc bằng MainLayout) */}
-                        {/* ========================================================= */}
+                        {/* NHÓM KHÁN GIẢ & CHỦ NGỰA */}
                         <Route path="/home" element={<ProtectedRoute><MainLayout><LandingPage /></MainLayout></ProtectedRoute>} />
                         <Route path="/dashboard" element={<ProtectedRoute><MainLayout><HomePage /></MainLayout></ProtectedRoute>} />
                         <Route path="/betting" element={<ProtectedRoute><MainLayout><BettingPage /></MainLayout></ProtectedRoute>} />
@@ -153,7 +196,6 @@ function App() {
                             </ProtectedRoute>
                         } />
 
-                        {/* --- TRANG CỦA NÀI NGỰA & TRỌNG TÀI --- */}
                         <Route path="/jockey/invitations" element={
                             <ProtectedRoute><MainLayout><JockeyInvitationPage /></MainLayout></ProtectedRoute>
                         } />
@@ -161,16 +203,12 @@ function App() {
                         <Route path="/referee/dashboard" element={
                             <ProtectedRoute><MainLayout><RefereeDashboardPage /></MainLayout></ProtectedRoute>
                         } />
-                        {/* Nhóm của OWNER */}
                         <Route path="/owner/jockeys" element={<ProtectedRoute><MainLayout><OwnerJockeyDirectoryPage /></MainLayout></ProtectedRoute>} />
 
-                        {/* Nhóm của ADMIN */}
                         <Route path="/admin/news" element={<ProtectedRoute><AdminLayout><AdminNewsPage /></AdminLayout></ProtectedRoute>} />
                         <Route path="/admin/content" element={<ProtectedRoute><AdminLayout><AdminContentPage /></AdminLayout></ProtectedRoute>} />
 
-                        {/* ========================================================= */}
-                        {/* NHÓM 2: CÁC TRANG CỦA ADMIN (Bọc bằng AdminLayout)        */}
-                        {/* ========================================================= */}
+                        {/* NHÓM ADMIN */}
                         <Route path="/admin/kyc" element={
                             <ProtectedRoute>
                                 <AdminLayout>
@@ -179,7 +217,6 @@ function App() {
                             </ProtectedRoute>
                         } />
 
-                        {/* --- ĐÃ SỬA: GẮN ROUTE DUYỆT NGỰA VÀO ĐÂY --- */}
                         <Route path="/admin/horses" element={
                             <ProtectedRoute>
                                 <AdminLayout>

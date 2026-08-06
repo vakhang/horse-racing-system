@@ -5,29 +5,26 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const { Text } = Typography;
 
-// [Chức năng rõ ràng]: Component Đầu trang (Header Public)
-// [Tác dụng]: Hiển thị thanh điều hướng cho Khách (Guest) chưa đăng nhập, chứa nút Đăng nhập / Đăng ký.
-// [Hướng dẫn sửa đổi]:
-// - UI: Thay logo hoặc màu sắc ở class `bg-white/10`.
+// [Chức năng rõ ràng]: bet365 Public Header
 const PublicHeader = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
     const getLinkClass = (path) => {
         return location.pathname === path 
-            ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1" 
-            : "text-gray-300 hover:text-yellow-400 font-semibold transition-colors";
+            ? "text-[#fcc200] font-black border-b-2 border-[#fcc200] pb-1" 
+            : "text-[#e0e0e0] hover:text-[#fcc200] font-semibold transition-colors";
     };
 
     const isSupportActive = ['/guide', '/faq', '/rules', '/race-rules', '/terms', '/privacy'].includes(location.pathname);
     const supportLinkClass = isSupportActive 
-        ? "text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1 cursor-pointer"
-        : "text-gray-300 hover:text-yellow-400 font-semibold transition-colors cursor-pointer";
+        ? "text-[#fcc200] font-black border-b-2 border-[#fcc200] pb-1 cursor-pointer"
+        : "text-[#e0e0e0] hover:text-[#fcc200] font-semibold transition-colors cursor-pointer";
 
     const getDropdownItemClass = (path) => {
         return location.pathname === path
-            ? "!text-yellow-400 font-bold block w-full pl-2 border-l-4 border-yellow-400"
-            : "!text-white hover:!text-yellow-400 font-semibold block w-full transition-colors pl-2 border-l-4 border-transparent hover:border-yellow-400/50";
+            ? "!text-[#fcc200] font-bold block w-full pl-2 border-l-4 border-[#fcc200]"
+            : "!text-white hover:!text-[#fcc200] font-semibold block w-full transition-colors pl-2 border-l-4 border-transparent hover:border-[#fcc200]/50";
     };
 
     const supportMenuItems = [
@@ -40,7 +37,7 @@ const PublicHeader = () => {
     ];
 
     return (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-[#001529]/95 backdrop-blur-md border-b border-white/10 px-6 lg:px-20 py-4 flex justify-between items-center shadow-md">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-[#005c44]/95 backdrop-blur-md border-b border-[#007355] px-6 lg:px-20 py-3.5 flex justify-between items-center shadow-lg">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => {
                 if (window.location.pathname === '/') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -48,8 +45,11 @@ const PublicHeader = () => {
                     navigate('/');
                 }
             }}>
-                <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center font-black text-black shadow-[0_0_15px_rgba(234,179,8,0.5)]">HR</div>
-                <Text className="text-white font-black text-xl tracking-wider uppercase hidden md:block" style={{ color: 'white' }}>HORSE RACE</Text>
+                <div className="flex items-center gap-1.5 font-black text-xl tracking-wide bg-[#004633] px-3 py-1 rounded-lg border border-[#007355]">
+                    <span className="text-white text-base">bet</span>
+                    <span className="text-[#fcc200] text-2xl tracking-tighter italic">365</span>
+                    <span className="text-xs text-emerald-300 font-bold ml-1 uppercase">RACING</span>
+                </div>
             </div>
             <div className="hidden lg:flex gap-8 items-center">
                 <Link to="/" className={getLinkClass('/')}>TRANG CHỦ</Link>
@@ -61,31 +61,30 @@ const PublicHeader = () => {
                     theme={{
                         components: {
                             Dropdown: {
-                                colorBgElevated: '#001529',
-                                controlItemBgHover: 'rgba(255, 255, 255, 0.1)',
+                                colorBgElevated: '#1e1e1e',
+                                controlItemBgHover: '#2a2a2a',
                                 paddingBlock: 8,
                             },
                             Menu: {
-                                colorBgContainer: '#001529',
-                                colorItemBgHover: 'rgba(255, 255, 255, 0.1)',
+                                colorBgContainer: '#1e1e1e',
+                                colorItemBgHover: '#2a2a2a',
                             }
                         }
                     }}
                 >
-                    <Dropdown menu={{ items: supportMenuItems, className: 'border border-white/20 shadow-lg' }} placement="bottom">
+                    <Dropdown menu={{ items: supportMenuItems, className: 'border border-[#333] shadow-2xl bg-[#1e1e1e]' }} placement="bottom">
                         <span className={supportLinkClass}>HỖ TRỢ</span>
                     </Dropdown>
                 </ConfigProvider>
             </div>
             <div className="flex items-center gap-1 md:gap-2">
                 <Button 
-                    type="text" 
+                    type="primary" 
                     icon={<LoginOutlined />}
-                    style={{ color: 'white' }}
-                    className="hover:scale-105 transition-transform hover:!text-yellow-400"
+                    className="b365-cta-btn h-10 px-5"
                     onClick={() => navigate('/login')}
                 >
-                    <span style={{ fontWeight: 900 }}>ĐĂNG NHẬP</span>
+                    <span>ĐĂNG NHẬP</span>
                 </Button>
             </div>
         </div>

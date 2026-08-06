@@ -9,18 +9,13 @@ import dayjs from 'dayjs';
 
 const { Header: AntHeader } = Layout;
 
-
-// [Chức năng rõ ràng]: Component Đầu trang (Header cho User Đăng nhập)
-// [Tác dụng]: Thanh điều hướng chính chứa Avatar, Số dư ví, Nút nạp tiền, Thông báo hệ thống và Menu đăng xuất.
-// [Hướng dẫn sửa đổi]:
-// - Logic/UI: Thêm menu con vào biến `profileMenuItems`. Sửa cách lấy số dư ở `fetchWalletBalance`.
+// [Chức năng rõ ràng]: Header bet365 Sports Theme
 const Header = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth() || {};
     const [balance, setBalance] = useState(0);
     const [notifications, setNotifications] = useState([]);
 
-    // FIX LỖI 1: Tên key trong AuthContext lưu là 'accessToken' chứ không phải 'token'
     const token = user?.token || localStorage.getItem('accessToken');
 
     useEffect(() => {
@@ -30,7 +25,6 @@ const Header = () => {
                     headers: { Authorization: `Bearer ${token}` }
                 })
                     .then(res => {
-                        // Bọc cực kỳ an toàn để tránh bị Null
                         setBalance(res.data?.balance || 0);
                     })
                     .catch(err => console.error("Lỗi lấy ví trên Header:", err));
@@ -46,11 +40,9 @@ const Header = () => {
                     
                     const allNews = res.data;
                     const validNews = allNews.filter(news => {
-                        // Lọc theo Role
                         const roles = news.targetRoles ? news.targetRoles.split(',') : [];
                         const roleMatch = roles.length === 0 || roles.includes(user.role);
                         
-                        // Lọc theo Status
                         const statuses = news.targetStatuses ? news.targetStatuses.split(',') : [];
                         const statusMatch = statuses.length === 0 || statuses.includes(user.status);
                         
@@ -70,7 +62,6 @@ const Header = () => {
             let notifs = [];
             let currentUser = user;
 
-            // Fetch real-time user data to get latest banReason and status
             if (user?.id && token) {
                 try {
                     const userRes = await api.get(`/users/${user.id}`, {
@@ -90,12 +81,10 @@ const Header = () => {
                 notifs.push({ title: 'Tài khoản có vấn đề', desc: currentUser.banReason || 'Vui lòng liên hệ Admin.', color: 'red' });
             }
 
-            // Hiển thị Nhắc Nhở cá nhân từ Admin (được lưu trong banReason) cho cả user đã APPROVED hoặc PENDING
             if (currentUser?.banReason && currentUser.status !== 'BANNED' && currentUser.status !== 'REJECTED') {
                 notifs.push({ title: '⚠️ Lời Nhắc Từ Admin', desc: currentUser.banReason, color: 'red' });
             }
 
-            // Lấy thông báo từ Database
             const systemNews = await fetchAnnouncements();
             systemNews.forEach(news => {
                 let dateStr = news.createdAt;
@@ -146,54 +135,53 @@ const Header = () => {
 
     const profileMenuItems = [
         { key: '1', icon: <UserOutlined />, label: 'Hồ sơ cá nhân', onClick: () => navigate('/profile') },
-        { key: '2', icon: <LogoutOutlined className="text-red-500" />, label: <span className="text-red-500 font-medium">Đăng xuất</span>, onClick: handleLogout },
+        { key: '2', icon: <LogoutOutlined className="text-red-400" />, label: <span className="text-red-400 font-medium">Đăng xuất</span>, onClick: handleLogout },
     ];
 
     const notificationContent = (
-        <div className="w-80 max-h-96 overflow-y-auto bg-white rounded-lg">
+        <div className="w-80 max-h-96 overflow-y-auto bg-[#1e1e1e] rounded-lg border border-[#333]">
             <List
                 itemLayout="horizontal"
                 dataSource={notifications}
                 renderItem={item => (
-                    <List.Item className="border-b last:border-b-0 hover:bg-gray-100 cursor-pointer px-4 py-3 transition-colors bg-white">
+                    <List.Item className="border-b border-[#2a2a2a] last:border-b-0 hover:bg-[#262626] cursor-pointer px-4 py-3 transition-colors bg-[#1e1e1e]">
                         <List.Item.Meta
                             avatar={<Badge color={item.color} />}
-                            title={<span className="font-bold text-gray-800">{item.title}</span>}
+                            title={<span className="font-bold text-[#e0e0e0]">{item.title}</span>}
                             description={
-                                <span className="text-xs text-gray-600 block mt-1">
+                                <span className="text-xs text-[#a0a0a0] block mt-1">
                                     {item.desc}
-                                    {item.date && <div className="mt-1 italic text-gray-400">{dayjs(item.date).format('HH:mm DD/MM')}</div>}
+                                    {item.date && <div className="mt-1 italic text-gray-500">{dayjs(item.date).format('HH:mm DD/MM')}</div>}
                                 </span>
                             }
                         />
                     </List.Item>
                 )}
-                locale={{ emptyText: <span className="text-gray-500">Không có thông báo mới</span> }}
+                locale={{ emptyText: <span className="text-gray-400">Không có thông báo mới</span> }}
             />
         </div>
     );
 
     return (
-        <AntHeader className="sticky top-0 z-50 w-full px-6 flex justify-end items-center shadow-sm bg-[#001529]" style={{ height: 64 }}>
+        <AntHeader className="sticky top-0 z-50 w-full px-6 flex justify-end items-center shadow-md bg-[#005c44] border-b border-[#007355]" style={{ height: 64 }}>
             <div className="flex items-center gap-5">
                 <Tag color={user?.status === 'APPROVED' ? 'success' : 'warning'}>KYC: {user?.status}</Tag>
-                <Tag color="blue">{user?.role}</Tag>
+                <Tag color="cyan" className="font-bold">{user?.role}</Tag>
 
-                <div className="flex items-center gap-2 font-bold px-3 h-[32px] bg-black/30 rounded-lg border border-yellow-500/30" style={{ color: 'white' }}>
-                    <WalletOutlined style={{ color: '#facc15', fontSize: '18px' }} />
-                    {/* FIX LỖI 3: Tránh lỗi Crash toLocaleString nếu balance undefined */}
-                    <span className="text-yellow-400">{(balance || 0).toLocaleString()} VNĐ</span>
+                <div className="flex items-center gap-2 font-bold px-3.5 h-[36px] bg-black/40 rounded-lg border border-[#fcc200]/40 shadow-inner">
+                    <WalletOutlined style={{ color: '#fcc200', fontSize: '18px' }} />
+                    <span className="text-[#fcc200] text-base tracking-wide">{(balance || 0).toLocaleString()} VNĐ</span>
                 </div>
 
-                <Popover content={notificationContent} title={<span className="font-bold text-base text-gray-800"><NotificationOutlined /> Thông báo hệ thống</span>} trigger="click" placement="bottomRight">
+                <Popover content={notificationContent} title={<span className="font-bold text-base text-[#fcc200]"><NotificationOutlined /> Thông báo hệ thống</span>} trigger="click" placement="bottomRight">
                     <Badge count={notifications.length} overflowCount={9} className="cursor-pointer mt-1 mr-2 hover:opacity-80 transition-opacity">
-                        <BellOutlined style={{ color: 'white', fontSize: '22px' }} />
+                        <BellOutlined style={{ color: '#e0e0e0', fontSize: '22px' }} />
                     </Badge>
                 </Popover>
 
                 <Dropdown menu={{ items: profileMenuItems }} placement="bottomRight" trigger={['click']}>
-                    <div className="cursor-pointer flex items-center gap-3 hover:bg-white/10 px-3 py-1 rounded-md transition duration-300">
-                        <Avatar icon={<UserOutlined />} className="bg-blue-500 border-none" />
+                    <div className="cursor-pointer flex items-center gap-3 hover:bg-black/20 px-3 py-1.5 rounded-md transition duration-300 border border-white/10">
+                        <Avatar icon={<UserOutlined />} className="bg-[#007355] text-white border-none" />
                         <span className="font-semibold text-white">{user?.username || 'Người dùng'}</span>
                     </div>
                 </Dropdown>

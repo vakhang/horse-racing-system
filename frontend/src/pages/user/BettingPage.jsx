@@ -185,9 +185,9 @@ const BettingPage = () => {
                         type={bettingHorseRegId === record.registrationId ? "primary" : "default"}
                         onClick={() => setBettingHorseRegId(record.registrationId)}
                         disabled={isDisabled}
-                        className={bettingHorseRegId === record.registrationId ? "bg-yellow-500 border-none text-black font-bold" : ""}
+                        className={bettingHorseRegId === record.registrationId ? "b365-odds-btn selected" : "b365-odds-btn"}
                     >
-                        {isDisabled ? "Bị Cấm" : bettingHorseRegId === record.registrationId ? "Đã Chọn" : "Chọn Ngựa Này"}
+                        {isDisabled ? "Bị Cấm" : bettingHorseRegId === record.registrationId ? "✓ ĐÃ CHỌN" : "CƯỢC NGỰA NÀY"}
                     </Button>
                 );
             }
