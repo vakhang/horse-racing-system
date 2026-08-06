@@ -35,6 +35,7 @@ public class RaceServiceImpl implements RaceService {
     private final AuditLogRepository auditLogRepository;
     private final PrizeConfigRepository prizeConfigRepository;
     private final com.swp.horseracing.repository.JockeyInvitationRepository jockeyInvitationRepository;
+    private final com.swp.horseracing.repository.SystemFundRepository systemFundRepository;
 
     private void validateRaceTimeConstraints(java.time.LocalDateTime newRaceTime, Integer tournamentId, Integer currentRaceId) {
         if (newRaceTime == null) return;
@@ -395,6 +396,109 @@ public class RaceServiceImpl implements RaceService {
         PrizeConfig config = prizeConfigRepository.findById(1).orElse(
                 PrizeConfig.builder()
                         .horseOwnerPercentage(new java.math.BigDecimal("0.05"))
+                        .jockeyPercentage(new java.math.BigDecimal("0.02"))
+                        .jackpotPool(java.math.BigDecimal.ZERO)
+                        .build()
+        );
+
+        java.math.BigDecimal currentJackpot = config.getJackpotPool() != null ? config.getJackpotPool() : java.math.BigDecimal.ZERO;
+        
+        // CỘNG DỒN JACKPOT CŨ VÀO NET POOL MỚI ĐỂ CHIA CHO KHÁN GIẢ
+        netPool = netPool.add(currentJackpot);
+
+        // Lấy tất cả bet của race
+        List<Bet> allBets = betRepository.findByRaceId(raceId);
+        
+        // BƯỚC 2: Tính tổng tiền cược của tất cả các vé đặt vào ngựa thắng
+        java.math.BigDecimal totalBetOnWinner = allBets.stream()
+                .filter(b -> b.getRegistration().getId().equals(winnerReg.getId()) && b.getStatus() == BetStatus.PENDING)
+                .map(b -> b.getAmount())
+                .reduce(java.math.BigDecimal.ZERO, (a, b) -> a.add(b));
+
+        // BƯỚC 3: Tính Dividend (Tỷ lệ chia thưởng)
+        java.math.BigDecimal dividend = java.math.BigDecimal.ZERO;
+        boolean isRefund = false;
+        if (totalBetOnWinner.compareTo(java.math.BigDecimal.ZERO) > 0) {
+            dividend = netPool.divide(totalBetOnWinner, 4, java.math.RoundingMode.HALF_UP);
+            
+            // MINUS POOL PROTECTION: Nếu Odds < 1.05, ép về 1.05 và trừ tiền từ RISK_RESERVE
+            if (dividend.compareTo(new java.math.BigDecimal("1.05")) < 0) {
+                java.math.BigDecimal originalDividend = dividend;
+                dividend = new java.math.BigDecimal("1.05");
+                
+                // Tính phần thiếu hụt
+                java.math.BigDecimal shortfallPerUnit = dividend.subtract(originalDividend);
+                java.math.BigDecimal totalShortfall = totalBetOnWinner.multiply(shortfallPerUnit).setScale(2, java.math.RoundingMode.HALF_UP);
+                
+                // Trừ từ RISK_RESERVE
+                SystemFund riskReserve = systemFundRepository.findByFundTypeWithPessimisticWrite("RISK_RESERVE")
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy Quỹ dự phòng rủi ro (RISK_RESERVE) để bù lỗ!"));
+                if (riskReserve.getBalance().compareTo(totalShortfall) < 0) {
+                    throw new RuntimeException("Quỹ dự phòng rủi ro không đủ để bù lỗ!");
+                }
+                riskReserve.setBalance(riskReserve.getBalance().subtract(totalShortfall));
+                systemFundRepository.save(riskReserve);
+                
+                // Lưu log rút quỹ bù lỗ
+                TransactionHistory txShortfall = TransactionHistory.builder()
+                        .transactionCode("RISK-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
+                        .amount(totalShortfall)
+                        .type(TransactionType.SYSTEM_FUND_DEDUCTION)
+                        .direction(TransactionDirection.OUT)
+                        .status(TransactionStatus.COMPLETED)
+                        .build();
+                transactionHistoryRepository.save(txShortfall);
+            }
+            
+            // Xóa sổ Jackpot cũ vì đã có người trúng
+            if (currentJackpot.compareTo(java.math.BigDecimal.ZERO) > 0) {
+                config.setJackpotPool(java.math.BigDecimal.ZERO);
+                prizeConfigRepository.save(config);
+            }
+        } else {
+            // KHÔNG CÓ AI TRÚNG CƯỢC -> AUTO REFUND THAY VÌ JACKPOT
+            isRefund = true;
+        }
+
+        for (Bet bet : allBets) {
+            if (bet.getStatus() != BetStatus.PENDING) continue; // Bỏ qua nếu đã xử lý
+
+            if (isRefund) {
+                bet.setStatus(BetStatus.REFUNDED);
+                bet.setReward(bet.getAmount());
+                
+                // Hoàn tiền vào ví
+                Wallet wallet = walletRepository.findByUserIdForUpdate(bet.getSpectator().getId())
+                        .orElseThrow(() -> new RuntimeException("Lỗi ví người chơi"));
+                wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
+                walletRepository.save(wallet);
+
+                TransactionHistory txRefund = TransactionHistory.builder()
+                        .transactionCode("REF-" + java.util.UUID.randomUUID().toString().substring(0,8).toUpperCase())
+                        .wallet(wallet)
+                        .bet(bet)
+                        .amount(bet.getAmount())
+                        .type(TransactionType.REFUND)
+                        .direction(TransactionDirection.IN)
+                        .status(TransactionStatus.COMPLETED)
+                        .build();
+                transactionHistoryRepository.save(txRefund);
+                
+                betRepository.save(bet);
+                continue;
+            }
+
+            if (bet.getRegistration().getId().equals(winnerReg.getId())) {
+                bet.setStatus(BetStatus.WON);
+                
+                // BƯỚC 4: Tiền thắng (Gross Winnings)
+                java.math.BigDecimal grossWinnings = bet.getAmount().multiply(dividend).setScale(2, java.math.RoundingMode.HALF_UP);
+                
+                // THU THUẾ TNCN (10% cho lợi nhuận > 10,000,000 VNĐ)
+                java.math.BigDecimal profit = grossWinnings.subtract(bet.getAmount());
+                java.math.BigDecimal tax = java.math.BigDecimal.ZERO;
+                if (profit.compareTo(new java.math.BigDecimal("10000000")) > 0) {
+                    java.math.BigDecimal taxableAmount = profit.subtract(new java.math.BigDecimal("10000000"));
                     tax = taxableAmount.multiply(new java.math.BigDecimal("0.10")).setScale(2, java.math.RoundingMode.HALF_UP);
                 }
                 
