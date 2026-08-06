@@ -237,32 +237,37 @@ const BettingPage = () => {
                                     </div>
                                     <Tag color="orange" className="font-bold border-orange-300 px-3 py-1">SẮP DIỄN RA</Tag>
                                 </div>
-                                <div className="text-gray-600 mb-6 font-medium">
-                                    Thời gian chạy: <span className="text-black">{new Date(race.raceTime).toLocaleString()}</span>
-                                </div>
                                 {(() => {
-                                    const timeDiff = new Date(race.raceTime).getTime() - currentTime;
-                                    const isLocked = timeDiff <= 60000;
-                                    return isLocked ? (
-                                        <Button
-                                            type="default"
-                                            size="large"
-                                            block
-                                            disabled
-                                            className="bg-gray-300 font-bold tracking-wide text-gray-500"
-                                        >
-                                            ĐÃ KHÓA NHẬN CƯỢC
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            type="primary"
-                                            size="large"
-                                            block
-                                            className="bg-blue-600 font-bold tracking-wide"
-                                            onClick={() => handleOpenBetModal(race)}
-                                        >
-                                            XEM TỶ LỆ & VÀO TIỀN
-                                        </Button>
+                                    const raceDate = race.raceTime ? new Date(race.raceTime) : null;
+                                    const isValidDate = raceDate && !isNaN(raceDate.getTime()) && raceDate.getFullYear() > 1970;
+                                    const isLocked = race.status === 'LOCK_SESSION' || (isValidDate && (raceDate.getTime() - currentTime <= 60000));
+                                    return (
+                                        <>
+                                            <div className="text-gray-600 mb-6 font-medium">
+                                                Thời gian chạy: <span className="text-white font-bold">{isValidDate ? raceDate.toLocaleString('vi-VN') : 'Chờ chốt lịch'}</span>
+                                            </div>
+                                            {isLocked ? (
+                                                <Button
+                                                    type="default"
+                                                    size="large"
+                                                    block
+                                                    disabled
+                                                    className="bg-gray-700 font-bold tracking-wide text-gray-400 border-none"
+                                                >
+                                                    ĐÃ KHÓA NHẬN CƯỢC
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    type="primary"
+                                                    size="large"
+                                                    block
+                                                    className="bg-[#007355] hover:bg-[#005740] text-white font-bold tracking-wide border-none"
+                                                    onClick={() => handleOpenBetModal(race)}
+                                                >
+                                                    XEM TỶ LỆ & VÀO TIỀN
+                                                </Button>
+                                            )}
+                                        </>
                                     );
                                 })()}
                             </Card>
