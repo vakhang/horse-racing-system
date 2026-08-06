@@ -11,4 +11,5 @@ import java.util.List;
 public interface HorseRepository extends JpaRepository<Horse, Integer> {
     // Hỗ trợ FE lấy danh sách ngựa của 1 chủ ngựa cụ thể
     List<Horse> findByOwnerId(Integer ownerId);
+    java.util.Optional<Horse> findByName(String name);
 }

@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
     // - Data: Viết thêm hàm tìm kiếm Giải đấu có số tiền thưởng cao nhất nếu muốn làm tính năng "Hot Tournaments".
 public interface TournamentRepository extends JpaRepository<Tournament, Integer> {
     boolean existsByName(String name);
+    java.util.Optional<Tournament> findByName(String name);
 }

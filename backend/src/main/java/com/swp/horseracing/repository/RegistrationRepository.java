@@ -16,6 +16,7 @@ public interface RegistrationRepository extends JpaRepository<Registration, Inte
     List<Registration> findByRaceId(Integer raceId);
 
     boolean existsByRaceIdAndHorseId(Integer raceId, Integer horseId);
+    java.util.Optional<Registration> findByRaceIdAndHorseId(Integer raceId, Integer horseId);
 
     boolean existsByRaceIdAndGateNumber(Integer raceId, Integer gateNumber);
 
