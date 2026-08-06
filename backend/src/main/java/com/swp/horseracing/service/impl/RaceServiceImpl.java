@@ -78,6 +78,10 @@ public class RaceServiceImpl implements RaceService {
         Tournament tournament = tournamentRepository.findById(request.getTournamentId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Giải đấu với ID: " + request.getTournamentId()));
 
+        if (request.getName() != null && raceRepository.existsByTournamentIdAndNameIgnoreCase(request.getTournamentId(), request.getName().trim())) {
+            throw new RuntimeException("Tên chặng đua '" + request.getName().trim() + "' đã tồn tại trong giải đấu này. Vui lòng nhập tên khác!");
+        }
+
         User referee = null;
         if (request.getRefereeId() != null) {
             referee = userRepository.findById(request.getRefereeId())
@@ -143,7 +147,13 @@ public class RaceServiceImpl implements RaceService {
             race.setTournament(newTournament);
         }
 
-        if (request.getName() != null) race.setName(request.getName());
+        if (request.getName() != null) {
+            String trimmedName = request.getName().trim();
+            if (!race.getName().equalsIgnoreCase(trimmedName) && raceRepository.existsByTournamentIdAndNameIgnoreCase(race.getTournament().getId(), trimmedName)) {
+                throw new RuntimeException("Tên chặng đua '" + trimmedName + "' đã tồn tại trong giải đấu này. Vui lòng nhập tên khác!");
+            }
+            race.setName(trimmedName);
+        }
         if (request.getRaceTime() != null) {
             if (!request.getRaceTime().equals(race.getRaceTime())) {
                 validateRaceTimeConstraints(request.getRaceTime(), race.getTournament().getId(), race.getId());

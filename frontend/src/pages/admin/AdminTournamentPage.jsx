@@ -331,10 +331,10 @@ const AdminTournamentPage = () => {
                 }
             },
             {
-                title: 'Quản Lý',
+                title: 'Thao Tác Quản Lý',
                 align: 'right',
                 render: (_, record) => (
-                    <Space>
+                    <Space wrap>
                         {record.status === 'REGISTRATION' && (
                             <Popconfirm title="Chốt danh sách ngựa thi đấu và mở cổng nhận cược?" onConfirm={() => handleForceTransition(record, 'BETTING')}>
                                 <Button size="small" type="primary" style={{ backgroundColor: '#1890ff', fontWeight: 'bold' }}>🔓 CHỐT DANH SÁCH & MỞ CƯỢC</Button>
@@ -371,19 +371,23 @@ const AdminTournamentPage = () => {
         ];
 
         return (
-            <Card key={`card-${tournament.id}`} className="bg-blue-50 border-dashed border-blue-300 m-2">
+            <Card key={`card-${tournament.id}`} className="bg-[#162a22] border-dashed border-[#007355] m-2 overflow-x-auto">
                 <Table
                     key={`race-table-${tournament.id}`}
                     columns={columns}
-                    dataSource={tournament.races || []} rowKey="id" pagination={false} size="small"
+                    dataSource={tournament.races || []} 
+                    rowKey="id" 
+                    pagination={false} 
+                    size="small"
+                    scroll={{ x: 'max-content' }}
                 />
             </Card>
         );
     };
 
     return (
-        <div className="p-8 bg-gray-100 min-h-screen">
-            <Card className="shadow-xl rounded-2xl border-none">
+        <div className="p-4 md:p-8 bg-[#121212] min-h-screen max-w-full overflow-x-auto">
+            <Card className="shadow-xl rounded-2xl border-none bg-[#1e1e1e]">
                 <Row justify="space-between" className="mb-6">
                     <Col>
                         <Title level={2}><TrophyOutlined className="text-yellow-500" /> Quản Lý Giải Đấu & Chặng Đua</Title>
@@ -422,7 +426,7 @@ const AdminTournamentPage = () => {
                                         </Popconfirm>
                                     </Space>
                                 }
-                            ]} dataSource={tournaments} rowKey="id" loading={loading} expandable={{ expandedRowRender, onExpand: (exp, rec) => exp && fetchRacesForTournament(rec.id) }} className="border rounded-xl" />
+                            ]} dataSource={tournaments} rowKey="id" loading={loading} expandable={{ expandedRowRender, onExpand: (exp, rec) => exp && fetchRacesForTournament(rec.id) }} className="border rounded-xl" scroll={{ x: 'max-content' }} />
                         )
                     },
                     {

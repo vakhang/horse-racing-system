@@ -18,6 +18,8 @@ public interface RaceRepository extends JpaRepository<Race, Integer> {
     @org.springframework.data.jpa.repository.Query("SELECT r FROM Race r JOIN FETCH r.tournament LEFT JOIN FETCH r.referee ORDER BY r.raceTime ASC")
     List<Race> findAllWithDetails();
 
+    boolean existsByTournamentIdAndNameIgnoreCase(Integer tournamentId, String name);
+
     List<Race> findByRefereeId(Integer refereeId);
     List<Race> findByStatus(com.swp.horseracing.model.RaceStatus status);
 
