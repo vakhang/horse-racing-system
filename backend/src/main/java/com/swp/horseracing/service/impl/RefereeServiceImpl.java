@@ -28,8 +28,6 @@ public class RefereeServiceImpl implements RefereeService {
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final AuditLogRepository auditLogRepository;
-    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
-
     @Override
     @Transactional
     public String submitRaceResult(RefereeResultRequestDTO request) {
@@ -191,7 +189,7 @@ public class RefereeServiceImpl implements RefereeService {
                     }
                 } else if (bet.getBetType() == BetType.QUINELLA || bet.getBetType() == BetType.EXACTA) {
                     if (bet.getRegistration().getId().equals(registration.getId()) || 
-                        (bet.getRegistrationId2() != null && bet.getRegistrationId2().equals(registration.getId()))) {
+                        (bet.getRegistration2() != null && bet.getRegistration2().getId().equals(registration.getId()))) {
                         shouldRefund = true;
                     }
                 }
@@ -228,16 +226,15 @@ public class RefereeServiceImpl implements RefereeService {
         }
 
         try {
-            java.util.Map<String, Object> details = new java.util.HashMap<>();
-            details.put("performedBy", "referee_id_" + referee.getId());
-            details.put("entityName", "Registration");
-            details.put("entityId", registration.getId());
-            details.put("gateNumber", registration.getGateNumber());
-            details.put("affectedBetsCount", affectedBetsCount);
-            details.put("totalRefundAmount", totalRefund);
-            details.put("timestamp", java.time.format.DateTimeFormatter.ISO_INSTANT.format(java.time.Instant.now()));
-
-            String detailsJson = objectMapper.writeValueAsString(details);
+            String detailsJson = String.format("{\"performedBy\":\"%s\",\"entityName\":\"%s\",\"entityId\":%d,\"gateNumber\":%d,\"affectedBetsCount\":%d,\"totalRefundAmount\":%s,\"timestamp\":\"%s\"}",
+                "referee_id_" + referee.getId(),
+                "Registration",
+                registration.getId(),
+                registration.getGateNumber(),
+                affectedBetsCount,
+                totalRefund.toString(),
+                java.time.format.DateTimeFormatter.ISO_INSTANT.format(java.time.Instant.now())
+            );
 
             AuditLog log = AuditLog.builder()
                     .action("NON_STARTER_REPORT")
