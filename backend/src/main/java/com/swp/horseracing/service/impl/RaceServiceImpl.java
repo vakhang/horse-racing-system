@@ -395,54 +395,6 @@ public class RaceServiceImpl implements RaceService {
         PrizeConfig config = prizeConfigRepository.findById(1).orElse(
                 PrizeConfig.builder()
                         .horseOwnerPercentage(new java.math.BigDecimal("0.05"))
-                        .jockeyPercentage(new java.math.BigDecimal("0.02"))
-                        .jackpotPool(java.math.BigDecimal.ZERO)
-                        .build()
-        );
-
-        java.math.BigDecimal currentJackpot = config.getJackpotPool() != null ? config.getJackpotPool() : java.math.BigDecimal.ZERO;
-        
-        // CỘNG DỒN JACKPOT CŨ VÀO NET POOL MỚI ĐỂ CHIA CHO KHÁN GIẢ
-        netPool = netPool.add(currentJackpot);
-
-        // Lấy tất cả bet của race
-        List<Bet> allBets = betRepository.findByRaceId(raceId);
-        
-        // BƯỚC 2: Tính tổng tiền cược của tất cả các vé đặt vào ngựa thắng
-        java.math.BigDecimal totalBetOnWinner = allBets.stream()
-                .filter(b -> b.getRegistration().getId().equals(winnerReg.getId()) && b.getStatus() == BetStatus.PENDING)
-                .map(b -> b.getAmount())
-                .reduce(java.math.BigDecimal.ZERO, (a, b) -> a.add(b));
-
-        // BƯỚC 3: Tính Dividend (Tỷ lệ chia thưởng)
-        java.math.BigDecimal dividend = java.math.BigDecimal.ZERO;
-        if (totalBetOnWinner.compareTo(java.math.BigDecimal.ZERO) > 0) {
-            dividend = netPool.divide(totalBetOnWinner, 4, java.math.RoundingMode.HALF_UP);
-            
-            // Xóa sổ Jackpot cũ vì đã có người trúng
-            if (currentJackpot.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                config.setJackpotPool(java.math.BigDecimal.ZERO);
-                prizeConfigRepository.save(config);
-            }
-        } else {
-            // Không có người trúng, Net Pool hiện tại trở thành Jackpot Carryover mới
-            config.setJackpotPool(netPool);
-            prizeConfigRepository.save(config);
-        }
-
-        for (Bet bet : allBets) {
-            if (bet.getStatus() != BetStatus.PENDING) continue; // Bỏ qua nếu đã xử lý
-
-            if (bet.getRegistration().getId().equals(winnerReg.getId())) {
-                bet.setStatus(BetStatus.WON);
-                
-                // BƯỚC 4: Tiền thắng (Gross Winnings)
-                java.math.BigDecimal grossWinnings = bet.getAmount().multiply(dividend).setScale(2, java.math.RoundingMode.HALF_UP);
-                
-                // THU THUẾ TNCN (10% cho phần thưởng > 10,000,000 VNĐ)
-                java.math.BigDecimal tax = java.math.BigDecimal.ZERO;
-                if (grossWinnings.compareTo(new java.math.BigDecimal("10000000")) > 0) {
-                    java.math.BigDecimal taxableAmount = grossWinnings.subtract(new java.math.BigDecimal("10000000"));
                     tax = taxableAmount.multiply(new java.math.BigDecimal("0.10")).setScale(2, java.math.RoundingMode.HALF_UP);
                 }
                 
