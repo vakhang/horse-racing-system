@@ -47,7 +47,7 @@ const PublicHeader = () => {
             }}>
                 <div className="flex items-center gap-1.5 font-black text-xl tracking-wide bg-[#004633] px-3 py-1 rounded-lg border border-[#007355]">
                     <span className="text-white text-base">bet</span>
-                    <span className="text-[#fcc200] text-2xl tracking-tighter italic">365</span>
+                    <span className="text-[#fcc200] text-2xl tracking-tighter italic">989</span>
                     <span className="text-xs text-emerald-300 font-bold ml-1 uppercase">RACING</span>
                 </div>
             </div>

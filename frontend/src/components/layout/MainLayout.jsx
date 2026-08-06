@@ -107,17 +107,17 @@ const MainLayout = ({ children }) => {
                     borderRight: '1px solid #282828'
                 }}
             >
-                {/* LOGO PARODY THEME BET365 */}
+                {/* LOGO PARODY THEME BET989 */}
                 <div
                     className="h-16 flex items-center justify-center m-3 bg-[#005c44] rounded-lg cursor-pointer border border-[#007355] shadow-lg transition-transform hover:scale-105"
                     onClick={() => navigate('/home')}
                 >
                     {collapsed ? (
-                        <span className="text-[#fcc200] font-black text-xl tracking-tighter">365</span>
+                        <span className="text-[#fcc200] font-black text-xl tracking-tighter">989</span>
                     ) : (
                         <div className="flex items-center gap-1.5 font-black text-xl tracking-wide">
                             <span className="text-white bg-[#004633] px-2 py-0.5 rounded text-base">bet</span>
-                            <span className="text-[#fcc200] text-2xl tracking-tighter italic">365</span>
+                            <span className="text-[#fcc200] text-2xl tracking-tighter italic">989</span>
                             <span className="text-xs text-emerald-300 font-bold ml-1 uppercase">RACING</span>
                         </div>
                     )}

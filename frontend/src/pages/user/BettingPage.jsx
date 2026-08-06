@@ -185,7 +185,7 @@ const BettingPage = () => {
                         type={bettingHorseRegId === record.registrationId ? "primary" : "default"}
                         onClick={() => setBettingHorseRegId(record.registrationId)}
                         disabled={isDisabled}
-                        className={bettingHorseRegId === record.registrationId ? "b365-odds-btn selected" : "b365-odds-btn"}
+                        className={bettingHorseRegId === record.registrationId ? "b989-odds-btn selected" : "b989-odds-btn"}
                     >
                         {isDisabled ? "Bị Cấm" : bettingHorseRegId === record.registrationId ? "✓ ĐÃ CHỌN" : "CƯỢC NGỰA NÀY"}
                     </Button>

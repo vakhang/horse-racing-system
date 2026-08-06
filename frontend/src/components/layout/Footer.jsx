@@ -20,7 +20,7 @@ const Footer = () => {
                             <div>
                                 <Link to="/about">
                                     <Text className="text-[#fcc200] font-bold mb-4 uppercase tracking-wider block text-base hover:text-white transition-colors" style={{ color: '#fcc200' }}>
-                                        TỔ CHỨC ĐUA NGỰA KKAN (BET365 SYSTEM)
+                                        TỔ CHỨC ĐUA NGỰA KKAN (BET989 SYSTEM)
                                     </Text>
                                 </Link>
                             </div>
@@ -33,7 +33,7 @@ const Footer = () => {
                                 Trường đua ngựa KKAN, HCM, Việt Nam
                             </div>
                             <Text className="text-gray-500 text-xs mt-4 block">
-                                © 2026 bet365 Horse Racing System. All rights reserved.
+                                © 2026 bet989 Horse Racing System. All rights reserved.
                             </Text>
                         </Space>
                     </Col>

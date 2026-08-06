@@ -6,22 +6,22 @@
 }
 
 /* ==========================================
-   BET365 DESIGN SYSTEM THEME VARIABLES
+   BET989 DESIGN SYSTEM THEME VARIABLES
    ========================================== */
 :root {
-  --b365-bg-dark: #121212;
-  --b365-bg-card: #1e1e1e;
-  --b365-bg-card-alt: #242424;
-  --b365-bg-header: #005c44;
-  --b365-bg-header-dark: #004633;
-  --b365-green-accent: #007355;
-  --b365-green-light: #00b37e;
-  --b365-gold: #fcc200;
-  --b365-gold-hover: #e5b100;
-  --b365-text-light: #e0e0e0;
-  --b365-text-muted: #a0a0a0;
-  --b365-border: #333333;
-  --b365-border-light: #282828;
+  --b989-bg-dark: #121212;
+  --b989-bg-card: #1e1e1e;
+  --b989-bg-card-alt: #242424;
+  --b989-bg-header: #005c44;
+  --b989-bg-header-dark: #004633;
+  --b989-green-accent: #007355;
+  --b989-green-light: #00b37e;
+  --b989-gold: #fcc200;
+  --b989-gold-hover: #e5b100;
+  --b989-text-light: #e0e0e0;
+  --b989-text-muted: #a0a0a0;
+  --b989-border: #333333;
+  --b989-border-light: #282828;
 }
 
 body {
@@ -32,7 +32,7 @@ body {
     font-family: "Lexend", sans-serif;
 }
 
-/* --- OVERRIDE TAILWIND DEFAULT LIGHT BACKGROUNDS TO BET365 DARK THEME --- */
+/* --- OVERRIDE TAILWIND DEFAULT LIGHT BACKGROUNDS TO BET989 DARK THEME --- */
 .bg-gray-100, .bg-gray-200, .bg-gray-50 {
     background-color: #121212 !important;
 }
@@ -68,8 +68,8 @@ body {
     border-color: #2c2c2c !important;
 }
 
-/* --- BET365 ODDS BUTTON STYLE --- */
-.b365-odds-btn {
+/* --- BET989 ODDS BUTTON STYLE --- */
+.b989-odds-btn {
     background-color: #262626 !important;
     color: #fcc200 !important;
     border: 1px solid #383838 !important;
@@ -77,22 +77,22 @@ body {
     transition: all 0.2s ease-in-out !important;
 }
 
-.b365-odds-btn:hover {
+.b989-odds-btn:hover {
     background-color: #007355 !important;
     color: #ffffff !important;
     border-color: #00b37e !important;
     transform: translateY(-1px);
 }
 
-.b365-odds-btn.selected {
+.b989-odds-btn.selected {
     background-color: #fcc200 !important;
     color: #000000 !important;
     border-color: #fcc200 !important;
     box-shadow: 0 0 10px rgba(252, 194, 0, 0.4);
 }
 
-/* --- BET365 PRIMARY CTA BUTTON --- */
-.b365-cta-btn {
+/* --- BET989 PRIMARY CTA BUTTON --- */
+.b989-cta-btn {
     background-color: #fcc200 !important;
     color: #000000 !important;
     font-weight: 800 !important;
@@ -100,13 +100,13 @@ body {
     box-shadow: 0 2px 8px rgba(252, 194, 0, 0.3) !important;
 }
 
-.b365-cta-btn:hover {
+.b989-cta-btn:hover {
     background-color: #e5b100 !important;
     color: #000000 !important;
     transform: scale(1.02);
 }
 
-/* --- ANT DESIGN OVERRIDES FOR BET365 EMERALD & DARK THEME --- */
+/* --- ANT DESIGN OVERRIDES FOR BET989 EMERALD & DARK THEME --- */
 .ant-card {
     background-color: #1e1e1e !important;
     border-color: #2a2a2a !important;
