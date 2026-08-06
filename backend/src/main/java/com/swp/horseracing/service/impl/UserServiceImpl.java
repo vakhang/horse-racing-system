@@ -186,10 +186,11 @@ public class UserServiceImpl implements UserService {
             userAttachmentRepository.saveAll(savedUser.getAttachments());
         }
 
-        // Khởi tạo ví với 0 đồng cho TẤT CẢ các role lúc mới đăng ký
+        // Khởi tạo ví: Khán giả (SPECTATOR) được tặng 100.000 VNĐ trải nghiệm, các role khác là 0 đồng.
+        BigDecimal initialBalance = savedUser.getRole() == RoleEnum.SPECTATOR ? new BigDecimal("100000.00") : BigDecimal.ZERO;
         Wallet wallet = Wallet.builder()
                 .user(savedUser)
-                .balance(BigDecimal.ZERO)
+                .balance(initialBalance)
                 .build();
         walletRepository.save(wallet);
 
