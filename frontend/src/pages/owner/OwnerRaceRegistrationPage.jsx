@@ -309,9 +309,25 @@ const OwnerRaceRegistrationPage = () => {
                         <Select placeholder="-- Chọn ngựa --" size="large">
                             {myHorses.map(horse => {
                                 const isAlreadyRegistered = currentRaceRegistrations.some(reg => reg.horseId === horse.id);
+                                const raceRequiredClass = selectedRace?.raceClass || 4;
+                                const isClassMismatch = horse.classLevel && horse.classLevel !== raceRequiredClass;
+                                const isDisabled = isAlreadyRegistered || isClassMismatch;
                                 return (
-                                    <Option key={horse.id} value={horse.id} disabled={isAlreadyRegistered}>
-                                        {horse.name} {isAlreadyRegistered ? <span className="text-red-500 font-bold ml-2">(Đã được chọn để thi đấu)</span> : <span className="text-green-600 ml-2">(Sẵn sàng)</span>}
+                                    <Option key={horse.id} value={horse.id} disabled={isDisabled}>
+                                        <div className="flex justify-between items-center w-full">
+                                            <span>
+                                                <strong className="mr-2">{horse.name}</strong>
+                                                <span className="text-xs bg-[#007355] text-[#fcc200] px-1.5 py-0.5 rounded mr-1 font-bold">Class {horse.classLevel || 4}</span>
+                                                <span className="text-xs bg-gray-700 text-gray-200 px-1.5 py-0.5 rounded">⭐ {horse.rating || 40} pts</span>
+                                            </span>
+                                            {isAlreadyRegistered ? (
+                                                <span className="text-red-500 font-bold text-xs ml-2">(Đã đăng ký)</span>
+                                            ) : isClassMismatch ? (
+                                                <span className="text-orange-400 font-bold text-xs ml-2">(Không hợp Class {raceRequiredClass})</span>
+                                            ) : (
+                                                <span className="text-green-500 font-bold text-xs ml-2">✓ Sẵn sàng</span>
+                                            )}
+                                        </div>
                                     </Option>
                                 );
                             })}
