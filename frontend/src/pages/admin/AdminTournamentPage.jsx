@@ -109,7 +109,8 @@ const AdminTournamentPage = () => {
                 startDate: values.dates[0].format('YYYY-MM-DDTHH:mm:ss'),
                 endDate: values.dates[1].format('YYYY-MM-DDTHH:mm:ss'),
                 status: values.status,
-                reason: values.reason
+                reason: values.reason,
+                requiredClass: values.requiredClass || 4
             };
             if (editingTourId) await api.put(`/tournaments/${editingTourId}`, payload);
             else await api.post('/tournaments', payload);
@@ -398,6 +399,7 @@ const AdminTournamentPage = () => {
                         children: (
                             <Table columns={[
                                 { title: 'Tên Giải Đấu', dataIndex: 'name', render: t => <Text strong className="text-blue-700 text-lg">{t}</Text> },
+                                { title: 'Class Quy Định', dataIndex: 'requiredClass', render: c => <Tag color="gold" className="font-bold">Class {c || 4}</Tag> },
                                 { title: 'Thời Gian Tổ Chức', render: (_, r) => `${dayjs(r.startDate).format('DD/MM/YYYY')} - ${dayjs(r.endDate).format('DD/MM/YYYY')}` },
                                 {
                                     title: 'Trạng Thái', dataIndex: 'status', render: s => {
@@ -414,7 +416,7 @@ const AdminTournamentPage = () => {
                                     align: 'right',
                                     render: (_, r) => <Space>
                                         <Button type="dashed" className="font-bold" icon={<FlagOutlined />} onClick={() => { setSelectedTourId(r.id); setEditingRaceId(null); raceForm.resetFields(); setIsRaceModalVisible(true); }}>Thêm Chặng Đua</Button>
-                                        <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({ name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status, reason: '' }); setIsTourModalVisible(true); }} />
+                                        <Button type="primary" ghost icon={<EditOutlined />} onClick={() => { setEditingTourId(r.id); tourForm.setFieldsValue({ name: r.name, dates: [dayjs(r.startDate), dayjs(r.endDate)], status: r.status, requiredClass: r.requiredClass || 4, reason: '' }); setIsTourModalVisible(true); }} />
                                         <Popconfirm title="Xác nhận xóa hoàn toàn giải đấu này?" onConfirm={() => handleDeleteTournament(r.id)} okText="Xóa" okButtonProps={{ danger: true }} cancelText="Hủy">
                                             <Button danger icon={<DeleteOutlined />} />
                                         </Popconfirm>
@@ -438,6 +440,16 @@ const AdminTournamentPage = () => {
                 <Form form={tourForm} layout="vertical" onFinish={handleSaveTournament} className="mt-4">
                     <Form.Item name="name" label={<Text strong>Tên Giải Đấu</Text>} rules={[{ required: true, message: 'Vui lòng nhập tên giải đấu' }]}>
                         <Input size="large" placeholder="VD: Siêu Cúp Mùa Hè..." />
+                    </Form.Item>
+
+                    <Form.Item name="requiredClass" label={<Text strong>Class Quy Định (Hạng Chiến Mã Phù Hợp)</Text>} initialValue={4}>
+                        <Select size="large">
+                            <Option value={1}>Class 1 (Hạng Cao Nhất - Siêu Cúp Top 1)</Option>
+                            <Option value={2}>Class 2 (Hạng 2)</Option>
+                            <Option value={3}>Class 3 (Hạng 3)</Option>
+                            <Option value={4}>Class 4 (Tiêu Chuẩn / Phổ Thông)</Option>
+                            <Option value={5}>Class 5 (Tân Binh / Nhập Môn)</Option>
+                        </Select>
                     </Form.Item>
 
                     <Form.Item

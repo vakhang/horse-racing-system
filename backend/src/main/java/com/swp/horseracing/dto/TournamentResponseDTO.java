@@ -18,4 +18,5 @@ public class TournamentResponseDTO {
     private LocalDateTime endDate;
     private TournamentStatus status;
     private String reason;
+    private Integer requiredClass;
 }

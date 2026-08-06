@@ -100,7 +100,6 @@ public class RaceServiceImpl implements RaceService {
                 .prize1(request.getPrize1())
                 .prize2(request.getPrize2())
                 .prize3(request.getPrize3())
-                .raceClass(request.getRaceClass())
                 .rakePercentage(request.getRakePercentage() != null ? request.getRakePercentage() : new java.math.BigDecimal("20.00"))
                 .build();
 
@@ -165,7 +164,6 @@ public class RaceServiceImpl implements RaceService {
         if (request.getPrize1() != null) race.setPrize1(request.getPrize1());
         if (request.getPrize2() != null) race.setPrize2(request.getPrize2());
         if (request.getPrize3() != null) race.setPrize3(request.getPrize3());
-        if (request.getRaceClass() != null) race.setRaceClass(request.getRaceClass());
         
         if (request.getRakePercentage() != null) race.setRakePercentage(request.getRakePercentage());
 
@@ -285,7 +283,7 @@ public class RaceServiceImpl implements RaceService {
                 .prize1(race.getPrize1())
                 .prize2(race.getPrize2())
                 .prize3(race.getPrize3())
-                .raceClass(race.getRaceClass())
+                .raceClass(race.getTournament() != null ? race.getTournament().getRequiredClass() : 4)
                 .rakePercentage(race.getRakePercentage())
                 .totalPool(race.getTotalPool())
                 .build();

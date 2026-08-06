@@ -44,6 +44,7 @@ public class TournamentServiceImpl implements TournamentService {
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
                 .status(request.getStatus() != null ? request.getStatus() : TournamentStatus.UPCOMING)
+                .requiredClass(request.getRequiredClass() != null ? request.getRequiredClass() : 4)
                 .build();
 
         return mapToResponseDTO(tournamentRepository.save(tournament));
@@ -103,6 +104,7 @@ public class TournamentServiceImpl implements TournamentService {
             if (request.getStartDate() != null) tournament.setStartDate(request.getStartDate());
             if (request.getEndDate() != null) tournament.setEndDate(request.getEndDate());
         }
+        if (request.getRequiredClass() != null) tournament.setRequiredClass(request.getRequiredClass());
 
         return mapToResponseDTO(tournamentRepository.save(tournament));
     }
@@ -297,6 +299,7 @@ public class TournamentServiceImpl implements TournamentService {
                 .endDate(tournament.getEndDate())
                 .status(currentStatus)
                 .reason(tournament.getReason())
+                .requiredClass(tournament.getRequiredClass())
                 .build();
     }
 }
