@@ -68,10 +68,12 @@ const BettingPage = () => {
         setLoadingRaces(true);
         try {
             const response = await api.get('/races');
-            const availableRaces = response.data.filter(race => race.status === 'BETTING');
+            const racesData = Array.isArray(response.data) ? response.data : [];
+            const availableRaces = racesData.filter(race => race && race.status === 'BETTING');
             setRaces(availableRaces);
         } catch (error) {
-            message.error('Không thể tải danh sách chặng đua!');
+            console.error('Lỗi lấy danh sách chặng đua:', error);
+            message.error(error.response?.data?.error || error.response?.data?.message || 'Không thể tải danh sách chặng đua!');
         } finally {
             setLoadingRaces(false);
         }

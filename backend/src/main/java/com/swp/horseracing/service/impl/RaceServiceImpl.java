@@ -281,19 +281,41 @@ public class RaceServiceImpl implements RaceService {
     }
 
     private RaceResponseDTO mapToResponseDTO(Race race) {
+        Integer tourId = null;
+        String tourName = null;
+        Integer tourClass = 4;
+        try {
+            if (race.getTournament() != null) {
+                tourId = race.getTournament().getId();
+                tourName = race.getTournament().getName();
+                if (race.getTournament().getRequiredClass() != null) {
+                    tourClass = race.getTournament().getRequiredClass();
+                }
+            }
+        } catch (Exception ignored) {}
+
+        Integer refId = null;
+        String refUsername = null;
+        try {
+            if (race.getReferee() != null) {
+                refId = race.getReferee().getId();
+                refUsername = race.getReferee().getUsername();
+            }
+        } catch (Exception ignored) {}
+
         return RaceResponseDTO.builder()
                 .id(race.getId())
-                .tournamentId(race.getTournament() != null ? race.getTournament().getId() : null)
-                .tournamentName(race.getTournament() != null ? race.getTournament().getName() : null)
+                .tournamentId(tourId)
+                .tournamentName(tourName)
                 .name(race.getName())
                 .raceTime(race.getRaceTime())
                 .status(race.getStatus() != null ? race.getStatus() : com.swp.horseracing.model.RaceStatus.REGISTRATION)
-                .refereeId(race.getReferee() != null ? race.getReferee().getId() : null)
-                .refereeUsername(race.getReferee() != null ? race.getReferee().getUsername() : null)
+                .refereeId(refId)
+                .refereeUsername(refUsername)
                 .prize1(race.getPrize1())
                 .prize2(race.getPrize2())
                 .prize3(race.getPrize3())
-                .raceClass(race.getTournament() != null ? race.getTournament().getRequiredClass() : 4)
+                .raceClass(tourClass)
                 .rakePercentage(race.getRakePercentage())
                 .totalPool(race.getTotalPool())
                 .build();
