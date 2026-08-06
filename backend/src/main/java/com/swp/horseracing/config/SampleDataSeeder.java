@@ -50,6 +50,7 @@ public class SampleDataSeeder implements CommandLineRunner {
         
         User jockeyHung = createUserIfNotExist("jockey_hung", "123456", "jockey_hung@horseracing.com", "0900000004", RoleEnum.JOCKEY, LocalDate.of(1996, 4, 12), 52.0, 165.0);
         User jockeyTuan = createUserIfNotExist("jockey_tuan", "123456", "jockey_tuan@horseracing.com", "0900000005", RoleEnum.JOCKEY, LocalDate.of(1997, 9, 25), 54.0, 168.0);
+        User jockeyBao = createUserIfNotExist("jockey_bao", "123456", "jockey_bao@horseracing.com", "0900000011", RoleEnum.JOCKEY, LocalDate.of(1995, 1, 10), 51.0, 163.0);
         
         User referee1 = createUserIfNotExist("referee1", "123456", "referee1@horseracing.com", "0900000006", RoleEnum.REFEREE, LocalDate.of(1982, 11, 5), null, null);
         User referee2 = createUserIfNotExist("referee2", "123456", "referee2@horseracing.com", "0900000007", RoleEnum.REFEREE, LocalDate.of(1984, 12, 1), null, null);
@@ -67,6 +68,10 @@ public class SampleDataSeeder implements CommandLineRunner {
         createAttachmentIfMissing(jockeyTuan, UserDocType.JOCKEY_CERT, "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d");
         createAttachmentIfMissing(jockeyTuan, UserDocType.HEALTH_CHECK, "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d");
 
+        createAttachmentIfMissing(jockeyBao, UserDocType.ID_CARD, "https://images.unsplash.com/photo-1500648767791-00dcc994a43e");
+        createAttachmentIfMissing(jockeyBao, UserDocType.JOCKEY_CERT, "https://images.unsplash.com/photo-1500648767791-00dcc994a43e");
+        createAttachmentIfMissing(jockeyBao, UserDocType.HEALTH_CHECK, "https://images.unsplash.com/photo-1500648767791-00dcc994a43e");
+
         createAttachmentIfMissing(referee1, UserDocType.REFEREE_CERT, "https://images.unsplash.com/photo-1500648767791-00dcc994a43e");
         createAttachmentIfMissing(referee2, UserDocType.REFEREE_CERT, "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e");
 
@@ -76,6 +81,7 @@ public class SampleDataSeeder implements CommandLineRunner {
         createWalletIfNotExist(ownerMinh, new BigDecimal("80000000.00"));
         createWalletIfNotExist(jockeyHung, new BigDecimal("25000000.00"));
         createWalletIfNotExist(jockeyTuan, new BigDecimal("20000000.00"));
+        createWalletIfNotExist(jockeyBao, new BigDecimal("15000000.00"));
         createWalletIfNotExist(referee1, new BigDecimal("10000000.00"));
         createWalletIfNotExist(referee2, new BigDecimal("10000000.00"));
         createWalletIfNotExist(spectatorKhang, new BigDecimal("500100000.00"));
@@ -109,7 +115,7 @@ public class SampleDataSeeder implements CommandLineRunner {
         // Race 2 (BETTING Live)
         Registration reg3 = createRegistrationIfNotExist(race2Betting, horse2, ownerDinh, jockeyHung, RegistrationStatus.APPROVED_BY_ADMIN, 1, null, 56.0, 56.0, 2.0, true, new BigDecimal("2.50"));
         Registration reg4 = createRegistrationIfNotExist(race2Betting, horse6, ownerDinh, jockeyTuan, RegistrationStatus.APPROVED_BY_ADMIN, 2, null, 55.0, 55.0, 1.0, true, new BigDecimal("3.20"));
-        Registration reg5 = createRegistrationIfNotExist(race2Betting, horse3, ownerMinh, jockeyHung, RegistrationStatus.APPROVED_BY_ADMIN, 3, null, 54.0, 54.0, 0.0, true, new BigDecimal("4.50"));
+        Registration reg5 = createRegistrationIfNotExist(race2Betting, horse3, ownerMinh, jockeyBao, RegistrationStatus.APPROVED_BY_ADMIN, 3, null, 54.0, 54.0, 0.0, true, new BigDecimal("4.50"));
 
         // Race 3 (BETTING Live)
         Registration reg6 = createRegistrationIfNotExist(race3Betting, horse2, ownerDinh, jockeyTuan, RegistrationStatus.APPROVED_BY_ADMIN, 1, null, 56.0, 56.0, 1.5, true, new BigDecimal("2.10"));

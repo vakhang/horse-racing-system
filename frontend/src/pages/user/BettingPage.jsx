@@ -1,17 +1,13 @@
 import api from '../../config/api.js';
 import React, { useState, useEffect } from 'react';
-import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin, Alert } from 'antd';
-import { RocketOutlined, DollarOutlined, LineChartOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin, Alert, Segmented, Select, Divider } from 'antd';
+import { RocketOutlined, DollarOutlined, LineChartOutlined, InfoCircleOutlined, TrophyOutlined, SwapOutlined, AimOutlined } from '@ant-design/icons';
 
 import { useAuth } from '../../context/AuthContext';
 
 const { Title, Text } = Typography;
 
-// [Chức năng rõ ràng]: Trang Đặt Cược Trực Tuyến dành cho Khán Giả
-// [Tác dụng]:
-// 1. Xem danh sách chặng đua đang mở cược (BETTING).
-// 2. Hiển thị tỷ lệ cược biến động thời gian thực (Parimutuel Pool).
-// 3. Đặt cược và kiểm tra số dư ví tự động trước khi xác nhận.
+// [Chức năng rõ ràng]: Trang Đặt Cược Trực Tuyến 4 Thể Loại dành cho Khán Giả (WIN, PLACE, QUINELLA, EXACTA)
 const BettingPage = () => {
     const { user } = useAuth();
     const [races, setRaces] = useState([]);
@@ -31,14 +27,16 @@ const BettingPage = () => {
         );
     }
 
-    // State cho Modal Đặt Cược
+    // State cho Modal Đặt Cược 4 Thể Loại
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [selectedRace, setSelectedRace] = useState(null);
     const [liveOdds, setLiveOdds] = useState([]);
     const [loadingOdds, setLoadingOdds] = useState(false);
 
-    // State cho việc submit Cược
-    const [bettingHorseRegId, setBettingHorseRegId] = useState(null);
+    // State cho việc chọn Thể Loại Cược & Ngựa
+    const [selectedBetType, setSelectedBetType] = useState('WIN'); // 'WIN', 'PLACE', 'QUINELLA', 'EXACTA'
+    const [bettingHorseRegId, setBettingHorseRegId] = useState(null); // Ngựa 1 / Ngựa Nhất
+    const [bettingHorseRegId2, setBettingHorseRegId2] = useState(null); // Ngựa 2 / Ngựa Nhì (Cược Cặp)
     const [betAmount, setBetAmount] = useState(100000);
     const [submittingBet, setSubmittingBet] = useState(false);
 
@@ -83,7 +81,9 @@ const BettingPage = () => {
         setSelectedRace(race);
         setIsModalVisible(true);
         setLoadingOdds(true);
+        setSelectedBetType('WIN');
         setBettingHorseRegId(null);
+        setBettingHorseRegId2(null);
         fetchUserWallet();
 
         try {
@@ -97,10 +97,23 @@ const BettingPage = () => {
     };
 
     const handlePlaceBet = async () => {
-        if (!bettingHorseRegId) {
-            message.warning('Vui lòng chọn một chiến mã để đặt cược!');
-            return;
+        if (selectedBetType === 'WIN' || selectedBetType === 'PLACE') {
+            if (!bettingHorseRegId) {
+                message.warning('Vui lòng chọn một chiến mã để đặt cược!');
+                return;
+            }
+        } else {
+            // QUINELLA & EXACTA cần 2 ngựa
+            if (!bettingHorseRegId || !bettingHorseRegId2) {
+                message.warning('Vui lòng chọn đủ 2 chiến mã cho loại cược cặp này!');
+                return;
+            }
+            if (bettingHorseRegId === bettingHorseRegId2) {
+                message.warning('Không thể chọn cùng một chiến mã cho cả 2 vị trí!');
+                return;
+            }
         }
+
         if (betAmount <= 0) {
             message.warning('Số tiền cược phải lớn hơn 0!');
             return;
@@ -118,6 +131,8 @@ const BettingPage = () => {
                 spectatorId: user.id,
                 raceId: selectedRace.id,
                 registrationId: bettingHorseRegId,
+                registrationId2: (selectedBetType === 'QUINELLA' || selectedBetType === 'EXACTA') ? bettingHorseRegId2 : null,
+                betType: selectedBetType,
                 amount: betAmount
             };
 
@@ -131,6 +146,7 @@ const BettingPage = () => {
             setLiveOdds(oddsRes.data);
 
             setBettingHorseRegId(null);
+            setBettingHorseRegId2(null);
         } catch (error) {
             message.error(error.response?.data?.error || 'Đặt cược thất bại!');
         } finally {
@@ -140,28 +156,31 @@ const BettingPage = () => {
 
     const oddsColumns = [
         {
-            title: <div className="text-center">Tên Chiến Mã</div>,
+            title: <div className="text-center font-bold">Cổng & Tên Chiến Mã</div>,
             dataIndex: 'horseName',
             key: 'horseName',
             align: 'left',
             render: (text, record) => (
-                <div className="flex flex-col">
-                    <span className="font-bold text-blue-700 text-lg">{text}</span>
-                    {record.status === 'DISQUALIFIED' && (
-                        <Tag color="red" className="mt-1 max-w-xs whitespace-normal">
-                            [BỊ TRUẤT QUYỀN] - {record.note || 'Vi phạm luật'}
-                        </Tag>
-                    )}
-                    {record.status === 'WITHDRAWN' && (
-                        <Tag color="orange" className="mt-1 max-w-xs whitespace-normal">
-                            [ĐÃ RÚT LUI] - {record.note || 'Sự cố trước giờ thi đấu'}
-                        </Tag>
-                    )}
+                <div className="flex items-center gap-3">
+                    <Tag color="gold" className="font-bold text-sm px-2 py-0.5">Cổng {record.gateNumber || '?'}</Tag>
+                    <div className="flex flex-col">
+                        <span className="font-bold text-yellow-400 text-lg">{text}</span>
+                        {record.status === 'DISQUALIFIED' && (
+                            <Tag color="red" className="mt-1 max-w-xs whitespace-normal">
+                                [BỊ TRUẤT QUYỀN] - {record.note || 'Vi phạm luật'}
+                            </Tag>
+                        )}
+                        {record.status === 'WITHDRAWN' && (
+                            <Tag color="orange" className="mt-1 max-w-xs whitespace-normal">
+                                [ĐÃ RÚT LUI] - {record.note || 'Sự cố thú y'}
+                            </Tag>
+                        )}
+                    </div>
                 </div>
             )
         },
         {
-            title: <div className="text-center">Tỷ Lệ Cược (Live)</div>,
+            title: <div className="text-center font-bold">Tỷ Lệ Cược Win (Live)</div>,
             dataIndex: 'calculatedOdds',
             key: 'calculatedOdds',
             align: 'center',
@@ -170,57 +189,86 @@ const BettingPage = () => {
                     return <Tag color="default" className="text-base px-3 py-1">Đã đóng</Tag>;
                 }
                 return (
-                    <Tag color={val > 0 ? "green" : "default"} className="text-base px-3 py-1">
+                    <Tag color={val > 0 ? "green" : "default"} className="text-base font-bold px-3 py-1 bg-[#162a22] text-[#00ffb3] border-[#007355]">
                         <LineChartOutlined /> {val > 0 ? `x${val}` : 'Chưa có cược'}
                     </Tag>
                 );
             }
         },
         {
-            title: <div className="text-center">Thao Tác</div>,
+            title: <div className="text-center font-bold">Thao Tác Chọn</div>,
             key: 'action',
             align: 'center',
             render: (_, record) => {
                 const isDisabled = record.status === 'DISQUALIFIED' || record.status === 'WITHDRAWN';
+                const isSelectedAs1 = bettingHorseRegId === record.registrationId;
+                const isSelectedAs2 = bettingHorseRegId2 === record.registrationId;
+
+                if (selectedBetType === 'WIN' || selectedBetType === 'PLACE') {
+                    return (
+                        <Button
+                            type={isSelectedAs1 ? "primary" : "default"}
+                            onClick={() => setBettingHorseRegId(record.registrationId)}
+                            disabled={isDisabled}
+                            className={isSelectedAs1 ? "b989-odds-btn selected" : "b989-odds-btn"}
+                        >
+                            {isDisabled ? "Bị Cấm" : isSelectedAs1 ? "✓ ĐÃ CHỌN" : "CƯỢC NGỰA NÀY"}
+                        </Button>
+                    );
+                }
+
+                // Cược Cặp QUINELLA hoặc EXACTA
                 return (
-                    <Button
-                        type={bettingHorseRegId === record.registrationId ? "primary" : "default"}
-                        onClick={() => setBettingHorseRegId(record.registrationId)}
-                        disabled={isDisabled}
-                        className={bettingHorseRegId === record.registrationId ? "b989-odds-btn selected" : "b989-odds-btn"}
-                    >
-                        {isDisabled ? "Bị Cấm" : bettingHorseRegId === record.registrationId ? "✓ ĐÃ CHỌN" : "CƯỢC NGỰA NÀY"}
-                    </Button>
+                    <div className="flex gap-2 justify-center">
+                        <Button
+                            size="small"
+                            type={isSelectedAs1 ? "primary" : "dashed"}
+                            disabled={isDisabled || isSelectedAs2}
+                            onClick={() => setBettingHorseRegId(record.registrationId)}
+                            className={isSelectedAs1 ? "bg-yellow-500 font-bold text-black border-none" : "text-yellow-400 border-yellow-500"}
+                        >
+                            {selectedBetType === 'EXACTA' ? '🥇 Nhất' : 'Ngựa A'}
+                        </Button>
+                        <Button
+                            size="small"
+                            type={isSelectedAs2 ? "primary" : "dashed"}
+                            disabled={isDisabled || isSelectedAs1}
+                            onClick={() => setBettingHorseRegId2(record.registrationId)}
+                            className={isSelectedAs2 ? "bg-blue-600 font-bold text-white border-none" : "text-blue-400 border-blue-500"}
+                        >
+                            {selectedBetType === 'EXACTA' ? '🥈 Nhì' : 'Ngựa B'}
+                        </Button>
+                    </div>
                 );
             }
         }
     ];
 
     return (
-        <div className="max-w-5xl mx-auto p-4">
-            <Title level={3} className="mb-6 border-b pb-2 flex justify-between items-center">
-                <span><RocketOutlined className="text-blue-500 mr-2" /> Cá Cược Trực Tuyến (Parimutuel Pool)</span>
-                <span className="text-sm font-normal bg-blue-50 text-blue-700 px-4 py-2 rounded-xl border border-blue-200">
+        <div className="max-w-6xl mx-auto p-4">
+            <Title level={3} className="mb-6 border-b border-gray-800 pb-2 flex justify-between items-center text-white">
+                <span><RocketOutlined className="text-yellow-400 mr-2" /> Cá Cược Trực Tuyến (Parimutuel Pool bet989)</span>
+                <span className="text-sm font-normal bg-[#1e1e1e] text-yellow-400 px-4 py-2 rounded-xl border border-yellow-500/30">
                     💰 Số dư ví: <b>{Number(walletBalance).toLocaleString()} VNĐ</b>
                 </span>
             </Title>
 
             <Alert
-                message="Quy tắc tính tỷ lệ cược Parimutuel"
-                description="Tỷ lệ cược thay đổi liên tục theo tổng tiền cược chung (Pool). Ban tổ chức lấy % phế cố định, phần còn lại chia đều cho những người cược vào chiến mã thắng theo tỷ lệ số tiền đặt. Tỷ lệ cược được chốt chính thức khi chặng đua bắt đầu."
+                message="Quy tắc tính tỷ lệ cược Parimutuel bet989"
+                description="Tỷ lệ cược thay đổi liên tục theo tổng tiền cược chung (Pool). Ban tổ chức lấy % phế cố định (35% GGR), 65% còn lại chia đều cho những người cược trúng cửa theo tỷ lệ số tiền đặt. Tỷ lệ cược được chốt chính thức khi chặng đua bắt đầu."
                 type="info"
                 showIcon
                 icon={<InfoCircleOutlined />}
-                className="mb-6 rounded-xl"
+                className="mb-6 rounded-xl bg-[#162a22] border-[#007355] text-gray-200"
             />
 
             <Spin spinning={loadingRaces}>
                 {races.length === 0 ? (
-                    <Card className="shadow-sm rounded-xl py-10">
+                    <Card className="shadow-sm rounded-xl py-10 bg-[#1e1e1e] border-gray-800">
                         <Empty
                             image={Empty.PRESENTED_IMAGE_SIMPLE}
                             description={
-                                <span className="text-gray-500 text-lg">
+                                <span className="text-gray-400 text-lg">
                                     Hiện chưa có cuộc đua nào sắp diễn ra.<br/> Mời bạn quay lại sau nhé!
                                 </span>
                             }
@@ -229,11 +277,11 @@ const BettingPage = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {races.map(race => (
-                            <Card key={race.id} className="shadow-md hover:shadow-lg transition-shadow border-t-4 border-blue-600 rounded-xl">
+                            <Card key={race.id} className="shadow-md hover:shadow-lg transition-shadow border-t-4 border-[#007355] bg-[#1e1e1e] rounded-xl border-gray-800">
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <Text className="text-gray-400 text-xs font-bold uppercase">{race.tournamentName}</Text>
-                                        <Title level={4} className="mt-1 mb-0">{race.name}</Title>
+                                        <Text className="text-gray-400 text-xs font-bold uppercase tracking-wider">{race.tournamentName}</Text>
+                                        <Title level={4} className="mt-1 mb-0 text-yellow-400">{race.name}</Title>
                                     </div>
                                     <Tag color="orange" className="font-bold border-orange-300 px-3 py-1">SẮP DIỄN RA</Tag>
                                 </div>
@@ -243,7 +291,7 @@ const BettingPage = () => {
                                     const isLocked = race.status === 'LOCK_SESSION' || (isValidDate && (raceDate.getTime() - currentTime <= 60000));
                                     return (
                                         <>
-                                            <div className="text-gray-600 mb-6 font-medium">
+                                            <div className="text-gray-400 mb-6 font-medium">
                                                 Thời gian chạy: <span className="text-white font-bold">{isValidDate ? raceDate.toLocaleString('vi-VN') : 'Chờ chốt lịch'}</span>
                                             </div>
                                             {isLocked ? (
@@ -252,7 +300,7 @@ const BettingPage = () => {
                                                     size="large"
                                                     block
                                                     disabled
-                                                    className="bg-gray-700 font-bold tracking-wide text-gray-400 border-none"
+                                                    className="bg-gray-800 font-bold tracking-wide text-gray-500 border-none"
                                                 >
                                                     ĐÃ KHÓA NHẬN CƯỢC
                                                 </Button>
@@ -261,7 +309,7 @@ const BettingPage = () => {
                                                     type="primary"
                                                     size="large"
                                                     block
-                                                    className="bg-[#007355] hover:bg-[#005740] text-white font-bold tracking-wide border-none"
+                                                    className="bg-[#007355] hover:bg-[#005740] text-white font-bold tracking-wide border-none shadow-md"
                                                     onClick={() => handleOpenBetModal(race)}
                                                 >
                                                     XEM TỶ LỆ & VÀO TIỀN
@@ -276,59 +324,127 @@ const BettingPage = () => {
                 )}
             </Spin>
 
+            {/* MODAL ĐẶT CƯỢC 4 THỂ LOẠI */}
             <Modal
-                title={<span className="text-xl font-bold">Bảng Kèo: {selectedRace?.name}</span>}
+                title={<span className="text-xl font-bold text-yellow-400">🏇 Bảng Kèo Cá Cược bet989: {selectedRace?.name}</span>}
                 open={isModalVisible}
                 onCancel={() => setIsModalVisible(false)}
                 footer={null}
-                width={700}
+                width={850}
                 centered
+                className="b989-bet-modal"
             >
-                <div className="mb-4 bg-gray-50 p-3 rounded-lg flex justify-between items-center border">
-                    <Text>Số dư ví hiện tại:</Text>
-                    <Text className="font-bold text-green-600 text-base">{Number(walletBalance).toLocaleString()} VNĐ</Text>
+                <div className="mb-4 bg-[#162a22] p-3 rounded-lg flex justify-between items-center border border-[#007355]">
+                    <Text className="text-gray-300">Số dư ví khả dụng:</Text>
+                    <Text className="font-bold text-yellow-400 text-lg">{Number(walletBalance).toLocaleString()} VNĐ</Text>
                 </div>
 
+                {/* THIẾT LẬP 4 LOẠI CƯỢC */}
+                <div className="mb-4">
+                    <Text strong className="text-gray-300 block mb-2">Chọn Thể Loại Đặt Cược:</Text>
+                    <Segmented
+                        block
+                        size="large"
+                        options={[
+                            { label: <span className="font-bold"><TrophyOutlined className="text-yellow-400" /> Cược Win (Đơn Thắng)</span>, value: 'WIN' },
+                            { label: <span className="font-bold"><RocketOutlined className="text-green-400" /> Cược Place (Top 2)</span>, value: 'PLACE' },
+                            { label: <span className="font-bold"><SwapOutlined className="text-blue-400" /> Cược Quinella (Cặp Đôi)</span>, value: 'QUINELLA' },
+                            { label: <span className="font-bold"><AimOutlined className="text-red-400" /> Cược Exacta (Cặp Chính Xác)</span>, value: 'EXACTA' },
+                        ]}
+                        value={selectedBetType}
+                        onChange={(val) => {
+                            setSelectedBetType(val);
+                            setBettingHorseRegId(null);
+                            setBettingHorseRegId2(null);
+                        }}
+                        className="bg-[#1a1a1a] text-white"
+                    />
+                </div>
+
+                {/* THÔNG TIN HƯỚNG DẪN LOẠI CƯỢC */}
+                <div className="mb-4 p-3 bg-[#1e1e1e] border border-gray-700 rounded-lg text-xs text-gray-300">
+                    {selectedBetType === 'WIN' && <span className="text-yellow-400 font-bold">🥇 Cược Win: Chọn 1 chiến mã duy nhất về Nhất (Vô địch).</span>}
+                    {selectedBetType === 'PLACE' && <span className="text-green-400 font-bold">🥈 Cược Place: Chọn 1 chiến mã về ở vị trí số 1 hoặc số 2.</span>}
+                    {selectedBetType === 'QUINELLA' && <span className="text-blue-400 font-bold">👯 Cược Quinella: Chọn cặp 2 chiến mã về Top 2 (Không phân biệt con nào Nhất, con nào Nhì).</span>}
+                    {selectedBetType === 'EXACTA' && <span className="text-red-400 font-bold">🎯 Cược Exacta: Chọn 2 chiến mã đoán chính xác tuyệt đối: Con A về Nhất & Con B về Nhì.</span>}
+                </div>
+
+                {/* BẢNG CHỌN NGỰA / CỰC CẶP */}
                 <Table
                     dataSource={liveOdds}
                     columns={oddsColumns}
                     rowKey="registrationId"
                     pagination={false}
                     loading={loadingOdds}
-                    size="middle"
-                    scroll={{ y: '50vh' }}
-                    rowClassName={(record, index) => index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                    className="mt-2 border rounded-lg"
+                    size="small"
+                    scroll={{ y: '35vh' }}
+                    className="mt-2 border border-gray-800 rounded-lg"
                 />
 
-                {bettingHorseRegId && (
-                    <div className="mt-6 p-5 bg-blue-50 border border-blue-200 rounded-xl">
-                        <Title level={5} className="mb-4">Số tiền muốn cược (VNĐ):</Title>
-                        <div className="flex gap-4">
-                            <InputNumber
-                                style={{ width: '100%' }}
-                                className="text-lg"
-                                size="large"
-                                min={10000}
-                                step={10000}
-                                value={betAmount}
-                                onChange={setBetAmount}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                {/* BẢNG CHỌN NGỰA RIÊNG CHO EXACTA / QUINELLA */}
+                {(selectedBetType === 'QUINELLA' || selectedBetType === 'EXACTA') && (
+                    <div className="mt-4 p-4 bg-[#1e1e1e] border border-gray-700 rounded-xl grid grid-cols-2 gap-4">
+                        <div>
+                            <Text strong className="text-yellow-400 block mb-1">
+                                {selectedBetType === 'EXACTA' ? '🥇 Chọn Ngựa Về Nhất (Ngựa 1):' : '🏇 Chọn Chiến Mã A:'}
+                            </Text>
+                            <Select
+                                className="w-full"
+                                placeholder="Chọn chiến mã 1"
+                                value={bettingHorseRegId}
+                                onChange={setBettingHorseRegId}
+                                options={liveOdds.map(o => ({
+                                    label: `Cổng ${o.gateNumber || '?'}: ${o.horseName}`,
+                                    value: o.registrationId,
+                                    disabled: o.registrationId === bettingHorseRegId2 || o.status === 'DISQUALIFIED' || o.status === 'WITHDRAWN'
+                                }))}
                             />
-                            <Button
-                                type="primary"
-                                size="large"
-                                className="bg-yellow-500 text-black font-bold w-40 border-none hover:bg-yellow-400 hover:scale-105 transition-all"
-                                onClick={handlePlaceBet}
-                                loading={submittingBet}
-                                icon={<DollarOutlined />}
-                            >
-                                CHỐT VÉ CƯỢC
-                            </Button>
+                        </div>
+                        <div>
+                            <Text strong className="text-blue-400 block mb-1">
+                                {selectedBetType === 'EXACTA' ? '🥈 Chọn Ngựa Về Nhì (Ngựa 2):' : '🏇 Chọn Chiến Mã B:'}
+                            </Text>
+                            <Select
+                                className="w-full"
+                                placeholder="Chọn chiến mã 2"
+                                value={bettingHorseRegId2}
+                                onChange={setBettingHorseRegId2}
+                                options={liveOdds.map(o => ({
+                                    label: `Cổng ${o.gateNumber || '?'}: ${o.horseName}`,
+                                    value: o.registrationId,
+                                    disabled: o.registrationId === bettingHorseRegId || o.status === 'DISQUALIFIED' || o.status === 'WITHDRAWN'
+                                }))}
+                            />
                         </div>
                     </div>
                 )}
+
+                <div className="mt-4 p-4 bg-[#162a22] border border-[#007355] rounded-xl">
+                    <Title level={5} className="mb-2 text-white">Nhập số tiền đặt cược (VNĐ):</Title>
+                    <div className="flex gap-4">
+                        <InputNumber
+                            style={{ width: '100%' }}
+                            className="text-lg"
+                            size="large"
+                            min={10000}
+                            step={10000}
+                            value={betAmount}
+                            onChange={setBetAmount}
+                            formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                            parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                        />
+                        <Button
+                            type="primary"
+                            size="large"
+                            className="bg-yellow-500 text-black font-bold w-48 border-none hover:bg-yellow-400 hover:scale-105 transition-all"
+                            onClick={handlePlaceBet}
+                            loading={submittingBet}
+                            icon={<DollarOutlined />}
+                        >
+                            CHỐT VÉ CƯỢC
+                        </Button>
+                    </div>
+                </div>
             </Modal>
         </div>
     );
