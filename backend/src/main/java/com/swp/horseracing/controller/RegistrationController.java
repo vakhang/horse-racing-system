@@ -66,4 +66,16 @@ public class RegistrationController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{id}/gate")
+    public ResponseEntity<?> assignGateNumber(@PathVariable Integer id, @RequestBody java.util.Map<String, Integer> body) {
+        try {
+            if (!body.containsKey("gateNumber")) {
+                return ResponseEntity.badRequest().body(java.util.Map.of("error", "Thiếu tham số gateNumber"));
+            }
+            return ResponseEntity.ok(registrationService.assignGateNumber(id, body.get("gateNumber")));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

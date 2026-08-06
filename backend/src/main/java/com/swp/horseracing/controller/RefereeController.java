@@ -44,4 +44,13 @@ public class RefereeController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/non-starter")
+    public ResponseEntity<?> declareNonStarter(@RequestBody com.swp.horseracing.dto.RefereeNonStarterRequestDTO request) {
+        try {
+            return ResponseEntity.ok(refereeService.declareNonStarter(request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

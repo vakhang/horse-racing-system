@@ -16,5 +16,6 @@ public interface RegistrationService {
     List<RegistrationResponseDTO> getRegistrationsByJockeyId(Integer jockeyId);
     RegistrationResponseDTO getRegistrationById(Integer id);
     RegistrationResponseDTO updateRegistration(Integer id, RegistrationRequestDTO request);
+    RegistrationResponseDTO assignGateNumber(Integer id, Integer gateNumber);
     void deleteRegistration(Integer id);
 }

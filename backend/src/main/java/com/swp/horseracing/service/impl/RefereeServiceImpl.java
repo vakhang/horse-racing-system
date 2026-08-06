@@ -25,6 +25,10 @@ public class RefereeServiceImpl implements RefereeService {
     private final RegistrationRepository registrationRepository;
     private final HorseRepository horseRepository;
     private final BetRepository betRepository;
+    private final WalletRepository walletRepository;
+    private final TransactionHistoryRepository transactionHistoryRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -156,5 +160,99 @@ public class RefereeServiceImpl implements RefereeService {
             
             return map;
         }).sorted((a, b) -> ((String)b.get("date")).compareTo((String)a.get("date"))).toList();
+    }
+
+    @Override
+    @Transactional
+    public String declareNonStarter(com.swp.horseracing.dto.RefereeNonStarterRequestDTO request) {
+        Race race = raceRepository.findByIdWithPessimisticWrite(request.getRaceId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Chặng đua!"));
+
+        User referee = userRepository.findById(request.getRefereeId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Trọng tài!"));
+
+        Registration registration = registrationRepository.findById(request.getRegistrationId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Suất đăng ký!"));
+
+        registration.setStatus(RegistrationStatus.NON_STARTER);
+        registrationRepository.save(registration);
+
+        List<Bet> bets = betRepository.findByRaceId(race.getId());
+        int affectedBetsCount = 0;
+        java.math.BigDecimal totalRefund = java.math.BigDecimal.ZERO;
+
+        for (Bet bet : bets) {
+            if (bet.getStatus() == BetStatus.PENDING) {
+                boolean shouldRefund = false;
+                
+                if (bet.getBetType() == BetType.WIN || bet.getBetType() == BetType.PLACE) {
+                    if (bet.getRegistration().getId().equals(registration.getId())) {
+                        shouldRefund = true;
+                    }
+                } else if (bet.getBetType() == BetType.QUINELLA || bet.getBetType() == BetType.EXACTA) {
+                    if (bet.getRegistration().getId().equals(registration.getId()) || 
+                        (bet.getRegistrationId2() != null && bet.getRegistrationId2().equals(registration.getId()))) {
+                        shouldRefund = true;
+                    }
+                }
+
+                if (shouldRefund) {
+                    bet.setStatus(BetStatus.REFUNDED);
+                    betRepository.save(bet);
+
+                    Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId()).orElse(null);
+                    if (wallet != null) {
+                        wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
+                        walletRepository.save(wallet);
+
+                        TransactionHistory tx = TransactionHistory.builder()
+                                .transactionCode("REFUND-NS-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                                .wallet(wallet)
+                                .amount(bet.getAmount())
+                                .type(TransactionType.REFUND)
+                                .direction(TransactionDirection.IN)
+                                .status(TransactionStatus.COMPLETED)
+                                .build();
+                        transactionHistoryRepository.save(tx);
+                        
+                        totalRefund = totalRefund.add(bet.getAmount());
+                        affectedBetsCount++;
+                    }
+                }
+            }
+        }
+
+        if (totalRefund.compareTo(java.math.BigDecimal.ZERO) > 0) {
+            race.setTotalPool(race.getTotalPool().subtract(totalRefund));
+            raceRepository.save(race);
+        }
+
+        try {
+            java.util.Map<String, Object> details = new java.util.HashMap<>();
+            details.put("performedBy", "referee_id_" + referee.getId());
+            details.put("entityName", "Registration");
+            details.put("entityId", registration.getId());
+            details.put("gateNumber", registration.getGateNumber());
+            details.put("affectedBetsCount", affectedBetsCount);
+            details.put("totalRefundAmount", totalRefund);
+            details.put("timestamp", java.time.format.DateTimeFormatter.ISO_INSTANT.format(java.time.Instant.now()));
+
+            String detailsJson = objectMapper.writeValueAsString(details);
+
+            AuditLog log = AuditLog.builder()
+                    .action("NON_STARTER_REPORT")
+                    .performedBy(referee.getUsername())
+                    .entityName("Registration")
+                    .entityId(String.valueOf(registration.getId()))
+                    .reason(detailsJson)
+                    .affectedBetsCount(affectedBetsCount)
+                    .totalRefundAmount(totalRefund)
+                    .build();
+            auditLogRepository.save(log);
+        } catch (Exception e) {
+            System.err.println("Failed to write Audit Log JSON: " + e.getMessage());
+        }
+
+        return "Đã ghi nhận sự cố NON_STARTER. Hệ thống đã hoàn tiền " + totalRefund + " VNĐ cho " + affectedBetsCount + " vé cược và cấu trúc lại bể cược.";
     }
 }

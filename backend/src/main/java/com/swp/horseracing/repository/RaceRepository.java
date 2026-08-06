@@ -20,4 +20,8 @@ public interface RaceRepository extends JpaRepository<Race, Integer> {
 
     List<Race> findByRefereeId(Integer refereeId);
     List<Race> findByStatus(com.swp.horseracing.model.RaceStatus status);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("SELECT r FROM Race r WHERE r.id = :id")
+    java.util.Optional<Race> findByIdWithPessimisticWrite(@org.springframework.data.repository.query.Param("id") Integer id);
 }

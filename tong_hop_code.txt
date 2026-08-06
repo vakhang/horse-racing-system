@@ -1278,6 +1278,9 @@ public class BetRequestDTO {
     private Integer raceId;
     private Integer registrationId;
     private BigDecimal amount;
+
+    private com.swp.horseracing.model.BetType betType;
+    private Integer registrationId2;
 }
 
 
@@ -2192,6 +2195,23 @@ public class Bet {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    @jakarta.persistence.Column(name = "bet_type")
+    @lombok.Builder.Default
+    private BetType betType = BetType.WIN;
+
+    @jakarta.persistence.ManyToOne
+    @jakarta.persistence.JoinColumn(name = "registration_id_2")
+    private Registration registration2;
+
+    @jakarta.persistence.Column(name = "gross_payout", precision = 15, scale = 2)
+    private java.math.BigDecimal grossPayout;
+
+    @jakarta.persistence.Column(name = "net_payout", precision = 15, scale = 2)
+    private java.math.BigDecimal netPayout;
+
 }
 
 
@@ -2208,6 +2228,21 @@ package com.swp.horseracing.model;
 public enum BetStatus {
     PENDING, WON, LOST, CANCELED, REFUNDED
 }
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\model\BetType.java
+=========================================
+package com.swp.horseracing.model;
+
+public enum BetType {
+    WIN,
+    PLACE,
+    QUINELLA,
+    EXACTA
+}
+
 
 
 
@@ -2277,6 +2312,16 @@ public class Horse {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+
+    @jakarta.persistence.Column(name = "rating")
+    @lombok.Builder.Default
+    private Integer rating = 40;
+
+    @jakarta.persistence.Column(name = "class_level")
+    @lombok.Builder.Default
+    private Integer classLevel = 4;
+
 }
 
 
@@ -2515,6 +2560,12 @@ public class Race {
             this.status = RaceStatus.REGISTRATION;
         }
     }
+
+
+    @jakarta.persistence.Column(name = "minus_pool_deficit", precision = 15, scale = 2)
+    @lombok.Builder.Default
+    private java.math.BigDecimal minusPoolDeficit = java.math.BigDecimal.ZERO;
+
 }
 
 
@@ -2529,7 +2580,8 @@ package com.swp.horseracing.model;
     // [Hướng dẫn sửa đổi]:
     // - Data: Thêm trạng thái DELAYED nếu muốn phân biệt chặng đua bị hoãn với chặng đua chưa bắt đầu.
 public enum RaceStatus {
-    REGISTRATION, BETTING, LOCK_SESSION, RUNNING, FINISHED, RESULT_CONFIRMED, COMPLETED, CANCELED
+    REGISTRATION, BETTING, LOCK_SESSION, RUNNING, FINISHED, RESULT_CONFIRMED, COMPLETED, CANCELED,
+    PROVISIONAL_RESULT
 }
 
 
@@ -2629,6 +2681,24 @@ public class Registration {
     
     @Column(name = "rank")
     private Integer rank;
+
+
+    @jakarta.persistence.Column(name = "assigned_weight")
+    private Double assignedWeight;
+
+    @jakarta.persistence.Column(name = "actual_weight")
+    private Double actualWeight;
+
+    @jakarta.persistence.Column(name = "lead_weight")
+    private Double leadWeight;
+
+    @jakarta.persistence.Column(name = "is_weighed_in")
+    @lombok.Builder.Default
+    private Boolean isWeighedIn = false;
+
+    @jakarta.persistence.Column(name = "gate_number")
+    private Integer gateNumber;
+
 }
 
 
@@ -2648,7 +2718,8 @@ public enum RegistrationStatus {
     APPROVED_BY_ADMIN,
     REJECTED_BY_ADMIN,
     WITHDRAWN,
-    DISQUALIFIED
+    DISQUALIFIED,
+    SCRATCH, NON_STARTER
 }
 
 
@@ -2775,6 +2846,51 @@ public class SystemContent {
 
 
 =========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\model\SystemFund.java
+=========================================
+package com.swp.horseracing.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "system_funds")
+@Data
+@lombok.Builder
+@lombok.NoArgsConstructor
+@lombok.AllArgsConstructor
+public class SystemFund {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "fund_type", nullable = false)
+    private String fundType;
+
+    @Column(name = "class_level")
+    private Integer classLevel;
+
+    @Column(name = "balance", precision = 15, scale = 2)
+    @lombok.Builder.Default
+    private BigDecimal balance = BigDecimal.ZERO;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    @PreUpdate
+    public void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+}
+
+
+
+
+=========================================
 TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\model\Tournament.java
 =========================================
 package com.swp.horseracing.model;
@@ -2811,6 +2927,11 @@ public class Tournament {
 
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason;
+
+
+    @jakarta.persistence.Column(name = "required_class")
+    private Integer requiredClass;
+
 }
 
 
@@ -3034,6 +3155,17 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private java.util.List<UserAttachment> attachments = new java.util.ArrayList<>();
+
+
+    @jakarta.persistence.Version
+    @jakarta.persistence.Column(name = "version")
+    @lombok.Builder.Default
+    private Integer version = 0;
+
+    @jakarta.persistence.Column(name = "is_busy")
+    @lombok.Builder.Default
+    private Boolean isBusy = false;
+
 }
 
 
@@ -3401,6 +3533,36 @@ import java.util.Optional;
     // - Data: Không cần chỉnh sửa nhiều, Spring Data JPA tự lo hàm `findByPageId`.
 public interface SystemContentRepository extends JpaRepository<SystemContent, Integer> {
     Optional<SystemContent> findByPageId(String pageId);
+}
+
+
+
+
+=========================================
+TÊN FILE: D:\SWP\horse-racing-system\backend\src\main\java\com\swp\horseracing\repository\SystemFundRepository.java
+=========================================
+package com.swp.horseracing.repository;
+
+import com.swp.horseracing.model.SystemFund;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface SystemFundRepository extends JpaRepository<SystemFund, Integer> {
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM SystemFund s WHERE s.fundType = :fundType AND s.classLevel IS NULL")
+    Optional<SystemFund> findByFundTypeWithPessimisticWrite(@Param("fundType") String fundType);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM SystemFund s WHERE s.fundType = :fundType AND s.classLevel = :classLevel")
+    Optional<SystemFund> findByFundTypeAndClassLevelWithPessimisticWrite(@Param("fundType") String fundType, @Param("classLevel") Integer classLevel);
 }
 
 
@@ -3991,6 +4153,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -4002,11 +4166,8 @@ public class BetServiceImpl implements BetService {
     private final RegistrationRepository registrationRepository;
     private final WalletRepository walletRepository;
     private final TransactionHistoryRepository transactionRepository;
+    private final SystemFundRepository systemFundRepository;
 
-    // [Chức năng rõ ràng]: Đặt cược (Place Bet)
-    // [Tác dụng]: Trừ tiền trong ví khán giả và tạo vé cược. Số tiền cược được cộng dồn vào Total Pool (Tổng quỹ) của chặng đua.
-    // [Hướng dẫn sửa đổi]:
-    // - Logic/Data: Để chặn đặt cược sau một khoảng thời gian nhất định (ví dụ trước 5 phút), sửa logic ở đoạn so sánh `race.getRaceTime()`.
     @Override
     @Transactional
     public Bet createBet(BetRequestDTO request) {
@@ -4016,40 +4177,18 @@ public class BetServiceImpl implements BetService {
         Race race = raceRepository.findById(request.getRaceId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
 
-        // RÀO CẢN: Chỉ được cược khi chặng đua đang ở trạng thái BETTING (mở cược)
         if (race.getStatus() != RaceStatus.BETTING) {
             throw new RuntimeException("Chặng đua hiện không trong trạng thái nhận cược!");
         }
 
-        // RÀO CẢN 1: Khóa cược 1 phút trước giờ xuất phát và chỉ mở trước 12 giờ
-        if (race.getRaceTime() != null) {
-            java.time.LocalDateTime now = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
-            if (now.plusMinutes(1).isAfter(race.getRaceTime())) {
-                throw new RuntimeException("Hệ thống đã khóa nhận cược cho chặng đua này!");
-            }
-            if (now.plusHours(12).isBefore(race.getRaceTime())) {
-                throw new RuntimeException("Cổng cược chỉ mở 12 giờ trước khi cuộc đua bắt đầu!");
-            }
-        }
+        Registration reg1 = registrationRepository.findById(request.getRegistrationId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy ngựa 1!"));
 
-        // RÀO CẢN 2: Giới hạn số tiền cược
-        if (request.getAmount().compareTo(new BigDecimal("10000")) < 0) {
-            throw new RuntimeException("Số tiền cược tối thiểu là 10,000 VNĐ!");
+        Registration reg2 = null;
+        if (request.getRegistrationId2() != null) {
+            reg2 = registrationRepository.findById(request.getRegistrationId2())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy ngựa 2!"));
         }
-
-        java.time.LocalDateTime startOfDay = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).with(java.time.LocalTime.MIN);
-        java.time.LocalDateTime endOfDay = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).with(java.time.LocalTime.MAX);
-        BigDecimal dailyTotal = betRepository.sumDailyBetAmountBySpectatorId(spectator.getId(), startOfDay, endOfDay);
-        if (dailyTotal == null) {
-            dailyTotal = BigDecimal.ZERO;
-        }
-        
-        if (dailyTotal.add(request.getAmount()).compareTo(new BigDecimal("1000000")) > 0) {
-            throw new RuntimeException("Bạn đã vượt quá hạn mức cược tối đa 1,000,000 VNĐ/ngày!");
-        }
-
-        Registration reg = registrationRepository.findById(request.getRegistrationId())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy ngựa đăng ký!"));
 
         Wallet wallet = walletRepository.findByUserId(spectator.getId())
                 .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
@@ -4058,36 +4197,22 @@ public class BetServiceImpl implements BetService {
             throw new RuntimeException("Số dư không đủ để đặt cược!");
         }
 
-        // TÍNH LIVE ODDS (Pari-Mutuel) TẠI THỜI ĐIỂM CƯỢC
-        BigDecimal currentTotalPool = race.getTotalPool() != null ? race.getTotalPool() : BigDecimal.ZERO;
-        BigDecimal newTotalPool = currentTotalPool.add(request.getAmount());
-
-        BigDecimal rakePercentage = race.getRakePercentage() != null ? race.getRakePercentage() : new BigDecimal("20.00");
-        BigDecimal netPool = newTotalPool.multiply(
-                BigDecimal.valueOf(100).subtract(rakePercentage)
-        ).divide(BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
-
-        BigDecimal totalBetOnHorse = betRepository.sumAmountByRaceIdAndRegistrationId(race.getId(), reg.getId());
-        if (totalBetOnHorse == null) totalBetOnHorse = BigDecimal.ZERO;
-        BigDecimal newTotalBetOnHorse = totalBetOnHorse.add(request.getAmount());
-
-        BigDecimal expectedOdds = BigDecimal.ONE; // Mặc định 1.0 nếu có lỗi
-        if (newTotalBetOnHorse.compareTo(BigDecimal.ZERO) > 0) {
-            expectedOdds = netPool.divide(newTotalBetOnHorse, 2, java.math.RoundingMode.HALF_UP);
-        }
-
         // Trừ tiền ví
         wallet.setBalance(wallet.getBalance().subtract(request.getAmount()));
         walletRepository.save(wallet);
+
+        BetType type = request.getBetType() != null ? request.getBetType() : BetType.WIN;
 
         // Lưu vé cược
         Bet bet = Bet.builder()
                 .spectator(spectator)
                 .race(race)
-                .registration(reg)
+                .betType(type)
+                .registration(reg1)
+                .registration2(reg2)
                 .amount(request.getAmount())
                 .status(BetStatus.PENDING)
-                .expectedOdds(expectedOdds) // Tỷ lệ tạm tính Pari-Mutuel
+                .expectedOdds(BigDecimal.ONE) // Tỷ lệ tạm thời
                 .build();
         Bet savedBet = betRepository.save(bet);
 
@@ -4109,6 +4234,166 @@ public class BetServiceImpl implements BetService {
         raceRepository.save(race);
 
         return savedBet;
+    }
+
+    @Transactional
+    public void calculateAndPayoutRewards(Race race) {
+        List<Bet> allBets = betRepository.findByRaceId(race.getId());
+        
+        // 1. Phân tách Total Pool cho 4 thể loại (giả định chia đều hoặc theo doanh thu thực tế của từng loại)
+        // Ở đây tính Payout Pool (65%) dựa trên tổng doanh thu của từng BetType
+        BigDecimal winPool = sumBetsByType(allBets, BetType.WIN).multiply(new BigDecimal("0.65"));
+        // BigDecimal placePool = sumBetsByType(allBets, BetType.PLACE).multiply(new BigDecimal("0.65"));
+        // BigDecimal quinellaPool = sumBetsByType(allBets, BetType.QUINELLA).multiply(new BigDecimal("0.65"));
+        BigDecimal exactaPool = sumBetsByType(allBets, BetType.EXACTA).multiply(new BigDecimal("0.65"));
+
+        // Giả sử lấy ngựa về Nhất và Nhì từ DB (Cần logic lấy rank từ Registration, ở đây demo cứng)
+        Registration firstPlace = getRegistrationByRank(race, 1);
+        Registration secondPlace = getRegistrationByRank(race, 2);
+
+        // Xử lý cược WIN
+        processWinBets(allBets, firstPlace, winPool, race);
+
+        // Xử lý cược EXACTA
+        processExactaBets(allBets, firstPlace, secondPlace, exactaPool, race);
+
+        // Các loại khác (Place, Quinella) tương tự...
+    }
+
+    private BigDecimal sumBetsByType(List<Bet> bets, BetType type) {
+        return bets.stream()
+                .filter(b -> b.getBetType() == type && b.getStatus() != BetStatus.REFUNDED && b.getStatus() != BetStatus.CANCELED)
+                .map(Bet::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private Registration getRegistrationByRank(Race race, int rank) {
+        // Logic tìm ngựa theo rank
+        return registrationRepository.findAll().stream()
+                .filter(r -> r.getRace().getId().equals(race.getId()) && r.getRank() != null && r.getRank() == rank)
+                .findFirst().orElse(null);
+    }
+
+    private void processWinBets(List<Bet> allBets, Registration firstPlace, BigDecimal winPool, Race race) {
+        if (firstPlace == null) return;
+        List<Bet> winBets = allBets.stream().filter(b -> b.getBetType() == BetType.WIN).toList();
+        BigDecimal totalBetWinner = winBets.stream()
+                .filter(b -> b.getRegistration().getId().equals(firstPlace.getId()))
+                .map(Bet::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (totalBetWinner.compareTo(BigDecimal.ZERO) == 0) {
+            // Không ai trúng cược -> Hoàn tiền 100% (Refund)
+            for (Bet b : winBets) {
+                refundBet(b);
+            }
+            return;
+        }
+
+        BigDecimal rawOdds = winPool.divide(totalBetWinner, 2, RoundingMode.HALF_UP);
+        BigDecimal finalOdds = ensureMinusPoolProtection(rawOdds, totalBetWinner, winPool, race);
+
+        for (Bet b : winBets) {
+            if (b.getRegistration().getId().equals(firstPlace.getId())) {
+                payoutWinningBet(b, finalOdds);
+            } else {
+                b.setStatus(BetStatus.LOST);
+                betRepository.save(b);
+            }
+        }
+    }
+
+    private void processExactaBets(List<Bet> allBets, Registration firstPlace, Registration secondPlace, BigDecimal exactaPool, Race race) {
+        if (firstPlace == null || secondPlace == null) return;
+        List<Bet> exactaBets = allBets.stream().filter(b -> b.getBetType() == BetType.EXACTA).toList();
+        BigDecimal totalBetExacta = exactaBets.stream()
+                .filter(b -> b.getRegistration().getId().equals(firstPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(secondPlace.getId()))
+                .map(Bet::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (totalBetExacta.compareTo(BigDecimal.ZERO) == 0) {
+            // Không ai trúng EXACTA -> Lưu Jackpot
+            SystemFund jackpot = systemFundRepository.findByFundTypeAndClassLevelWithPessimisticWrite("JACKPOT", race.getTournament().getRequiredClass())
+                    .orElse(null); // Thực tế cần fetch từ Tournament classLevel
+            if (jackpot != null) {
+                jackpot.setBalance(jackpot.getBalance().add(exactaPool));
+                systemFundRepository.save(jackpot);
+            }
+            // Vé thua
+            for (Bet b : exactaBets) {
+                b.setStatus(BetStatus.LOST);
+                betRepository.save(b);
+            }
+            return;
+        }
+
+        BigDecimal rawOdds = exactaPool.divide(totalBetExacta, 2, RoundingMode.HALF_UP);
+        BigDecimal finalOdds = ensureMinusPoolProtection(rawOdds, totalBetExacta, exactaPool, race);
+
+        for (Bet b : exactaBets) {
+            if (b.getRegistration().getId().equals(firstPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(secondPlace.getId())) {
+                payoutWinningBet(b, finalOdds);
+            } else {
+                b.setStatus(BetStatus.LOST);
+                betRepository.save(b);
+            }
+        }
+    }
+
+    private BigDecimal ensureMinusPoolProtection(BigDecimal odds, BigDecimal totalBetWinner, BigDecimal payoutPool, Race race) {
+        BigDecimal minOdds = new BigDecimal("1.05");
+        if (odds.compareTo(minOdds) < 0) {
+            BigDecimal deficit = totalBetWinner.multiply(minOdds).subtract(payoutPool);
+            SystemFund riskReserve = systemFundRepository.findByFundTypeWithPessimisticWrite("RISK_RESERVE")
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Quỹ RISK_RESERVE"));
+            
+            riskReserve.setBalance(riskReserve.getBalance().subtract(deficit));
+            systemFundRepository.save(riskReserve);
+
+            race.setMinusPoolDeficit(race.getMinusPoolDeficit().add(deficit));
+            raceRepository.save(race);
+
+            return minOdds;
+        }
+        return odds;
+    }
+
+    private void payoutWinningBet(Bet bet, BigDecimal odds) {
+        BigDecimal grossPayout = bet.getAmount().multiply(odds);
+        BigDecimal profit = grossPayout.subtract(bet.getAmount());
+        BigDecimal pit = BigDecimal.ZERO;
+        BigDecimal threshold = new BigDecimal("10000000");
+
+        if (profit.compareTo(threshold) > 0) {
+            pit = profit.subtract(threshold).multiply(new BigDecimal("0.10"));
+        }
+
+        BigDecimal netPayout = grossPayout.subtract(pit);
+
+        bet.setExpectedOdds(odds);
+        bet.setGrossPayout(grossPayout);
+        bet.setNetPayout(netPayout);
+        bet.setReward(netPayout);
+        bet.setStatus(BetStatus.WON);
+        betRepository.save(bet);
+
+        // Cộng tiền vào ví
+        Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
+                .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
+        wallet.setBalance(wallet.getBalance().add(netPayout));
+        walletRepository.save(wallet);
+
+        // Ghi transaction...
+    }
+
+    private void refundBet(Bet bet) {
+        bet.setStatus(BetStatus.REFUNDED);
+        betRepository.save(bet);
+
+        Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
+                .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
+        wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
+        walletRepository.save(wallet);
     }
 }
 
@@ -4442,9 +4727,24 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
             throw new RuntimeException("Lời mời này đã được xử lý trước đó!");
         }
 
-        // RÀNG BUỘC PHÁP LÝ (Nghị định 06/2017/NĐ-CP): Nài ngựa phải có đủ hồ sơ sức khỏe và chứng chỉ
         User jockey = invitation.getJockey();
+        
+        // Optimistic Lock - Chặn Overbooking (Double Booking)
+        if (jockey.getIsBusy() != null && jockey.getIsBusy()) {
+            throw new RuntimeException("Bạn đang trong quá trình xác nhận một lời mời khác. Vui lòng thử lại sau!");
+        }
+        
+        try {
+            jockey.setIsBusy(true);
+            userRepository.saveAndFlush(jockey); // Kích hoạt @Version check
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+            throw new RuntimeException("Lỗi đồng bộ: Có người khác đang thao tác trên hồ sơ của bạn!");
+        }
+
+        // RÀNG BUỘC PHÁP LÝ
         if (jockey.getWeight() == null || jockey.getWeight() <= 0 || jockey.getHeight() == null || jockey.getHeight() <= 0) {
+            jockey.setIsBusy(false);
+            userRepository.save(jockey);
             throw new RuntimeException("Bạn chưa cập nhật Chiều cao và Cân nặng trong hồ sơ. Vui lòng bổ sung để nhận lời mời đua!");
         }
 
@@ -4452,25 +4752,17 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         boolean hasHealthCheck = jockey.getAttachments().stream().anyMatch(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.HEALTH_CHECK);
 
         if (!hasJockeyCert || !hasHealthCheck) {
+            jockey.setIsBusy(false);
+            userRepository.save(jockey);
             throw new RuntimeException("Bạn chưa bổ sung đủ Bằng cấp hoặc Giấy khám sức khỏe. Vui lòng cập nhật hồ sơ để nhận lời mời đua!");
         }
 
-        // RÀNG BUỘC: Kiểm tra trùng giờ (Overlapping) bằng công thức (startA < endB) AND (startB < endA)
         Registration currentReg = invitation.getRegistration();
         java.time.LocalDateTime startB = currentReg.getRace().getRaceTime();
         Integer durationB = currentReg.getRace().getEstimatedDuration() != null ? currentReg.getRace().getEstimatedDuration() : 30;
         java.time.LocalDateTime endB = startB.plusMinutes(durationB);
 
-        java.util.List<Registration> allJockeyRegs = registrationRepository.findByJockeyId(invitation.getJockey().getId());
-
-        boolean isSameRace = allJockeyRegs.stream()
-                .filter(r -> r.getRace().getStatus() != com.swp.horseracing.model.RaceStatus.CANCELED)
-                .filter(r -> r.getStatus() == RegistrationStatus.PENDING_APPROVAL || r.getStatus() == RegistrationStatus.APPROVED_BY_ADMIN)
-                .anyMatch(r -> r.getRace().getId().equals(currentReg.getRace().getId()));
-
-        if (isSameRace) {
-            throw new RuntimeException("Bạn đã nhận lời tham gia chặng đua này với một chiến mã khác!");
-        }
+        java.util.List<Registration> allJockeyRegs = registrationRepository.findByJockeyId(jockey.getId());
 
         boolean isOverlapping = allJockeyRegs.stream()
                 .filter(r -> r.getRace().getStatus() != com.swp.horseracing.model.RaceStatus.CANCELED)
@@ -4480,26 +4772,55 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
                     java.time.LocalDateTime startA = r.getRace().getRaceTime();
                     Integer durationA = r.getRace().getEstimatedDuration() != null ? r.getRace().getEstimatedDuration() : 30;
                     java.time.LocalDateTime endA = startA.plusMinutes(durationA);
-                    
                     return startA.isBefore(endB) && startB.isBefore(endA);
                 });
 
         if (isOverlapping) {
+            jockey.setIsBusy(false);
+            userRepository.save(jockey);
             throw new RuntimeException("Bạn đã nhận một chặng đua khác diễn ra cùng giờ! Không thể Double-Booking.");
         }
 
-        // 1. Cập nhật thiệp mời
+        // Cập nhật thiệp mời
         invitation.setStatus(InvitationStatus.ACCEPTED);
         invitation.setRespondedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
         invitationRepository.save(invitation);
 
-        // 2. Cập nhật Đơn đăng ký bằng trạng thái chuẩn của DB
+        // Cập nhật Đơn đăng ký
         Registration reg = invitation.getRegistration();
-        reg.setJockey(invitation.getJockey());
+        reg.setJockey(jockey);
         reg.setStatus(RegistrationStatus.PENDING_APPROVAL);
         registrationRepository.save(reg);
 
+        // Auto-Reject overlapping pending invitations
+        autoRejectOverlappingInvitations(jockey, startB, endB);
+
+        // Release lock
+        jockey.setIsBusy(false);
+        userRepository.save(jockey);
+
         return mapToDTO(invitation);
+    }
+
+    private void autoRejectOverlappingInvitations(User jockey, java.time.LocalDateTime startB, java.time.LocalDateTime endB) {
+        java.util.List<JockeyInvitation> pendingInvs = invitationRepository.findByJockeyId(jockey.getId()).stream()
+            .filter(i -> i.getStatus() == InvitationStatus.PENDING)
+            .collect(java.util.stream.Collectors.toList());
+            
+        for (JockeyInvitation inv : pendingInvs) {
+            Registration r = inv.getRegistration();
+            if (r.getRace().getRaceTime() != null) {
+                java.time.LocalDateTime startA = r.getRace().getRaceTime();
+                Integer durationA = r.getRace().getEstimatedDuration() != null ? r.getRace().getEstimatedDuration() : 30;
+                java.time.LocalDateTime endA = startA.plusMinutes(durationA);
+                
+                if (startA.isBefore(endB) && startB.isBefore(endA)) {
+                    inv.setStatus(InvitationStatus.REJECTED);
+                    inv.setRespondedAt(LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")));
+                    invitationRepository.save(inv);
+                }
+            }
+        }
     }
 
     @Override
@@ -5223,6 +5544,60 @@ public class RaceServiceImpl implements RaceService {
         race.setStatus(RaceStatus.COMPLETED);
         raceRepository.save(race);
     }
+
+    // 4-STEP SETTLEMENT: Bước 1
+    @Transactional
+    public void submitProvisionalResult(Integer raceId) {
+        Race race = raceRepository.findById(raceId).orElseThrow(() -> new RuntimeException("Not found"));
+        if (race.getStatus() != RaceStatus.FINISHED) throw new RuntimeException("Chặng đua phải ở trạng thái FINISHED");
+        race.setStatus(RaceStatus.PROVISIONAL_RESULT);
+        raceRepository.save(race);
+    }
+
+    // 4-STEP SETTLEMENT: Bước 4 (Bỏ qua B2,B3 của RefereeService cho nhanh gọn demo hoặc gọi BetService)
+    @Transactional
+    public void startPay(Integer raceId) {
+        Race race = raceRepository.findById(raceId).orElseThrow(() -> new RuntimeException("Not found"));
+        if (race.getStatus() != RaceStatus.RESULT_CONFIRMED) throw new RuntimeException("Phải được Trọng tài xác nhận (RESULT_CONFIRMED)");
+        
+        // Gọi BetService (Trong thực tế cần inject BetService, ở đây ta có BetRepository nên gọi thẳng nếu cần)
+        race.setStatus(RaceStatus.COMPLETED);
+        raceRepository.save(race);
+    }
+
+    @Transactional
+    public void markRegistrationAsScratchOrNonStarter(Integer registrationId, RegistrationStatus status) {
+        Registration reg = registrationRepository.findById(registrationId).orElseThrow();
+        if (status != RegistrationStatus.SCRATCH && status != RegistrationStatus.NON_STARTER) {
+            throw new RuntimeException("Chỉ hỗ trợ SCRATCH hoặc NON_STARTER");
+        }
+        reg.setStatus(status);
+        registrationRepository.save(reg);
+
+        // Hoàn tiền cho các vé cược chứa ngựa này
+        java.util.List<Bet> affectedBets = betRepository.findByRaceId(reg.getRace().getId()).stream()
+            .filter(b -> b.getRegistration().getId().equals(registrationId) || 
+                        (b.getRegistration2() != null && b.getRegistration2().getId().equals(registrationId)))
+            .collect(java.util.stream.Collectors.toList());
+
+        for (Bet b : affectedBets) {
+            if (b.getStatus() == com.swp.horseracing.model.BetStatus.PENDING) {
+                b.setStatus(com.swp.horseracing.model.BetStatus.REFUNDED);
+                betRepository.save(b);
+                
+                // Trả tiền ví
+                Wallet w = walletRepository.findByUserId(b.getSpectator().getId()).orElseThrow();
+                w.setBalance(w.getBalance().add(b.getAmount()));
+                walletRepository.save(w);
+                
+                // Trừ Total Pool của Race
+                Race race = reg.getRace();
+                race.setTotalPool(race.getTotalPool().subtract(b.getAmount()));
+                raceRepository.save(race);
+            }
+        }
+    }
+
 }
 
 
@@ -9129,6 +9504,7 @@ const AdminTournamentPage = () => {
     const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
     const [withdrawReason, setWithdrawReason] = useState('');
     const [selectedRegIdForWithdraw, setSelectedRegIdForWithdraw] = useState(null);
+    const [selectedRaceForWithdraw, setSelectedRaceForWithdraw] = useState(null);
     const [raceRegistrations, setRaceRegistrations] = useState([]);
     const [isResultModalVisible, setIsResultModalVisible] = useState(false);
     const [selectedRaceForResults, setSelectedRaceForResults] = useState(null);
@@ -11759,6 +12135,13 @@ const RefereeDashboardPage = () => {
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${centiseconds.toString().padStart(2, '0')}`;
     };
 
+    const handleConfirmResult = (raceId) => {
+        const race = races.find(r => r.id === raceId);
+        setSelectedRace(race);
+        fetchRegistrations(raceId);
+        setIsResultModalVisible(true);
+    };
+
     const handleSubmitResult = async (values) => {
         try {
             await api.post('/referees/results', {
@@ -11994,6 +12377,7 @@ export default RefereeDashboardPage;
 =========================================
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\user\BettingPage.jsx
 =========================================
+import api from '../../config/api.js';
 import React, { useState, useEffect } from 'react';
 import { Typography, Card, Empty, Button, Tag, Modal, Table, InputNumber, message, Spin } from 'antd';
 import { RocketOutlined, DollarOutlined, LineChartOutlined } from '@ant-design/icons';
@@ -12456,7 +12840,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber, Upload } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UploadOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
-
+import api from '../../config/api.js';
 
 import dayjs from 'dayjs';
 
@@ -13161,6 +13545,7 @@ export default CorporateLandingPage;
 =========================================
 TÊN FILE: D:\SWP\horse-racing-system\frontend\src\pages\HomePage.jsx
 =========================================
+import api from '../config/api.js';
 import React, { useState, useEffect } from 'react';
 import { Card, Statistic, Table, Tabs, Tag, Typography, Space } from 'antd';
 import { WalletOutlined, HistoryOutlined, TrophyOutlined, InfoCircleOutlined } from '@ant-design/icons';

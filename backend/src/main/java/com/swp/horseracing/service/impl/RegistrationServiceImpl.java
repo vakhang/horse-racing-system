@@ -267,6 +267,20 @@ public class RegistrationServiceImpl implements RegistrationService {
         registrationRepository.deleteById(id);
     }
 
+    @Override
+    @Transactional
+    public RegistrationResponseDTO assignGateNumber(Integer id, Integer gateNumber) {
+        Registration reg = registrationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Đơn đăng ký ID: " + id));
+
+        if (registrationRepository.existsByRaceIdAndGateNumber(reg.getRace().getId(), gateNumber)) {
+            throw new RuntimeException("Cổng số " + gateNumber + " trong chặng đua này đã có chiến mã đăng ký!");
+        }
+
+        reg.setGateNumber(gateNumber);
+        return mapToResponseDTO(registrationRepository.save(reg));
+    }
+
     private RegistrationResponseDTO mapToResponseDTO(Registration reg) {
         return RegistrationResponseDTO.builder()
                 .id(reg.getId())
@@ -281,6 +295,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .status(reg.getStatus())
                 .note(reg.getNote())
                 .finishPosition(reg.getRank())
+                .gateNumber(reg.getGateNumber())
                 .build();
     }
 }

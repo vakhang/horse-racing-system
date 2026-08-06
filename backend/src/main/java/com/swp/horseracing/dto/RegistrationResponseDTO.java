@@ -23,4 +23,5 @@ public class RegistrationResponseDTO {
     private RegistrationStatus status;
     private String note;
     private Integer finishPosition;
+    private Integer gateNumber;
 }
