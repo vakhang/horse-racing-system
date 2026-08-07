@@ -96,15 +96,63 @@ const RefereeDashboardPage = () => {
         } catch (error) { message.error('Lỗi tải danh sách thi đấu!'); }
     };
 
+    const handleAssignGate = async (regId, gateNumber) => {
+        try {
+            await api.put(`/registrations/${regId}/gate`, { gateNumber });
+            message.success(`Đã gán Cổng xuất phát #${gateNumber}! 🎲`);
+            if (weighingRace) {
+                const res = await api.get(`/registrations?raceId=${weighingRace.id}`);
+                setWeighingList(res.data);
+            }
+        } catch (err) {
+            message.error(err.response?.data?.error || 'Không thể gán cổng xuất phát!');
+        }
+    };
+
+    const handleRandomDrawGates = async () => {
+        if (!weighingList || weighingList.length === 0) return;
+        const gates = Array.from({ length: weighingList.length }, (_, i) => i + 1);
+        for (let i = gates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [gates[i], gates[j]] = [gates[j], gates[i]];
+        }
+
+        try {
+            for (let i = 0; i < weighingList.length; i++) {
+                await api.put(`/registrations/${weighingList[i].id}/gate`, { gateNumber: gates[i] });
+            }
+            message.success('Đã bốc thăm ngẫu nhiên Cổng xuất phát cho tất cả chiến mã! 🎲');
+            const res = await api.get(`/registrations?raceId=${weighingRace.id}`);
+            setWeighingList(res.data);
+        } catch (err) {
+            message.error('Lỗi khi bốc thăm cổng!');
+        }
+    };
+
     // --- TRỌNG TÀI ẤN NÚT BẮT ĐẦU ĐUA ---
     const handleStartRace = async (race) => {
         try {
+            const res = await api.get(`/registrations?raceId=${race.id}`);
+            const activeRegs = res.data.filter(r => r.status !== 'WITHDRAWN' && r.status !== 'DISQUALIFIED');
+            const unassignedGateCount = activeRegs.filter(r => !r.gateNumber).length;
+
+            if (unassignedGateCount > 0) {
+                Modal.confirm({
+                    title: '⚠️ Chưa Xóa Bốc Thăm / Gán Cổng Xuất Phát!',
+                    content: `Hiện có ${unassignedGateCount} chiến mã chưa được gán Cổng xuất phát (Gate #). Trọng tài cần xác nhận bốc thăm cổng trước khi bấm Bắt Đầu.`,
+                    okText: 'Mở Bảng Bốc Thăm & Cân Nài',
+                    cancelText: 'Hủy Bỏ',
+                    onOk: () => openWeighingModal(race)
+                });
+                return;
+            }
+
             await api.put(`/races/${race.id}`, {
                 tournamentId: race.tournamentId,
                 name: race.name,
                 status: 'RUNNING'
             });
-            message.success('Đã phát lệnh bắt đầu! Tỷ lệ cược đã được chốt sổ tự động.');
+            message.success('Đã phát lệnh bắt đầu đua! 🏁 Tỷ lệ cược đã được chốt sổ tự động.');
             fetchRaces();
         } catch (error) {
             const errorMsg = error.response?.data?.error || error.response?.data?.message || error.response?.data || 'Có lỗi xảy ra khi bắt đầu chặng đua!';
@@ -254,7 +302,7 @@ const RefereeDashboardPage = () => {
                 return (
                     <Space wrap>
                         <Button size="small" type="primary" className="bg-amber-600 border-none font-bold" onClick={() => openWeighingModal(record)}>
-                            ⚖️ Cân Nài & Bù Chì
+                            🎲 Bốc Thăm Cổng & ⚖️ Cân Nài
                         </Button>
                         {isReadyToStart && (
                             <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record)}>BẮT ĐẦU ĐUA</Button>
@@ -387,21 +435,24 @@ const RefereeDashboardPage = () => {
             </Modal>
 
             <Modal
-                title={<span className="text-xl font-bold text-amber-600">⚖️ Cân Đo & Đeo Chì Chấp (Handicap): {weighingRace?.name}</span>}
+                title={<span className="text-xl font-bold text-amber-600">🎲 Bốc Thăm Cổng Xuất Phát & ⚖️ Cân Nài Bù Chì: {weighingRace?.name}</span>}
                 open={isWeighingModalVisible}
                 onCancel={() => setIsWeighingModalVisible(false)}
                 footer={[
-                    <Button key="close" type="primary" onClick={() => setIsWeighingModalVisible(false)}>
+                    <Button key="random" type="primary" className="bg-purple-600 border-none font-bold mr-2" onClick={handleRandomDrawGates}>
+                        🎲 BỐC THĂM CỔNG TỰ ĐỘNG
+                    </Button>,
+                    <Button key="close" onClick={() => setIsWeighingModalVisible(false)}>
                         Đóng
                     </Button>
                 ]}
-                width={900}
+                width={950}
                 centered
             >
                 <div className="py-2">
                     <Alert
-                        message="Quy Trình Cân Nài Thực Địa (Handicap & Lead Weight)"
-                        description="Trước cuộc đua, Trọng tài đưa kỵ sĩ và yên cương lên bàn cân để ghi nhận Khối lượng thực tế. Nếu Khối lượng thực tế nhỏ hơn Trọng lượng chỉ định của ngựa, Trọng tài phát chì lá cho kỵ sĩ đút vào túi yên và nhấn nút 'ĐÃ KIỂM TRA & ĐEO CHÌ'."
+                        message="Xác Nhận Cổng Xuất Phát & Quy Trình Cân Nài Thực Địa"
+                        description="Trọng tài thực hiện Bốc thăm Cổng xuất phát (Gate #) cho từng chiến mã, sau đó đưa kỵ sĩ và yên cương lên bàn cân để xác nhận Khối lượng thực tế và phát chì lá bù tải trọng trước khi phát lệnh Bắt Đầu Đua."
                         type="info"
                         showIcon
                         className="mb-4"
@@ -412,7 +463,24 @@ const RefereeDashboardPage = () => {
                         rowKey="id"
                         pagination={false}
                         columns={[
-                            { title: 'Cổng', dataIndex: 'gateNumber', width: 60, render: g => <Text strong>#{g || '?'}</Text> },
+                            {
+                                title: 'Cổng Xuất Phát 🎲',
+                                key: 'gateNumber',
+                                width: 130,
+                                render: (_, r) => (
+                                    <Select
+                                        size="small"
+                                        className="w-28 font-bold"
+                                        value={r.gateNumber || undefined}
+                                        placeholder="-- Gán Cổng --"
+                                        onChange={(g) => handleAssignGate(r.id, g)}
+                                    >
+                                        {Array.from({ length: Math.max(8, weighingList.length) }, (_, i) => i + 1).map(num => (
+                                            <Option key={num} value={num}>Cổng #{num}</Option>
+                                        ))}
+                                    </Select>
+                                )
+                            },
                             { title: 'Chiến Mã', dataIndex: 'horseName', render: (t, r) => <Text strong className="text-blue-700">{t}</Text> },
                             { title: 'Nài Ngựa', dataIndex: 'jockeyUsername', render: (t, r) => (
                                 <div>

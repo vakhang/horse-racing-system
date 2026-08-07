@@ -273,8 +273,13 @@ public class RegistrationServiceImpl implements RegistrationService {
         Registration reg = registrationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy Đơn đăng ký ID: " + id));
 
-        if (registrationRepository.existsByRaceIdAndGateNumber(reg.getRace().getId(), gateNumber)) {
-            throw new RuntimeException("Cổng số " + gateNumber + " trong chặng đua này đã có chiến mã đăng ký!");
+        if (gateNumber != null) {
+            List<Registration> activeRegs = registrationRepository.findByRaceId(reg.getRace().getId());
+            for (Registration other : activeRegs) {
+                if (!other.getId().equals(id) && other.getGateNumber() != null && other.getGateNumber().equals(gateNumber)) {
+                    throw new RuntimeException("Cổng xuất phát số " + gateNumber + " đã được gán cho chiến mã " + other.getHorse().getName() + "!");
+                }
+            }
         }
 
         reg.setGateNumber(gateNumber);
