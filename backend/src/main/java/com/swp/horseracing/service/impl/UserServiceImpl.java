@@ -293,6 +293,15 @@ public class UserServiceImpl implements UserService {
                             UserAttachment.builder().user(user).docType(UserDocType.HEALTH_CHECK).fileUrl(url).build());
             }
         }
+        if (request.getAvatarFile() != null) {
+            String url = fileStorageService.storeFile(request.getAvatarFile(), folder);
+            if (url != null) {
+                // Remove old avatar if exists
+                user.getAttachments().removeIf(att -> att.getDocType() == UserDocType.AVATAR);
+                user.getAttachments().add(
+                        UserAttachment.builder().user(user).docType(UserDocType.AVATAR).fileUrl(url).build());
+            }
+        }
 
         return mapToResponseDTO(userRepository.save(user));
     }
@@ -364,6 +373,7 @@ public class UserServiceImpl implements UserService {
         List<String> kycUrls = new ArrayList<>();
         List<String> certUrls = new ArrayList<>();
         List<String> healthUrls = new ArrayList<>();
+        String avatarUrl = null;
 
         if (user.getAttachments() != null) {
             for (UserAttachment a : user.getAttachments()) {
@@ -373,6 +383,8 @@ public class UserServiceImpl implements UserService {
                     certUrls.add(a.getFileUrl());
                 if (a.getDocType() == UserDocType.HEALTH_CHECK)
                     healthUrls.add(a.getFileUrl());
+                if (a.getDocType() == UserDocType.AVATAR)
+                    avatarUrl = a.getFileUrl();
             }
         }
 
@@ -388,6 +400,7 @@ public class UserServiceImpl implements UserService {
                 .kycDocumentUrls(kycUrls)
                 .certDocumentUrls(certUrls)
                 .healthDocumentUrls(healthUrls)
+                .avatarUrl(avatarUrl)
                 .weight(user.getWeight())
                 .height(user.getHeight())
                 .balance(balance)

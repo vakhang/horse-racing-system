@@ -101,6 +101,13 @@ const ProfilePage = () => {
             appendFiles('healthFiles', values.healthFiles);
             appendFiles('kycFiles', values.kycFiles);
 
+            if (values.avatarFile && values.avatarFile.length > 0) {
+                const fileObj = values.avatarFile[0].originFileObj || (values.avatarFile[0] instanceof File ? values.avatarFile[0] : null);
+                if (fileObj) {
+                    formData.append('avatarFile', fileObj);
+                }
+            }
+
             const response = await api.put(`/users/${user.id}`, formData);
 
             const updatedUser = { ...user, ...response.data, token: token };
@@ -196,7 +203,11 @@ const ProfilePage = () => {
     const ProfileFormView = () => (
         <Card className="shadow-2xl rounded-2xl border border-[#007355] bg-[#141f1c] text-white">
             <div className="flex items-center gap-4 mb-6 bg-[#007355]/20 p-4 rounded-xl border border-[#007355]/40">
-                <SafetyCertificateOutlined className="text-3xl text-[#fcc200]" />
+                {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-[#fcc200]" />
+                ) : (
+                    <SafetyCertificateOutlined className="text-4xl text-[#fcc200]" />
+                )}
                 <div>
                     <div className="text-lg font-bold text-[#fcc200]">Trạng thái xác minh (KYC)</div>
                     {user?.status === 'APPROVED' ? (
@@ -245,6 +256,13 @@ const ProfilePage = () => {
                             <Form.Item label={<span className="text-gray-200 font-semibold">Giấy Khám Sức Khỏe (Nếu có cập nhật)</span>} name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
                                 <Upload multiple beforeUpload={() => false}>
                                     <Button icon={<UploadOutlined />} className="!bg-[#007355] !text-white !border-none hover:!bg-[#005e45]">Tải lên Sổ Khám Mới</Button>
+                                </Upload>
+                            </Form.Item>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                            <Form.Item label={<span className="text-gray-200 font-semibold">Ảnh Đại Diện / Avatar</span>} name="avatarFile" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                <Upload maxCount={1} beforeUpload={() => false} listType="picture">
+                                    <Button icon={<UploadOutlined />} className="!bg-[#007355] !text-white !border-none hover:!bg-[#005e45]">Tải lên Avatar Mới</Button>
                                 </Upload>
                             </Form.Item>
                         </div>

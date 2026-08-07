@@ -5,5 +5,5 @@ package com.swp.horseracing.model;
     // [Hướng dẫn sửa đổi]:
     // - Data: Thêm DRIVING_LICENSE hoặc PASSPORT nếu chấp nhận giấy tờ khác để KYC.
 public enum UserDocType {
-    ID_CARD, PASSPORT, JOCKEY_CERT, HEALTH_CHECK, REFEREE_CERT
+    ID_CARD, PASSPORT, JOCKEY_CERT, HEALTH_CHECK, REFEREE_CERT, AVATAR
 }

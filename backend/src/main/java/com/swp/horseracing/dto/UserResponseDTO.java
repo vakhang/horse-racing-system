@@ -31,6 +31,7 @@ public class UserResponseDTO {
     private List<String> kycDocumentUrls;
     private List<String> certDocumentUrls;
     private List<String> healthDocumentUrls;
+    private String avatarUrl;
 
     private Double weight;
     private Double height;

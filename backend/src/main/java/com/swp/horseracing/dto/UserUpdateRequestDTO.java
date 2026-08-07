@@ -23,4 +23,5 @@ public class UserUpdateRequestDTO {
     private Double height;
     private java.util.List<org.springframework.web.multipart.MultipartFile> certFiles;
     private java.util.List<org.springframework.web.multipart.MultipartFile> healthFiles;
+    private org.springframework.web.multipart.MultipartFile avatarFile;
 }
