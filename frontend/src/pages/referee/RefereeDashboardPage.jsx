@@ -26,6 +26,7 @@ const RefereeDashboardPage = () => {
     const [formReport] = Form.useForm();
 
     // State Cân Nài & Bù Chì
+    const [reportsHistory, setReportsHistory] = useState([]);
     const [isWeighingModalVisible, setIsWeighingModalVisible] = useState(false);
     const [weighingRace, setWeighingRace] = useState(null);
     const [weighingList, setWeighingList] = useState([]);
