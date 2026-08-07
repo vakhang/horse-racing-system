@@ -322,11 +322,6 @@ const RefereeDashboardPage = () => {
                                 📋 Cổng Xuất Phát & ⚖️ Cân Nài
                             </Button>
                         )}
-                        {isReadyToStart && (
-                            <Popconfirm title="Mở cổng cho Khán giả đặt cược?" onConfirm={async () => { await api.put(`/races/${record.id}/status`, { targetStatus: 'BETTING' }); message.success('Đã mở cổng cá cược cho khán giả! 🔓'); fetchRaces(); }}>
-                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold shadow-md">🔓 MỞ ĐẶT CƯỢC</Button>
-                            </Popconfirm>
-                        )}
                         {(isReadyToStart || isBettingOpen) && (
                             <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record)}>BẮT ĐẦU ĐUA</Button>
                         )}
