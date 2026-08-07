@@ -60,7 +60,7 @@ const LoginPage = () => {
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center justify-center mb-3">
                             <div className="bg-[#007355] text-white font-black text-2xl tracking-wider px-4 py-1.5 rounded-lg border border-[#00ffb3] shadow-[0_0_15px_rgba(0,255,179,0.3)]">
-                                bet <span className="bg-[#ffdf1b] text-black px-2 py-0.5 rounded font-black text-xl">989</span> RACING
+                                bet <span className="px-2 py-0.5 rounded font-black text-xl inline-block" style={{ backgroundColor: '#ffdf1b', color: '#000000' }}>989</span> RACING
                             </div>
                         </div>
                         <Title level={3} className="m-0 text-white font-bold tracking-wide">
@@ -104,7 +104,8 @@ const LoginPage = () => {
                                 htmlType="submit"
                                 loading={loading}
                                 block
-                                className="h-13 bg-[#007355] hover:bg-[#005740] border-none text-white font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(0,115,85,0.5)] hover:scale-[1.02] transition-all duration-300"
+                                style={{ backgroundColor: '#007355', color: '#ffffff', fontWeight: 'bold' }}
+                                className="h-13 border-none text-white font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(0,115,85,0.5)] hover:bg-[#005740] hover:scale-[1.02] transition-all duration-300"
                             >
                                 {loading ? 'ĐANG KẾT NỐI...' : 'ĐĂNG NHẬP BET989'}
                             </Button>

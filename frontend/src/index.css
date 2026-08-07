@@ -52,8 +52,12 @@ body {
 }
 
 /* Text Overrides for Dark Theme */
-.text-gray-800, .text-gray-900, .text-black {
+.text-gray-800, .text-gray-900 {
     color: #f0f0f0 !important;
+}
+
+.text-black {
+    color: #000000 !important;
 }
 
 .text-gray-600, .text-gray-500, .text-gray-700 {
