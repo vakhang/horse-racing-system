@@ -290,6 +290,49 @@ const BettingPage = () => {
                 className="mb-6 rounded-xl bg-[#162a22] border-[#007355] text-gray-200"
             />
 
+            <Card className="shadow-lg border border-gray-800 bg-[#1e1e1e] mb-6 rounded-xl">
+                <Alert
+                    message={
+                        <span className="font-bold text-yellow-400 text-lg flex items-center gap-2">
+                            <InfoCircleOutlined /> QUY TẮC PHÂN BỔ DÒNG TIỀN (100% TOTAL POOL) & 4 THỂ LOẠI CƯỢC
+                        </span>
+                    }
+                    description={
+                        <div className="text-gray-300 text-sm mt-2 space-y-2">
+                            <div className="p-3 bg-[#14261d] rounded-lg border border-[#007355]">
+                                <Text className="font-bold text-green-400 block mb-1">💰 Công Thức Phân Bổ Dòng Tiền Tuyệt Đối 100%:</Text>
+                                <ul className="list-disc pl-5 space-y-1">
+                                    <li><span className="text-yellow-300 font-bold">Quỹ Trả Thưởng Khán Giả (65% Payout Pool):</span> Dành riêng 100% để trả thưởng cho người chơi đoán trúng vé cược. Không bị trích cho bất kỳ bên nào khác.</li>
+                                    <li><span className="text-blue-300 font-bold">Doanh Thu Nhà Cái (35% GGR):</span> Trích <b>5%</b> thưởng cho Chủ Ngựa Nhất, <b>2%</b> thưởng cho Nài Ngựa Nhất. Nhà cái nhận <b>28% Doanh Thu Ròng (Net GGR)</b>.</li>
+                                    <li className="italic text-gray-400">Kiểm toán tuyệt đối: 100% Total Pool = 65% Trả Thưởng Khách + 5% Thưởng Chủ + 2% Thưởng Nài + 28% Doanh Thu Ròng Nhà Cái.</li>
+                                </ul>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                                <div className="p-2.5 bg-gray-900 rounded-lg border border-gray-800">
+                                    <Text className="font-bold text-yellow-400 block">🥇 1. Cược Win (Đơn Thắng):</Text>
+                                    <Text className="text-xs text-gray-400">Đoán con ngựa về vị trí <b>thứ 1 (Vô Địch)</b>.<br/>Odds = (Doanh thu Win × 65%) / Tổng cược vào ngựa thắng.</Text>
+                                </div>
+                                <div className="p-2.5 bg-gray-900 rounded-lg border border-gray-800">
+                                    <Text className="font-bold text-green-400 block">🥈 2. Cược Place (Nhất Nhì):</Text>
+                                    <Text className="text-xs text-gray-400">Đoán con ngựa về vị trí <b>thứ 1 hoặc thứ 2</b>.<br/>Bể 65% chia đôi (32.5% cho Nhất & 32.5% cho Nhì).</Text>
+                                </div>
+                                <div className="p-2.5 bg-gray-900 rounded-lg border border-gray-800">
+                                    <Text className="font-bold text-blue-400 block">👯 3. Cược Quinella (Cặp Đôi Top 2):</Text>
+                                    <Text className="text-xs text-gray-400">Đoán cặp 2 con về <b>Top 2</b> (bất kể thứ tự).<br/>Odds = (Doanh thu Quinella × 65%) / Tổng cược vào cặp thắng.</Text>
+                                </div>
+                                <div className="p-2.5 bg-gray-900 rounded-lg border border-gray-800">
+                                    <Text className="font-bold text-red-400 block">🎯 4. Cược Exacta (Cặp Chính Xác + Jackpot):</Text>
+                                    <Text className="text-xs text-gray-400">Đoán chính xác <b>Con A Nhất & Con B Nhì</b>.<br/>Nếu không ai trúng, 65% bể Exacta tích lũy (Carryover) chuyển sang chặng cùng Class tiếp theo!</Text>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    type="info"
+                    className="border-none bg-transparent p-0"
+                />
+            </Card>
+
             <Spin spinning={loadingRaces}>
                 {races.length === 0 ? (
                     <Card className="shadow-sm rounded-xl py-10 bg-[#1e1e1e] border-gray-800">

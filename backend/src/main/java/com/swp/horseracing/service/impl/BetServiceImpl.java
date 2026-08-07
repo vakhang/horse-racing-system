@@ -242,7 +242,20 @@ public class BetServiceImpl implements BetService {
     private void processExactaBets(List<Bet> allBets, Registration firstPlace, Registration secondPlace, BigDecimal exactaPool, Race race) {
         if (firstPlace == null || secondPlace == null) return;
         List<Bet> exactaBets = allBets.stream().filter(b -> b.getBetType() == BetType.EXACTA).toList();
-        if (exactaBets.isEmpty()) return;
+
+        Integer requiredClass = (race.getTournament() != null && race.getTournament().getRequiredClass() != null) ? race.getTournament().getRequiredClass() : 4;
+        SystemFund jackpot = systemFundRepository.findByFundTypeAndClassLevelWithPessimisticWrite("JACKPOT", requiredClass)
+                .orElse(null);
+        BigDecimal carryover = (jackpot != null && jackpot.getBalance() != null) ? jackpot.getBalance() : BigDecimal.ZERO;
+        BigDecimal totalExactaPayoutPool = exactaPool.add(carryover);
+
+        if (exactaBets.isEmpty()) {
+            if (exactaPool.compareTo(BigDecimal.ZERO) > 0 && jackpot != null) {
+                jackpot.setBalance(totalExactaPayoutPool);
+                systemFundRepository.save(jackpot);
+            }
+            return;
+        }
 
         BigDecimal totalBetExacta = exactaBets.stream()
                 .filter(b -> b.getRegistration().getId().equals(firstPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(secondPlace.getId()))
@@ -251,12 +264,16 @@ public class BetServiceImpl implements BetService {
 
         if (totalBetExacta.compareTo(BigDecimal.ZERO) == 0) {
             // Không ai trúng EXACTA -> Lưu Jackpot Carryover cho chặng đua cùng Class
-            Integer requiredClass = (race.getTournament() != null && race.getTournament().getRequiredClass() != null) ? race.getTournament().getRequiredClass() : 4;
-            SystemFund jackpot = systemFundRepository.findByFundTypeAndClassLevelWithPessimisticWrite("JACKPOT", requiredClass)
-                    .orElse(null);
             if (jackpot != null) {
-                jackpot.setBalance(jackpot.getBalance().add(exactaPool));
+                jackpot.setBalance(totalExactaPayoutPool);
                 systemFundRepository.save(jackpot);
+            } else {
+                SystemFund newJackpot = SystemFund.builder()
+                        .fundType("JACKPOT")
+                        .classLevel(requiredClass)
+                        .balance(totalExactaPayoutPool)
+                        .build();
+                systemFundRepository.save(newJackpot);
             }
             for (Bet b : exactaBets) {
                 b.setStatus(BetStatus.LOST);
@@ -265,8 +282,14 @@ public class BetServiceImpl implements BetService {
             return;
         }
 
-        BigDecimal rawOdds = exactaPool.divide(totalBetExacta, 2, RoundingMode.HALF_UP);
-        BigDecimal finalOdds = ensureMinusPoolProtection(rawOdds, totalBetExacta, exactaPool, race);
+        // Có người trúng -> Reset Carryover của Class về 0
+        if (jackpot != null && carryover.compareTo(BigDecimal.ZERO) > 0) {
+            jackpot.setBalance(BigDecimal.ZERO);
+            systemFundRepository.save(jackpot);
+        }
+
+        BigDecimal rawOdds = totalExactaPayoutPool.divide(totalBetExacta, 2, RoundingMode.HALF_UP);
+        BigDecimal finalOdds = ensureMinusPoolProtection(rawOdds, totalBetExacta, totalExactaPayoutPool, race);
 
         for (Bet b : exactaBets) {
             if (b.getRegistration().getId().equals(firstPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(secondPlace.getId())) {
