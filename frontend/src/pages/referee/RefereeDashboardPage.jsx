@@ -266,6 +266,13 @@ const RefereeDashboardPage = () => {
         )
     };
 
+    const isAssignedReferee = (race, currentUser) => {
+        if (!race || !currentUser) return false;
+        if (currentUser.role === 'ADMIN') return true;
+        return String(race.refereeId) === String(currentUser.id) || 
+               (race.refereeUsername && race.refereeUsername === currentUser.username);
+    };
+
     const columns = [
         { title: 'Tên Giải', dataIndex: 'tournamentName', key: 'tournamentName' },
         { title: 'Chặng Đua', dataIndex: 'name', key: 'name', render: t => <Text strong className="text-blue-700">{t}</Text> },
@@ -290,8 +297,8 @@ const RefereeDashboardPage = () => {
             key: 'action',
             align: 'right',
             render: (_, record) => {
-                if (record.refereeId !== user?.id) {
-                    return <Text type="secondary" italic>Chỉ xem (Không được phân công)</Text>;
+                if (!isAssignedReferee(record, user)) {
+                    return <Text type="secondary" italic>Chỉ xem (Phân công cho: {record.refereeUsername || 'Trọng tài khác'})</Text>;
                 }
                 if (record.status === 'COMPLETED') return <Text type="success" className="font-bold"><SafetyCertificateOutlined /> Đã Phát Thưởng</Text>;
                 if (record.status === 'CANCELED') return <Text type="secondary">Chặng Bị Hủy</Text>;
@@ -334,6 +341,8 @@ const RefereeDashboardPage = () => {
         { title: 'Chi Tiết', dataIndex: 'reason' }
     ];
 
+    const myAssignedRaces = races.filter(r => isAssignedReferee(r, user));
+
     return (
         <div className="p-8 bg-gray-100 min-h-screen">
             <Card className="shadow-xl rounded-2xl border-none">
@@ -346,12 +355,25 @@ const RefereeDashboardPage = () => {
                 <Tabs size="large" items={[
                     {
                         key: '1',
-                        label: 'Phân Công Của Tôi (Thao Tác)',
-                        children: <Table columns={columns} dataSource={races.filter(r => r.refereeId === user?.id)} rowKey="id" loading={loading} className="border rounded-xl" expandable={{ expandedRowRender, onExpand: (exp, rec) => { if(exp) fetchRegistrations(rec.id) } }} locale={{ emptyText: 'Bạn chưa được phân công giám sát chặng đua nào.' }} />
+                        label: `Phân Công Của Tôi (${myAssignedRaces.length})`,
+                        children: (
+                            <div>
+                                {myAssignedRaces.length === 0 && (
+                                    <Alert
+                                        message="Thông Báo Phân Công Trọng Tài"
+                                        description="Tài khoản của bạn hiện chưa được phân công giám sát chặng đua nào trong giải. Vui lòng liên hệ Admin để gán chặng đua hoặc chuyển sang tab 'Lịch Thi Đấu Chung' để xem danh sách."
+                                        type="info"
+                                        showIcon
+                                        className="mb-4"
+                                    />
+                                )}
+                                <Table columns={columns} dataSource={myAssignedRaces} rowKey="id" loading={loading} className="border rounded-xl" expandable={{ expandedRowRender, onExpand: (exp, rec) => { if(exp) fetchRegistrations(rec.id) } }} locale={{ emptyText: 'Bạn chưa được phân công giám sát chặng đua nào.' }} />
+                            </div>
+                        )
                     },
                     {
                         key: '2',
-                        label: 'Lịch Thi Đấu Chung (Chỉ Xem)',
+                        label: `Lịch Thi Đấu Chung (${races.length})`,
                         children: <Table columns={columns} dataSource={races} rowKey="id" loading={loading} className="border rounded-xl" expandable={{ expandedRowRender, onExpand: (exp, rec) => { if(exp) fetchRegistrations(rec.id) } }} />
                     },
                     {
