@@ -305,16 +305,29 @@ const RefereeDashboardPage = () => {
                 if (record.status === 'COMPLETED') return <Text type="success" className="font-bold"><SafetyCertificateOutlined /> Đã Phát Thưởng</Text>;
                 if (record.status === 'CANCELED') return <Text type="secondary">Chặng Bị Hủy</Text>;
 
+                const isRegistrationOpen = record.status === 'REGISTRATION';
                 const isReadyToStart = record.status === 'LOCK_SESSION';
+                const isBettingOpen = record.status === 'BETTING';
                 const isRunning = record.status === 'RUNNING';
                 const isFinished = record.status === 'FINISHED';
 
                 return (
                     <Space wrap>
-                        <Button size="small" type="primary" className="bg-amber-600 border-none font-bold" onClick={() => openWeighingModal(record)}>
-                            📋 Cổng Xuất Phát & ⚖️ Cân Nài
-                        </Button>
+                        {isRegistrationOpen ? (
+                            <Button size="small" type="default" disabled className="font-bold">
+                                ⏳ Chờ Admin Chốt Danh Sách
+                            </Button>
+                        ) : (
+                            <Button size="small" type="primary" className="bg-amber-600 border-none font-bold" onClick={() => openWeighingModal(record)}>
+                                📋 Cổng Xuất Phát & ⚖️ Cân Nài
+                            </Button>
+                        )}
                         {isReadyToStart && (
+                            <Popconfirm title="Mở cổng cho Khán giả đặt cược?" onConfirm={async () => { await api.put(`/races/${record.id}/status`, { targetStatus: 'BETTING' }); message.success('Đã mở cổng cá cược cho khán giả! 🔓'); fetchRaces(); }}>
+                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold shadow-md">🔓 MỞ ĐẶT CƯỢC</Button>
+                            </Popconfirm>
+                        )}
+                        {(isReadyToStart || isBettingOpen) && (
                             <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record)}>BẮT ĐẦU ĐUA</Button>
                         )}
                         {isFinished && (

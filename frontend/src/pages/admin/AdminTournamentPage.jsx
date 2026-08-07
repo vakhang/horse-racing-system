@@ -380,12 +380,17 @@ const AdminTournamentPage = () => {
                 render: (_, record) => (
                     <Space wrap>
                         {record.status === 'REGISTRATION' && (
-                            <Popconfirm title="Chốt danh sách ngựa thi đấu và mở cổng nhận cược?" onConfirm={() => handleForceTransition(record, 'BETTING')}>
-                                <Button size="small" type="primary" style={{ backgroundColor: '#1890ff', fontWeight: 'bold' }}>🔓 CHỐT DANH SÁCH & MỞ CƯỢC</Button>
+                            <Popconfirm title="Chốt danh sách ngựa thi đấu (Chuyển sang bước Cân Nài & Gán Cổng)?" onConfirm={() => handleForceTransition(record, 'LOCK_SESSION')}>
+                                <Button size="small" type="primary" className="bg-amber-600 border-none font-bold">📋 CHỐT DANH SÁCH THI ĐẤU</Button>
+                            </Popconfirm>
+                        )}
+                        {record.status === 'LOCK_SESSION' && (
+                            <Popconfirm title="Mở cổng cho Khán giả đặt cược Pari-mutuel?" onConfirm={() => handleForceTransition(record, 'BETTING')}>
+                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold shadow-md">🔓 MỞ ĐẶT CƯỢC (BETTING)</Button>
                             </Popconfirm>
                         )}
                         {record.status === 'BETTING' && (
-                            <Popconfirm title="Khóa cổng cược ngay lập tức?" onConfirm={() => handleForceTransition(record, 'LOCK_SESSION')}>
+                            <Popconfirm title="Khóa cổng cược ngay lập tức để chuẩn bị chạy?" onConfirm={() => handleForceTransition(record, 'LOCK_SESSION')}>
                                 <Button size="small" type="primary" style={{ backgroundColor: '#595959', fontWeight: 'bold' }}>🔒 KHÓA CỔNG NHẬN CƯỢC</Button>
                             </Popconfirm>
                         )}

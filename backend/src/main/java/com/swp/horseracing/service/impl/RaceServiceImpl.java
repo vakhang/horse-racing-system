@@ -408,8 +408,8 @@ public class RaceServiceImpl implements RaceService {
         try {
             RaceStatus newStatus = RaceStatus.valueOf(targetStatus);
             
-            // Nếu chuẩn bị chuyển sang BETTING, dọn dẹp các đơn đăng ký lỗi (không có nài ngựa)
-            if (newStatus == RaceStatus.BETTING) {
+            // Dọn dẹp các đơn đăng ký lỗi (không có nài ngựa) khi chốt danh sách thi đấu
+            if (newStatus == RaceStatus.BETTING || newStatus == RaceStatus.LOCK_SESSION) {
                 cleanupInvalidRegistrations(race.getId());
             }
 
