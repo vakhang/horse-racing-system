@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
-import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Input, Tabs, Alert, Popconfirm } from 'antd';
+import { Table, Button, Tag, Space, message, Card, Typography, Modal, Form, Select, Row, Col, Input, Tabs, Alert, Popconfirm, InputNumber } from 'antd';
 import { FileProtectOutlined, SafetyCertificateOutlined, WarningOutlined, PlayCircleOutlined, PauseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 import dayjs from 'dayjs';
