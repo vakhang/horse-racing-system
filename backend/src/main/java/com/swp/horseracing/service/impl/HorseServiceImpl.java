@@ -56,8 +56,8 @@ public class HorseServiceImpl implements HorseService {
                 .status(request.getStatus() != null ? request.getStatus() : HorseStatus.PENDING)
                 .microchipCode(request.getMicrochipCode())
                 .lastHealthCheck(request.getLastHealthCheck())
-                .rating(40)
-                .classLevel(4)
+                .rating(60)
+                .classLevel(3)
                 .attachments(new ArrayList<>())
                 .build();
 

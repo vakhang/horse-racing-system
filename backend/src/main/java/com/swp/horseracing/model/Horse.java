@@ -65,10 +65,10 @@ public class Horse {
 
     @jakarta.persistence.Column(name = "rating")
     @lombok.Builder.Default
-    private Integer rating = 40;
+    private Integer rating = 60;
 
     @jakarta.persistence.Column(name = "class_level")
     @lombok.Builder.Default
-    private Integer classLevel = 4;
+    private Integer classLevel = 3;
 
 }
