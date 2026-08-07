@@ -9,6 +9,9 @@ import java.math.BigDecimal;
 public class LiveOddsResponseDTO {
     private Integer registrationId;
     private String horseName;
+    private String horseAvatarUrl;
+    private String jockeyName;
+    private String jockeyAvatarUrl;
     private BigDecimal totalBetOnHorse; // Total WIN bet on this horse
     private BigDecimal calculatedOdds;   // WIN Odds
 

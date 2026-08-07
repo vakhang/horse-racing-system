@@ -375,9 +375,25 @@ public class RaceServiceImpl implements RaceService {
             int horseWinRaces = reg.getHorse().getWinRaces() != null ? reg.getHorse().getWinRaces() : 0;
             float horseWinRate = horseTotalRaces > 0 ? ((float) horseWinRaces / horseTotalRaces) * 100 : 0f;
 
+            String hAvatar = reg.getHorse().getAttachments().stream()
+                    .filter(a -> a.getDocType() == com.swp.horseracing.model.HorseDocType.REAL_IMAGE)
+                    .findFirst()
+                    .map(com.swp.horseracing.model.HorseAttachment::getFileUrl)
+                    .orElse(null);
+                    
+            String jName = reg.getJockey() != null ? reg.getJockey().getUsername() : null;
+            String jAvatar = reg.getJockey() != null ? reg.getJockey().getAttachments().stream()
+                    .filter(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.AVATAR)
+                    .findFirst()
+                    .map(com.swp.horseracing.model.UserAttachment::getFileUrl)
+                    .orElse(null) : null;
+
             oddsList.add(LiveOddsResponseDTO.builder()
                     .registrationId(reg.getId())
                     .horseName(reg.getHorse().getName())
+                    .horseAvatarUrl(hAvatar)
+                    .jockeyName(jName)
+                    .jockeyAvatarUrl(jAvatar)
                     .totalBetOnHorse(winBetOnHorse)
                     .calculatedOdds(winOdds)
                     .totalPlaceBetOnHorse(placeBetOnHorse)
