@@ -198,7 +198,18 @@ public class UserServiceImpl implements UserService {
                 .user(savedUser)
                 .balance(initialBalance)
                 .build();
-        walletRepository.save(wallet);
+        wallet = walletRepository.save(wallet);
+
+        if (initialBalance.compareTo(BigDecimal.ZERO) > 0) {
+            com.swp.horseracing.model.TransactionHistory th = com.swp.horseracing.model.TransactionHistory.builder()
+                    .wallet(wallet)
+                    .transactionCode("BONUS00" + savedUser.getId())
+                    .transactionType(TransactionType.BONUS)
+                    .amount(initialBalance)
+                    .status(com.swp.horseracing.model.TransactionStatus.COMPLETED)
+                    .build();
+            transactionHistoryRepository.save(th);
+        }
 
         return mapToResponseDTO(savedUser);
     }

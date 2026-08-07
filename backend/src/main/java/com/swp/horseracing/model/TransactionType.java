@@ -5,5 +5,5 @@ package com.swp.horseracing.model;
     // [Hướng dẫn sửa đổi]:
     // - Data: Thêm BONUS nếu hệ thống tặng tiền tân thủ.
 public enum TransactionType {
-    DEPOSIT, WITHDRAW, BET, REWARD, REFUND, TAX, SYSTEM_FUND_DEDUCTION
+    DEPOSIT, WITHDRAW, BET, REWARD, REFUND, TAX, SYSTEM_FUND_DEDUCTION, BONUS
 }

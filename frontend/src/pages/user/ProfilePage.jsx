@@ -174,7 +174,8 @@ const ProfilePage = () => {
                     WITHDRAW: <Tag color="volcano">RÚT TIỀN</Tag>,
                     BET_PLACED: <Tag color="blue">ĐẶT CƯỢC</Tag>,
                     BET_WON: <Tag color="gold">THẮNG CƯỢC</Tag>,
-                    REFUND: <Tag color="purple">HOÀN TIỀN</Tag>
+                    REFUND: <Tag color="purple">HOÀN TIỀN</Tag>,
+                    BONUS: <Tag color="green">KHUYẾN MÃI</Tag>
                 };
                 return map[type] || <Tag>{type}</Tag>;
             }
