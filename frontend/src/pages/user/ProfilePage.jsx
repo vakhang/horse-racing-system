@@ -191,68 +191,74 @@ const ProfilePage = () => {
     ];
 
     const ProfileFormView = () => (
-        <Card className="shadow-md rounded-xl border-t-4 border-blue-500">
-            <div className="flex items-center gap-4 mb-6 bg-blue-50 p-4 rounded-lg">
-                <SafetyCertificateOutlined className="text-3xl text-blue-500" />
+        <Card className="shadow-2xl rounded-2xl border border-[#007355] bg-[#141f1c] text-white">
+            <div className="flex items-center gap-4 mb-6 bg-[#007355]/20 p-4 rounded-xl border border-[#007355]/40">
+                <SafetyCertificateOutlined className="text-3xl text-[#fcc200]" />
                 <div>
-                    <div className="text-lg font-bold">Trạng thái xác minh (KYC)</div>
+                    <div className="text-lg font-bold text-[#fcc200]">Trạng thái xác minh (KYC)</div>
                     {user?.status === 'APPROVED' ? (
-                        <Text className="text-green-600 font-medium">Tài khoản đã được xác minh toàn diện. Bạn có thể sử dụng toàn bộ tính năng.</Text>
+                        <Text className="text-green-400 font-medium">Tài khoản đã được xác minh toàn diện. Bạn có thể sử dụng toàn bộ tính năng.</Text>
                     ) : (
-                        <Text className="text-orange-500 font-medium">Đang chờ Admin phê duyệt hồ sơ của bạn.</Text>
+                        <Text className="text-yellow-400 font-medium">Đang chờ Admin phê duyệt hồ sơ của bạn.</Text>
                     )}
                 </div>
             </div>
-            <Divider />
+            <Divider className="border-gray-700" />
 
             <Form form={form} layout="vertical" onFinish={handleUpdateProfile} size="large">
-                <Form.Item label="Địa chỉ Email (Định danh đăng nhập)" name="email">
-                    <Input prefix={<MailOutlined />} disabled className="bg-gray-100" />
+                <Form.Item label={<span className="text-gray-300 font-semibold">Địa chỉ Email (Định danh đăng nhập)</span>} name="email">
+                    <Input prefix={<MailOutlined className="text-gray-400" />} disabled className="!bg-[#0f1715] !text-gray-400 !border-gray-700" />
                 </Form.Item>
-                <Form.Item label="Họ và Tên" name="username" rules={[{ required: true }]}>
-                    <Input prefix={<UserOutlined />} placeholder="Nhập tên hiển thị của bạn" />
+                <Form.Item label={<span className="text-gray-200 font-semibold">Họ và Tên</span>} name="username" rules={[{ required: true }]}>
+                    <Input prefix={<UserOutlined className="text-gray-400" />} placeholder="Nhập tên hiển thị của bạn" className="!bg-[#1c2926] !text-white !border-gray-700" />
                 </Form.Item>
-                <Form.Item label="Số điện thoại liên hệ" name="phoneNumber" rules={[{ required: true }]}>
-                    <Input prefix={<PhoneOutlined />} placeholder="Nhập số điện thoại của bạn" />
+                <Form.Item label={<span className="text-gray-200 font-semibold">Số điện thoại liên hệ</span>} name="phoneNumber" rules={[{ required: true }]}>
+                    <Input prefix={<PhoneOutlined className="text-gray-400" />} placeholder="Nhập số điện thoại của bạn" className="!bg-[#1c2926] !text-white !border-gray-700" />
                 </Form.Item>
-                <Form.Item label="Ngày tháng năm sinh" name="dob" rules={[{ required: true }]}>
-                    <DatePicker className="w-full" format="YYYY-MM-DD" />
+                <Form.Item label={<span className="text-gray-200 font-semibold">Ngày tháng năm sinh</span>} name="dob" rules={[{ required: true }]}>
+                    <DatePicker className="w-full !bg-[#1c2926] !text-white !border-gray-700" format="YYYY-MM-DD" />
                 </Form.Item>
 
                 {/* KHU VỰC DÀNH RIÊNG CHO NÀI NGỰA */}
                 {user?.role === 'JOCKEY' && (
-                    <div className="bg-purple-50 p-4 rounded-lg border border-purple-200 mt-4 mb-4">
-                        <Title level={5} className="text-purple-700 mb-4">Thông số Thể chất & Bằng Cấp (Dành cho Nài ngựa)</Title>
-                        <div className="flex gap-4">
-                            <Form.Item label="Cân nặng (kg)" name="weight" className="w-full" rules={[{ required: true, message: 'Nhập cân nặng!' }]}>
-                                <InputNumber min={40} max={100} className="w-full" placeholder="VD: 55" />
+                    <div className="bg-[#1c2725] p-5 rounded-xl border border-[#007355] mt-4 mb-4 shadow-md">
+                        <Title level={5} className="!text-[#fcc200] mb-4 flex items-center gap-2">
+                            🏆 Thông Số Thể Chất & Bằng Cấp (Dành cho Nài Ngựa)
+                        </Title>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Form.Item label={<span className="text-gray-200 font-semibold">* Cân nặng (kg)</span>} name="weight" className="w-full" rules={[{ required: true, message: 'Nhập cân nặng!' }]}>
+                                <InputNumber min={40} max={100} className="w-full !bg-[#131c1a] !text-white !border-gray-700" placeholder="VD: 55" />
                             </Form.Item>
-                            <Form.Item label="Chiều cao (cm)" name="height" className="w-full" rules={[{ required: true, message: 'Nhập chiều cao!' }]}>
-                                <InputNumber min={140} max={200} className="w-full" placeholder="VD: 165" />
-                            </Form.Item>
-                        </div>
-                        <div className="flex gap-4">
-                            <Form.Item label="Chứng chỉ hành nghề (Nếu có cập nhật)" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
-                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Bằng Cấp Mới</Button></Upload>
-                            </Form.Item>
-                            <Form.Item label="Giấy Khám Sức Khỏe (Nếu có cập nhật)" name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
-                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Sổ Khám Mới</Button></Upload>
+                            <Form.Item label={<span className="text-gray-200 font-semibold">* Chiều cao (cm)</span>} name="height" className="w-full" rules={[{ required: true, message: 'Nhập chiều cao!' }]}>
+                                <InputNumber min={140} max={200} className="w-full !bg-[#131c1a] !text-white !border-gray-700" placeholder="VD: 165" />
                             </Form.Item>
                         </div>
-                        <Text className="text-gray-500 text-sm italic">* Hồ sơ chứng chỉ sẽ được hiển thị công khai trên Sàn Giao Dịch.</Text>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                            <Form.Item label={<span className="text-gray-200 font-semibold">Chứng chỉ hành nghề (Nếu có cập nhật)</span>} name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                <Upload multiple beforeUpload={() => false}>
+                                    <Button icon={<UploadOutlined />} className="!bg-[#007355] !text-white !border-none hover:!bg-[#005e45]">Tải lên Bằng Cấp Mới</Button>
+                                </Upload>
+                            </Form.Item>
+                            <Form.Item label={<span className="text-gray-200 font-semibold">Giấy Khám Sức Khỏe (Nếu có cập nhật)</span>} name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                <Upload multiple beforeUpload={() => false}>
+                                    <Button icon={<UploadOutlined />} className="!bg-[#007355] !text-white !border-none hover:!bg-[#005e45]">Tải lên Sổ Khám Mới</Button>
+                                </Upload>
+                            </Form.Item>
+                        </div>
+                        <Text className="text-gray-400 text-xs italic block mt-1">* Hồ sơ chứng chỉ sẽ được hiển thị công khai trên Thị Trường Nài Ngựa.</Text>
                     </div>
                 )}
 
                 {/* KHU VỰC DÀNH RIÊNG CHO TRỌNG TÀI */}
                 {user?.role === 'REFEREE' && (
-                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200 mt-4 mb-4">
-                        <Title level={5} className="text-indigo-700 mb-4">Tài Liệu Cập Nhật (Tùy chọn bổ sung dành cho Trọng Tài)</Title>
-                        <div className="flex gap-4">
-                            <Form.Item label="CCCD / Hộ Chiếu (Nếu làm lại)" name="kycFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
-                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên CCCD mới</Button></Upload>
+                    <div className="bg-[#1c2725] p-5 rounded-xl border border-indigo-500/50 mt-4 mb-4 shadow-md">
+                        <Title level={5} className="!text-indigo-400 mb-4">⚖️ Tài Liệu Cập Nhật (Dành cho Trọng Tài)</Title>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Form.Item label={<span className="text-gray-200 font-semibold">CCCD / Hộ Chiếu (Nếu làm lại)</span>} name="kycFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />} className="!bg-indigo-600 !text-white !border-none">Tải lên CCCD mới</Button></Upload>
                             </Form.Item>
-                            <Form.Item label="Chứng chỉ chuyên môn (Nếu có mới)" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
-                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Chứng Chỉ mới</Button></Upload>
+                            <Form.Item label={<span className="text-gray-200 font-semibold">Chứng chỉ chuyên môn (Nếu có mới)</span>} name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />} className="!bg-indigo-600 !text-white !border-none">Tải lên Chứng Chỉ mới</Button></Upload>
                             </Form.Item>
                         </div>
                     </div>
@@ -260,21 +266,21 @@ const ProfilePage = () => {
 
                 {/* KHU VỰC DÀNH RIÊNG CHO CHỦ NGỰA */}
                 {user?.role === 'OWNER' && (
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4 mb-4">
-                        <Title level={5} className="text-blue-700 mb-4">Hồ Sơ Yêu Cầu Bổ Sung (Dành cho Chủ Ngựa)</Title>
-                        <div className="flex gap-4">
-                            <Form.Item label="Ảnh Thực Tế & CN Nguồn Gốc Chiến Mã" name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
-                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Ảnh & CN</Button></Upload>
+                    <div className="bg-[#1c2725] p-5 rounded-xl border border-blue-500/50 mt-4 mb-4 shadow-md">
+                        <Title level={5} className="!text-blue-400 mb-4">🐎 Hồ Sơ Yêu Cầu Bổ Sung (Dành cho Chủ Ngựa)</Title>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Form.Item label={<span className="text-gray-200 font-semibold">Ảnh Thực Tế & CN Nguồn Gốc Chiến Mã</span>} name="certFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />} className="!bg-blue-600 !text-white !border-none">Tải lên Ảnh & CN</Button></Upload>
                             </Form.Item>
-                            <Form.Item label="Sổ Tiêm Phòng/Khám Bệnh" name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
-                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />}>Tải lên Sổ Khám</Button></Upload>
+                            <Form.Item label={<span className="text-gray-200 font-semibold">Sổ Tiêm Phòng/Khám Bệnh</span>} name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                                <Upload multiple beforeUpload={() => false}><Button icon={<UploadOutlined />} className="!bg-blue-600 !text-white !border-none">Tải lên Sổ Khám</Button></Upload>
                             </Form.Item>
                         </div>
                     </div>
                 )}
 
                 <Form.Item>
-                    <Button type="primary" htmlType="submit" loading={loading} className="w-full mt-4 h-12 text-lg font-bold">LƯU THAY ĐỔI</Button>
+                    <Button type="primary" htmlType="submit" loading={loading} className="w-full mt-4 h-12 text-lg font-bold !bg-[#fcc200] !text-black !border-none hover:!bg-[#e5b000]">LƯU THAY ĐỔI</Button>
                 </Form.Item>
             </Form>
             
