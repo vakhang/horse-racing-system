@@ -115,6 +115,17 @@ const AdminUserManagementPage = () => {
         return false;
     };
 
+    const sortUsersWithPendingFirst = (userList) => {
+        return [...userList].sort((a, b) => {
+            const aIsPending = a.status === 'PENDING' ? 0 : 1;
+            const bIsPending = b.status === 'PENDING' ? 0 : 1;
+            if (aIsPending !== bIsPending) {
+                return aIsPending - bIsPending;
+            }
+            return (a.username || '').localeCompare(b.username || '', 'vi', { sensitivity: 'base' });
+        });
+    };
+
     const getFilteredUsers = (role) => {
         let list = users.filter(u => u.role === role);
 
@@ -132,7 +143,7 @@ const AdminUserManagementPage = () => {
             list = list.filter(u => (u.status === 'APPROVED' || u.status === 'PENDING') && !isFullDocs(u));
         }
 
-        return list;
+        return sortUsersWithPendingFirst(list);
     };
 
     // Đếm tổng số lượng User đang chờ duyệt trên toàn hệ thống

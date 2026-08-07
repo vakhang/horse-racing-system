@@ -59,13 +59,15 @@ const AdminKycApprovalPage = () => {
 
     // 3. Logic Lọc dữ liệu theo Tab và Thanh Search
     const getFilteredData = () => {
-        return users.filter(user => {
+        const filtered = users.filter(user => {
             const matchTab = user.status === activeTab;
             const matchSearch =
                 (user.username && user.username.toLowerCase().includes(searchText.toLowerCase())) ||
                 (user.email && user.email.toLowerCase().includes(searchText.toLowerCase()));
             return matchTab && matchSearch;
         });
+
+        return filtered.sort((a, b) => (a.username || '').localeCompare(b.username || '', 'vi', { sensitivity: 'base' }));
     };
 
     // 4. Cấu hình Cột (Bao ngầu)

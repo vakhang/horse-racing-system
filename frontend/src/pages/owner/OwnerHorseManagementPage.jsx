@@ -175,6 +175,15 @@ const OwnerHorseManagementPage = () => {
         { title: 'Tiền Thưởng', dataIndex: 'prize', render: p => <Text type="success" strong>{p}</Text> },
     ];
 
+    const sortedHorses = [...horses].sort((a, b) => {
+        const aIsPending = (a.status || 'PENDING') === 'PENDING' ? 0 : 1;
+        const bIsPending = (b.status || 'PENDING') === 'PENDING' ? 0 : 1;
+        if (aIsPending !== bIsPending) {
+            return aIsPending - bIsPending;
+        }
+        return (a.name || '').localeCompare(b.name || '', 'vi', { sensitivity: 'base' });
+    });
+
     return (
         <div className="p-8 bg-gray-100 min-h-screen">
             <Card className="shadow-xl rounded-2xl border-none">
@@ -185,7 +194,7 @@ const OwnerHorseManagementPage = () => {
                     </Col>
                     <Col><Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm Ngựa Mới</Button></Col>
                 </Row>
-                <Table columns={columns} dataSource={horses} rowKey="id" loading={loading} className="overflow-hidden rounded-xl border border-gray-200" />
+                <Table columns={columns} dataSource={sortedHorses} rowKey="id" loading={loading} className="overflow-hidden rounded-xl border border-gray-200" />
             </Card>
 
             <Modal title={<span className="text-xl">{editingHorseId ? 'Cập Nhật Hồ Sơ' : 'Khai Báo Chiến Mã Mới'}</span>} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null} centered>

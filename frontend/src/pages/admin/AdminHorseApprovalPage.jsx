@@ -70,13 +70,22 @@ const AdminHorseApprovalPage = () => {
     };
 
     const getFilteredData = () => {
-        return horses.filter(horse => {
+        const filtered = horses.filter(horse => {
             const matchTab = (horse.status || 'PENDING') === activeTab;
             const searchLower = searchText.trim().toLowerCase();
             const matchSearch = !searchLower ||
                 (horse.name && horse.name.toLowerCase().includes(searchLower)) ||
                 (horse.ownerUsername && horse.ownerUsername.toLowerCase().includes(searchLower));
             return matchTab && matchSearch;
+        });
+
+        return filtered.sort((a, b) => {
+            const aIsPending = (a.status || 'PENDING') === 'PENDING' ? 0 : 1;
+            const bIsPending = (b.status || 'PENDING') === 'PENDING' ? 0 : 1;
+            if (aIsPending !== bIsPending) {
+                return aIsPending - bIsPending;
+            }
+            return (a.name || '').localeCompare(b.name || '', 'vi', { sensitivity: 'base' });
         });
     };
 
