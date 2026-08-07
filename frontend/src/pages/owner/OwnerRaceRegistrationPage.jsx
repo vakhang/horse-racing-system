@@ -42,7 +42,7 @@ const OwnerRaceRegistrationPage = () => {
         try {
             const response = await api.get('/races');
             setAllRaces(response.data || []);
-            setRaces(response.data.filter(race => race.status === 'REGISTRATION'));
+            setRaces(response.data.filter(race => race.status === 'REGISTRATION' && race.tournamentStatus !== 'COMPLETED' && race.tournamentStatus !== 'CANCELED'));
         } catch (error) { message.error('Không thể tải danh sách chặng đua!'); }
         finally { setLoading(false); }
     };

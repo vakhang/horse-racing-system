@@ -95,7 +95,8 @@ const RefereeDashboardPage = () => {
         setLoading(true);
         try {
             const response = await api.get('/races');
-            const sorted = response.data.sort((a, b) => (a.status === 'FINISHED' ? 1 : -1));
+            const activeRaces = response.data.filter(race => race.tournamentStatus !== 'COMPLETED' && race.tournamentStatus !== 'CANCELED');
+            const sorted = activeRaces.sort((a, b) => (a.status === 'FINISHED' ? 1 : -1));
             setRaces(sorted);
         } catch (error) { message.error('Lỗi tải danh sách chặng đua!'); }
         finally { setLoading(false); }
