@@ -301,10 +301,10 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
 
     private RegistrationResponseDTO mapToResponseDTO(Registration reg) {
+        int rating = (reg.getHorse() != null && reg.getHorse().getRating() != null) ? reg.getHorse().getRating() : 40;
+        int classLevel = (reg.getHorse() != null && reg.getHorse().getClassLevel() != null) ? reg.getHorse().getClassLevel() : 4;
         Double assignedKg = reg.getAssignedWeight();
         if (assignedKg == null && reg.getHorse() != null) {
-            int rating = reg.getHorse().getRating() != null ? reg.getHorse().getRating() : 40;
-            int classLevel = reg.getHorse().getClassLevel() != null ? reg.getHorse().getClassLevel() : 4;
             assignedKg = calculateAssignedWeightKg(rating, classLevel);
         }
 
@@ -329,6 +329,8 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .leadWeight(reg.getLeadWeight())
                 .isWeighedIn(Boolean.TRUE.equals(reg.getIsWeighedIn()))
                 .jockeyWeight(jockeyKg)
+                .horseRating(rating)
+                .horseClassLevel(classLevel)
                 .build();
     }
 }

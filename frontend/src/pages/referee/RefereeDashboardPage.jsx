@@ -37,6 +37,20 @@ const RefereeDashboardPage = () => {
     const [isRunning, setIsRunning] = useState(false);
     const timerRef = useRef(null);
 
+    const calculateAssignedWeightKg = (rating, classLevel) => {
+        let floor = 40;
+        if (classLevel === 1) floor = 95;
+        else if (classLevel === 2) floor = 80;
+        else if (classLevel === 3) floor = 60;
+        else if (classLevel === 4) floor = 40;
+        else if (classLevel === 5) floor = 0;
+        
+        const delta = Math.max(0, (rating || 40) - floor);
+        const assignedLb = 115.0 + (delta * 0.5);
+        const assignedKg = assignedLb * 0.45359237;
+        return Math.round(assignedKg * 10) / 10;
+    };
+
     const openWeighingModal = async (race) => {
         setWeighingRace(race);
         setIsWeighingModalVisible(true);
@@ -45,7 +59,9 @@ const RefereeDashboardPage = () => {
             setWeighingList(res.data);
             const initialMap = {};
             res.data.forEach(r => {
-                initialMap[r.id] = r.actualWeight || r.jockeyWeight || 52;
+                initialMap[r.id] = (r.actualWeight !== null && r.actualWeight !== undefined) 
+                    ? r.actualWeight 
+                    : (r.jockeyWeight || 52);
             });
             setActualWeights(initialMap);
         } catch (err) {
@@ -517,7 +533,14 @@ const RefereeDashboardPage = () => {
                                     <Text type="secondary" className="text-xs">Khai báo: {r.jockeyWeight ? `${r.jockeyWeight} kg` : 'Chưa có'}</Text>
                                 </div>
                             ) },
-                            { title: 'Tải Chỉ Định', dataIndex: 'assignedWeight', render: w => <Tag color="blue" className="font-bold">{w ? `${w} kg` : '52.1 kg'}</Tag> },
+                            {
+                                title: 'Tải Chỉ Định',
+                                dataIndex: 'assignedWeight',
+                                render: (w, r) => {
+                                    const assigned = w || calculateAssignedWeightKg(r.horseRating, r.horseClassLevel);
+                                    return <Tag color="blue" className="font-bold">{assigned.toFixed(1)} kg</Tag>;
+                                }
+                            },
                             {
                                 title: 'Khối Lượng Thực Tế (kg)',
                                 key: 'actualWeight',
@@ -527,8 +550,8 @@ const RefereeDashboardPage = () => {
                                         max={120}
                                         step={0.1}
                                         size="small"
-                                        className="w-28"
-                                        value={actualWeights[r.id] ?? r.actualWeight ?? r.jockeyWeight ?? 50}
+                                        className="w-28 font-bold"
+                                        value={actualWeights[r.id] ?? r.actualWeight ?? r.jockeyWeight ?? 52}
                                         onChange={(val) => setActualWeights(prev => ({ ...prev, [r.id]: val }))}
                                     />
                                 )
@@ -537,13 +560,18 @@ const RefereeDashboardPage = () => {
                                 title: 'Bù Chì Thêm',
                                 key: 'leadWeight',
                                 render: (_, r) => {
-                                    const assigned = r.assignedWeight || 52.1;
-                                    const actual = actualWeights[r.id] ?? r.actualWeight ?? r.jockeyWeight ?? 50;
-                                    const lead = Math.max(0, Math.round((assigned - actual) * 10) / 10);
+                                    const assigned = r.assignedWeight || calculateAssignedWeightKg(r.horseRating, r.horseClassLevel);
+                                    const actual = actualWeights[r.id] ?? r.actualWeight ?? r.jockeyWeight ?? 52;
+                                    const diff = assigned - actual;
+                                    const lead = Math.max(0, Math.round(diff * 10) / 10);
                                     return lead > 0 ? (
-                                        <Tag color="orange" className="font-bold">+{lead} kg chì</Tag>
+                                        <Tag color="orange" className="font-bold text-sm py-0.5 px-2">
+                                            +{lead.toFixed(1)} kg chì lá ⚖️
+                                        </Tag>
                                     ) : (
-                                        <Tag color="green">Đủ tải trọng</Tag>
+                                        <Tag color="green" className="font-bold py-0.5 px-2">
+                                            Đủ tải trọng
+                                        </Tag>
                                     );
                                 }
                             },

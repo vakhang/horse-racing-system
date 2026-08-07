@@ -26,4 +26,6 @@ public class RegistrationResponseDTO {
     private Double leadWeight;
     private Boolean isWeighedIn;
     private Double jockeyWeight;
+    private Integer horseRating;
+    private Integer horseClassLevel;
 }
