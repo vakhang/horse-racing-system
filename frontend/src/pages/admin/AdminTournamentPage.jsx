@@ -45,11 +45,11 @@ const AdminTournamentPage = () => {
     const [selectedRaceForChangeReferee, setSelectedRaceForChangeReferee] = useState(null);
     const [selectedRefereeId, setSelectedRefereeId] = useState(null);
 
-    const openChangeRefereeModal = (race) => {
-        fetchReferees();
+    const openChangeRefereeModal = async (race) => {
         setSelectedRaceForChangeReferee(race);
         setSelectedRefereeId(race.refereeId || null);
         setIsChangeRefereeModalVisible(true);
+        await fetchReferees();
     };
 
     const handleChangeRefereeSubmit = async () => {
@@ -57,17 +57,12 @@ const AdminTournamentPage = () => {
             return message.warning('Vui lòng chọn trọng tài mới!');
         }
         try {
-            try {
-                await api.put(`/races/${selectedRaceForChangeReferee.id}/referee`, { refereeId: selectedRefereeId });
-            } catch (err) {
-                if (err.response && err.response.status === 404) {
-                    await api.put(`/races/${selectedRaceForChangeReferee.id}`, { refereeId: selectedRefereeId });
-                } else {
-                    throw err;
-                }
-            }
+            await api.put(`/races/${selectedRaceForChangeReferee.id}/referee`, { refereeId: selectedRefereeId });
             message.success('Cập nhật trọng tài cho chặng đua thành công! 👔');
             setIsChangeRefereeModalVisible(false);
+            if (selectedRaceForChangeReferee.tournamentId) {
+                await fetchRacesForTournament(selectedRaceForChangeReferee.tournamentId);
+            }
             fetchTournaments();
         } catch (error) {
             message.error(error.response?.data?.error || error.response?.data?.message || 'Có lỗi khi cập nhật trọng tài!');
@@ -95,9 +90,13 @@ const AdminTournamentPage = () => {
     const fetchReferees = async () => {
         try {
             const response = await api.get('/users');
-            setReferees(response.data.filter(u => u.role === 'REFEREE'));
+            const data = Array.isArray(response.data) ? response.data : [];
+            const refereeList = data.filter(u => u && u.role && String(u.role).toUpperCase() === 'REFEREE');
+            setReferees(refereeList);
+            return refereeList;
         } catch (error) {
             console.error("Lỗi lấy danh sách trọng tài", error);
+            return [];
         }
     };
 
@@ -749,12 +748,14 @@ const AdminTournamentPage = () => {
                     <Select
                         className="w-full"
                         size="large"
+                        showSearch
+                        optionFilterProp="label"
                         value={selectedRefereeId}
                         onChange={setSelectedRefereeId}
                         placeholder="-- Chọn Trọng Tài --"
                         options={referees.map(r => ({
                             value: r.id,
-                            label: `👨‍⚖️ ${r.username} (${r.email})`
+                            label: `👨‍⚖️ ${r.username} (${r.email || 'Hệ thống'})`
                         }))}
                     />
                 </div>
