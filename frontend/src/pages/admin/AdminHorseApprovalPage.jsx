@@ -101,6 +101,25 @@ const AdminHorseApprovalPage = () => {
             ),
         },
         {
+            title: 'Cấp Chạy & Rating 🏆',
+            key: 'classRating',
+            render: (_, record) => {
+                const classLevel = record.classLevel || 3;
+                const rating = record.rating || 60;
+                const classColor = classLevel === 1 ? 'gold' : classLevel === 2 ? 'purple' : classLevel === 3 ? 'green' : classLevel === 4 ? 'blue' : 'default';
+                return (
+                    <Space direction="vertical" size="small">
+                        <Tag color={classColor} className="font-bold text-sm px-2.5 py-0.5 border">
+                            Cấp {classLevel} (Class {classLevel})
+                        </Tag>
+                        <Tag color="cyan" className="font-bold text-xs px-2 py-0.5">
+                            ⚡ Rating: {rating} Điểm
+                        </Tag>
+                    </Space>
+                );
+            }
+        },
+        {
             title: 'Đặc Điểm',
             key: 'details',
             render: (_, record) => (

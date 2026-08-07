@@ -129,6 +129,24 @@ const OwnerHorseManagementPage = () => {
 
     const columns = [
         { title: 'Tên Chiến Mã', dataIndex: 'name', key: 'name', render: text => <Text strong className="text-blue-700 text-lg">{text}</Text> },
+        { 
+            title: 'Phân Hạng & Rating 🏆', 
+            render: (_, r) => {
+                const classLevel = r.classLevel || 3;
+                const rating = r.rating || 60;
+                const classColor = classLevel === 1 ? 'gold' : classLevel === 2 ? 'purple' : classLevel === 3 ? 'green' : classLevel === 4 ? 'blue' : 'default';
+                return (
+                    <Space direction="vertical" size="small">
+                        <Tag color={classColor} className="font-bold text-sm px-2.5 py-0.5 border">
+                            Cấp {classLevel} (Class {classLevel})
+                        </Tag>
+                        <Tag color="cyan" className="font-bold text-xs px-2 py-0.5">
+                            ⚡ Rating: {rating} Điểm
+                        </Tag>
+                    </Space>
+                );
+            }
+        },
         { title: 'Thông Số', render: (_, r) => (
                 <Space direction="vertical" size="small">
                     <Text>Tuổi: {r.age} | Giống: {r.breed}</Text>
