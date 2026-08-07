@@ -48,12 +48,15 @@ const SchedulePage = () => {
         }
     };
 
-    const fetchParticipants = async (raceId, raceName) => {
-        setSelectedRaceName(raceName);
+    const [selectedRace, setSelectedRace] = useState(null);
+
+    const fetchParticipants = async (race) => {
+        setSelectedRace(race);
+        setSelectedRaceName(race.name);
         setIsModalOpen(true);
         setModalLoading(true);
         try {
-            const res = await api.get(`/registrations?raceId=${raceId}`);
+            const res = await api.get(`/registrations?raceId=${race.id}`);
             const activeParticipants = res.data.filter(r => r.status !== 'WITHDRAWN' && r.status !== 'DISQUALIFIED');
             setParticipants(activeParticipants);
         } catch (error) {
@@ -78,10 +81,16 @@ const SchedulePage = () => {
             render: text => <Text className="text-yellow-400 font-bold">{text}</Text>
         },
         {
-            title: 'Thời gian',
+            title: 'Thời gian xuất phát',
             dataIndex: 'raceTime',
             key: 'raceTime',
             render: time => <Text className="text-gray-300">{dayjs(time).format('DD/MM/YYYY HH:mm')}</Text>
+        },
+        {
+            title: 'Quy Định Class',
+            dataIndex: 'raceClass',
+            key: 'raceClass',
+            render: (v, record) => <Tag color="magenta" className="font-bold">CLASS {v || record.requiredClass || 4}</Tag>
         },
         {
             title: 'Trạng thái',
@@ -96,14 +105,14 @@ const SchedulePage = () => {
             }
         },
         {
-            title: 'Danh sách tham gia',
+            title: 'Chi tiết chặng',
             key: 'action',
             render: (_, record) => (
                 <a 
-                    className="text-yellow-500 hover:text-yellow-400 flex items-center gap-1"
-                    onClick={() => fetchParticipants(record.id, record.name)}
+                    className="text-yellow-400 hover:text-yellow-300 font-bold flex items-center gap-1 bg-yellow-500/10 px-3 py-1 rounded-lg border border-yellow-500/30"
+                    onClick={() => fetchParticipants(record)}
                 >
-                    <TeamOutlined /> Danh sách
+                    <TeamOutlined /> Chi Tiết Chặng & Danh Sách
                 </a>
             )
         }
@@ -117,7 +126,7 @@ const SchedulePage = () => {
                 <div className="bg-white/5 p-8 rounded-2xl border border-white/10">
                     <div className="text-center mb-12">
                         <Title level={1} className="text-4xl md:text-5xl font-black tracking-widest uppercase mb-4 inline-block" style={{ color: '#facc15', WebkitTextStroke: '2px #facc15', textShadow: '0 0 15px rgba(250,204,21,0.6)' }}>
-                            LỊCH ĐUA
+                            LỊCH THI ĐẤU & KẾT QUẢ
                         </Title>
                     </div>
                     
@@ -141,40 +150,85 @@ const SchedulePage = () => {
                 </div>
             </div>
 
-            <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorBgElevated: '#001529' } }}>
+            <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorBgElevated: '#14221b' } }}>
                 <Modal
-                    title={`Danh sách tham gia: ${selectedRaceName}`}
+                    title={<span className="text-xl text-yellow-400 font-black uppercase">🏇 CHI TIẾT CHẶNG ĐUA: {selectedRaceName}</span>}
                     open={isModalOpen}
                     onCancel={() => setIsModalOpen(false)}
                     footer={null}
-                    bodyStyle={{ maxHeight: '60vh', overflowY: 'auto' }}
+                    width={800}
+                    centered
                 >
                     {modalLoading ? (
-                        <div className="flex justify-center p-8"><Spin /></div>
+                        <div className="flex justify-center p-8"><Spin size="large" /></div>
                     ) : (
-                        <List
-                            itemLayout="horizontal"
-                            dataSource={participants}
-                            renderItem={item => (
-                                <List.Item>
-                                    <List.Item.Meta
-                                        avatar={<Avatar src={item.horseImageUrl || 'https://joeschmoe.io/api/v1/random'} />}
-                                        title={
-                                            <Space>
-                                                <Text strong className="text-yellow-400">Ngựa: {item.horseName}</Text>
-                                                {item.status === 'DISQUALIFIED' && (
-                                                    <Tooltip title={`Lý do: ${item.note || 'Vi phạm nội quy'}`}>
-                                                        <Badge color="red" text="TRUẤT QUYỀN" className="font-bold text-red-600" />
-                                                    </Tooltip>
-                                                )}
-                                            </Space>
-                                        }
-                                        description={<Text className="text-gray-300">Nài ngựa: {item.jockeyUsername || 'Chưa có'}</Text>}
-                                    />
-                                </List.Item>
+                        <div className="space-y-4">
+                            {/* CƠ CẤU GIẢI THƯỞNG & THÔNG TIN CHẶNG */}
+                            {selectedRace && (
+                                <div className="bg-[#1a2f24] p-4 rounded-xl border border-[#007355] shadow-md">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                                        <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/30 text-center">
+                                            <Text className="text-xs text-yellow-400 font-bold uppercase block">🥇 GIẢI NHẤT (PRIZE 1)</Text>
+                                            <Text className="text-xl font-black text-yellow-300">{Number(selectedRace.prize1 || 10000000).toLocaleString()} VNĐ</Text>
+                                            <Text className="text-[10px] text-gray-400 block mt-0.5">(Chủ 70% + 5% Pool | Nài 30% + 2% Pool)</Text>
+                                        </div>
+                                        <div className="bg-gray-400/10 p-3 rounded-lg border border-gray-400/30 text-center">
+                                            <Text className="text-xs text-gray-300 font-bold uppercase block">🥈 GIẢI NHÌ (PRIZE 2)</Text>
+                                            <Text className="text-xl font-black text-gray-200">{Number(selectedRace.prize2 || 5000000).toLocaleString()} VNĐ</Text>
+                                        </div>
+                                        <div className="bg-amber-700/10 p-3 rounded-lg border border-amber-700/30 text-center">
+                                            <Text className="text-xs text-amber-500 font-bold uppercase block">🥉 GIẢI BA (PRIZE 3)</Text>
+                                            <Text className="text-xl font-black text-amber-400">{Number(selectedRace.prize3 || 2000000).toLocaleString()} VNĐ</Text>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap justify-between items-center text-xs text-gray-300 pt-2 border-t border-gray-700/50">
+                                        <span>🏆 Class Quy Định: <strong className="text-yellow-400 font-bold">Class {selectedRace.raceClass || selectedRace.requiredClass || 4}</strong></span>
+                                        <span>💰 Live Total Pool: <strong className="text-green-400 font-bold">{Number(selectedRace.totalPool || 0).toLocaleString()} VNĐ</strong></span>
+                                        <span>👨‍⚖️ Trọng Tài: <strong className="text-blue-400 font-bold">{selectedRace.refereeUsername || 'Chưa phân công'}</strong></span>
+                                    </div>
+                                </div>
                             )}
-                            locale={{ emptyText: <span className="text-gray-400">Chưa có danh sách thi đấu</span> }}
-                        />
+
+                            {/* DANH SÁCH ĐĂNG KÝ THI ĐẤU */}
+                            <div className="bg-[#1e1e1e] p-4 rounded-xl border border-gray-800">
+                                <Text strong className="text-yellow-400 text-sm uppercase block mb-3">📋 DANH SÁCH CHIẾN MÃ & CẬP NHẬT CÂN NÀI (HANDICAP):</Text>
+                                <List
+                                    itemLayout="horizontal"
+                                    dataSource={participants}
+                                    renderItem={item => (
+                                        <List.Item className="bg-[#141414] p-3 rounded-lg border border-gray-800 mb-2">
+                                            <List.Item.Meta
+                                                avatar={<Avatar size={48} src={item.horseImageUrl || 'https://joeschmoe.io/api/v1/random'} className="border border-yellow-500/50" />}
+                                                title={
+                                                    <div className="flex justify-between items-center">
+                                                        <Space>
+                                                            <Text strong className="text-lg text-yellow-400">{item.horseName}</Text>
+                                                            {item.gateNumber ? (
+                                                                <Tag color="gold" className="font-bold">Cổng xuất phát #{item.gateNumber}</Tag>
+                                                            ) : (
+                                                                <Tag color="default" className="text-xs">Chưa bốc cổng</Tag>
+                                                            )}
+                                                        </Space>
+                                                        {item.status === 'DISQUALIFIED' && (
+                                                            <Tag color="red" className="font-bold">TRUẤT QUYỀN</Tag>
+                                                        )}
+                                                    </div>
+                                                }
+                                                description={
+                                                    <div className="text-xs text-gray-300 space-y-1 mt-1">
+                                                        <div>🏇 Nài ngựa: <strong className="text-white">{item.jockeyUsername || 'Chưa phân công'}</strong> | 🐎 Chủ sở hữu: <strong className="text-white">{item.ownerUsername || 'Không rõ'}</strong></div>
+                                                        <div className="text-amber-300">
+                                                            ⚖️ Tải trọng chỉ định: <strong>{item.assignedWeight || 52.1} kg</strong> | Cân nặng nài: <strong>{item.jockeyWeight || item.actualWeight || 'Chờ cân'} kg</strong> {item.leadWeight > 0 ? <span className="text-red-400 font-bold">(Đeo thêm +{item.leadWeight} kg chì bù)</span> : <span className="text-green-400 font-bold">(Đủ tải trọng)</span>}
+                                                        </div>
+                                                    </div>
+                                                }
+                                            />
+                                        </List.Item>
+                                    )}
+                                    locale={{ emptyText: <span className="text-gray-400 italic block text-center py-4">Chưa có ngựa nào đăng ký chặng thi đấu này.</span> }}
+                                />
+                            </div>
+                        </div>
                     )}
                 </Modal>
             </ConfigProvider>
