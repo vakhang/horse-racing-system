@@ -32,6 +32,11 @@ const RefereeDashboardPage = () => {
     const [weighingList, setWeighingList] = useState([]);
     const [actualWeights, setActualWeights] = useState({});
 
+    // State Đồng hồ bấm giờ
+    const [time, setTime] = useState(0);
+    const [isRunning, setIsRunning] = useState(false);
+    const timerRef = useRef(null);
+
     const openWeighingModal = async (race) => {
         setWeighingRace(race);
         setIsWeighingModalVisible(true);
