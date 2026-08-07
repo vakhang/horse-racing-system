@@ -74,38 +74,41 @@ const ProfilePage = () => {
 
     const handleUpdateProfile = async (values) => {
         setLoading(true);
-        const formData = new FormData();
-        formData.append('username', values.username);
-        formData.append('phoneNumber', values.phoneNumber);
-        if (values.dob) formData.append('dob', values.dob.format('YYYY-MM-DD'));
-
-        if (user.role === 'JOCKEY') {
-            formData.append('weight', values.weight);
-            formData.append('height', values.height);
-        }
-
-        if (user.role === 'JOCKEY' || user.role === 'OWNER' || user.role === 'REFEREE') {
-            if (values.certFiles && values.certFiles.length > 0) {
-                values.certFiles.forEach(f => formData.append('certFiles', f.originFileObj));
-            }
-            if (values.healthFiles && values.healthFiles.length > 0) {
-                values.healthFiles.forEach(f => formData.append('healthFiles', f.originFileObj));
-            }
-            if (values.kycFiles && values.kycFiles.length > 0) {
-                values.kycFiles.forEach(f => formData.append('kycFiles', f.originFileObj));
-            }
-        }
-
         try {
-            const response = await api.put(`/users/${user.id}`, formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            const formData = new FormData();
+            if (values.username) formData.append('username', values.username);
+            if (values.phoneNumber) formData.append('phoneNumber', values.phoneNumber);
+            if (values.dob) formData.append('dob', values.dob.format('YYYY-MM-DD'));
+
+            if (values.weight !== undefined && values.weight !== null && values.weight !== '') {
+                formData.append('weight', String(values.weight));
+            }
+            if (values.height !== undefined && values.height !== null && values.height !== '') {
+                formData.append('height', String(values.height));
+            }
+
+            const appendFiles = (fieldName, fileList) => {
+                if (!fileList || !Array.isArray(fileList)) return;
+                fileList.forEach(f => {
+                    const fileObj = f.originFileObj || (f instanceof File ? f : null);
+                    if (fileObj) {
+                        formData.append(fieldName, fileObj);
+                    }
+                });
+            };
+
+            appendFiles('certFiles', values.certFiles);
+            appendFiles('healthFiles', values.healthFiles);
+            appendFiles('kycFiles', values.kycFiles);
+
+            const response = await api.put(`/users/${user.id}`, formData);
 
             const updatedUser = { ...user, ...response.data, token: token };
             login(updatedUser);
-            message.success('Cập nhật hồ sơ thành công!');
+            message.success('Cập nhật hồ sơ thành công! ✨');
         } catch (error) {
-            message.error(error.response?.data?.error || 'Cập nhật thất bại!');
+            console.error('Lỗi cập nhật profile:', error);
+            message.error(error.response?.data?.error || error.response?.data?.message || 'Cập nhật thất bại!');
         } finally {
             setLoading(false);
         }
