@@ -235,6 +235,12 @@ const ProfilePage = () => {
                     <DatePicker className="w-full !bg-[#1c2926] !text-white !border-gray-700" format="YYYY-MM-DD" />
                 </Form.Item>
 
+                <Form.Item label={<span className="text-gray-200 font-semibold">Ảnh Đại Diện / Avatar</span>} name="avatarFile" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
+                    <Upload maxCount={1} beforeUpload={() => false} listType="picture">
+                        <Button icon={<UploadOutlined />} className="!bg-[#007355] !text-white !border-none hover:!bg-[#005e45]">Tải lên Avatar Mới</Button>
+                    </Upload>
+                </Form.Item>
+
                 {/* KHU VỰC DÀNH RIÊNG CHO NÀI NGỰA */}
                 {user?.role === 'JOCKEY' && (
                     <div className="bg-[#1c2725] p-5 rounded-xl border border-[#007355] mt-4 mb-4 shadow-md">
@@ -258,13 +264,6 @@ const ProfilePage = () => {
                             <Form.Item label={<span className="text-gray-200 font-semibold">Giấy Khám Sức Khỏe (Nếu có cập nhật)</span>} name="healthFiles" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
                                 <Upload multiple beforeUpload={() => false}>
                                     <Button icon={<UploadOutlined />} className="!bg-[#007355] !text-white !border-none hover:!bg-[#005e45]">Tải lên Sổ Khám Mới</Button>
-                                </Upload>
-                            </Form.Item>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                            <Form.Item label={<span className="text-gray-200 font-semibold">Ảnh Đại Diện / Avatar</span>} name="avatarFile" valuePropName="fileList" getValueFromEvent={normFile} className="w-full">
-                                <Upload maxCount={1} beforeUpload={() => false} listType="picture">
-                                    <Button icon={<UploadOutlined />} className="!bg-[#007355] !text-white !border-none hover:!bg-[#005e45]">Tải lên Avatar Mới</Button>
                                 </Upload>
                             </Form.Item>
                         </div>

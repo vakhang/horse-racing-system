@@ -181,7 +181,7 @@ const Header = () => {
 
                 <Dropdown menu={{ items: profileMenuItems }} placement="bottomRight" trigger={['click']}>
                     <div className="cursor-pointer flex items-center gap-3 hover:bg-black/20 px-3 py-1.5 rounded-md transition duration-300 border border-white/10">
-                        <Avatar icon={<UserOutlined />} className="bg-[#007355] text-white border-none" />
+                        <Avatar src={user?.avatarUrl} icon={!user?.avatarUrl && <UserOutlined />} className="bg-[#007355] text-white border-none" />
                         <span className="font-semibold text-white">{user?.username || 'Người dùng'}</span>
                     </div>
                 </Dropdown>

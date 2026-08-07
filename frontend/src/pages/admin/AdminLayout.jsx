@@ -68,7 +68,7 @@ const AdminLayout = ({ children }) => {
 
                         <Dropdown menu={{ items: profileMenuItems }} placement="bottomRight" trigger={['click']}>
                             <div className="cursor-pointer flex items-center gap-3 hover:bg-black/20 px-3 py-1.5 rounded-md transition duration-300 border border-white/10">
-                                <Avatar icon={<UserOutlined />} className="bg-[#007355] text-white border-none" />
+                                <Avatar src={user?.avatarUrl} icon={!user?.avatarUrl && <UserOutlined />} className="bg-[#007355] text-white border-none" />
                                 <div className="flex flex-col leading-tight hidden md:flex ml-1">
                                     <span className="font-semibold text-white text-sm">{user?.username || 'Admin Tối Cao'}</span>
                                     <span className="text-xs text-[#fcc200] font-medium">{user?.role || 'SYSTEM ADMIN'}</span>
