@@ -295,8 +295,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         else floorRating = 0;
 
         int deltaRating = Math.max(0, rating - floorRating);
-        double assignedWeightLb = 115.0 + (deltaRating * 0.5);
-        double assignedWeightKg = assignedWeightLb * 0.45359237;
+        double assignedWeightKg = 52.1 + (deltaRating * 0.5 * 0.45359237);
         return Math.round(assignedWeightKg * 10.0) / 10.0;
     }
 

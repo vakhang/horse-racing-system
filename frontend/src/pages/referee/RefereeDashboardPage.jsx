@@ -46,8 +46,7 @@ const RefereeDashboardPage = () => {
         else if (classLevel === 5) floor = 0;
         
         const delta = Math.max(0, (rating || 40) - floor);
-        const assignedLb = 115.0 + (delta * 0.5);
-        const assignedKg = assignedLb * 0.45359237;
+        const assignedKg = 52.1 + (delta * 0.5 * 0.45359237);
         return Math.round(assignedKg * 10) / 10;
     };
 
@@ -579,16 +578,28 @@ const RefereeDashboardPage = () => {
                                 title: 'Xác Nhận',
                                 key: 'action',
                                 align: 'center',
-                                render: (_, r) => (
-                                    <Button
-                                        size="small"
-                                        type={r.isWeighedIn ? "default" : "primary"}
-                                        className={r.isWeighedIn ? "text-green-600 border-green-600 font-bold" : "bg-amber-600 font-bold"}
-                                        onClick={() => handleSaveWeighing(r)}
-                                    >
-                                        {r.isWeighedIn ? "✅ ĐÃ KIỂM TRA & ĐEO CHÌ" : "⚖️ XÁC NHẬN CÂN"}
-                                    </Button>
-                                )
+                                render: (_, r) => {
+                                    const assigned = r.assignedWeight || calculateAssignedWeightKg(r.horseRating, r.horseClassLevel);
+                                    const actual = actualWeights[r.id] ?? r.actualWeight ?? r.jockeyWeight ?? 52;
+                                    const diff = assigned - actual;
+                                    const lead = Math.max(0, Math.round(diff * 10) / 10);
+
+                                    let btnText = "⚖️ XÁC NHẬN CÂN";
+                                    if (r.isWeighedIn) {
+                                        btnText = lead > 0 ? `✅ ĐÃ KIỂM TRA (Đeo +${lead.toFixed(1)}kg chì)` : "✅ ĐÃ KIỂM TRA (Đủ Tải)";
+                                    }
+
+                                    return (
+                                        <Button
+                                            size="small"
+                                            type={r.isWeighedIn ? "default" : "primary"}
+                                            className={r.isWeighedIn ? (lead > 0 ? "text-amber-500 border-amber-500 font-bold" : "text-green-600 border-green-600 font-bold") : "bg-amber-600 font-bold"}
+                                            onClick={() => handleSaveWeighing(r)}
+                                        >
+                                            {btnText}
+                                        </Button>
+                                    );
+                                }
                             }
                         ]}
                     />
