@@ -280,11 +280,13 @@ public class RaceServiceImpl implements RaceService {
     private RaceResponseDTO mapToResponseDTO(Race race) {
         Integer tourId = null;
         String tourName = null;
+        com.swp.horseracing.model.TournamentStatus tourStatus = null;
         Integer tourClass = 4;
         try {
             if (race.getTournament() != null) {
                 tourId = race.getTournament().getId();
                 tourName = race.getTournament().getName();
+                tourStatus = race.getTournament().getStatus();
                 if (race.getTournament().getRequiredClass() != null) {
                     tourClass = race.getTournament().getRequiredClass();
                 }
@@ -304,6 +306,7 @@ public class RaceServiceImpl implements RaceService {
                 .id(race.getId())
                 .tournamentId(tourId)
                 .tournamentName(tourName)
+                .tournamentStatus(tourStatus)
                 .name(race.getName())
                 .raceTime(race.getRaceTime())
                 .status(race.getStatus() != null ? race.getStatus() : com.swp.horseracing.model.RaceStatus.REGISTRATION)

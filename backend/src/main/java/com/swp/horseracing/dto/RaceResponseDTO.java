@@ -16,6 +16,7 @@ public class RaceResponseDTO {
     private Integer id;
     private Integer tournamentId;
     private String tournamentName;
+    private com.swp.horseracing.model.TournamentStatus tournamentStatus;
     private String name;
     private LocalDateTime raceTime;
     private RaceStatus status;

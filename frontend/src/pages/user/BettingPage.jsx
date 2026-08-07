@@ -67,7 +67,7 @@ const BettingPage = () => {
         try {
             const response = await api.get('/races');
             const racesData = Array.isArray(response.data) ? response.data : [];
-            const availableRaces = racesData.filter(race => race && race.status === 'BETTING');
+            const availableRaces = racesData.filter(race => race && race.status === 'BETTING' && race.tournamentStatus !== 'COMPLETED' && race.tournamentStatus !== 'CANCELED');
             setRaces(availableRaces);
         } catch (error) {
             console.error('Lỗi lấy danh sách chặng đua:', error);

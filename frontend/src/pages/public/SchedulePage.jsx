@@ -33,10 +33,12 @@ const SchedulePage = () => {
             const futureRaces = res.data.filter(race => {
                 const raceDate = new Date(race.raceTime);
                 return (
-                    race.status === 'REGISTRATION' || 
+                    (race.status === 'REGISTRATION' || 
                     race.status === 'BETTING' || 
                     race.status === 'LOCK_SESSION' || 
-                    race.status === 'RUNNING'
+                    race.status === 'RUNNING') &&
+                    race.tournamentStatus !== 'COMPLETED' &&
+                    race.tournamentStatus !== 'CANCELED'
                 );
             });
             setRaces(futureRaces);
