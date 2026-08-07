@@ -318,6 +318,7 @@ public class RaceServiceImpl implements RaceService {
                 .prize2(race.getPrize2())
                 .prize3(race.getPrize3())
                 .raceClass(tourClass)
+                .requiredClass(tourClass)
                 .rakePercentage(race.getRakePercentage())
                 .totalPool(race.getTotalPool())
                 .build();

@@ -239,6 +239,18 @@ const OwnerRaceRegistrationPage = () => {
     const columns = [
         { title: 'Tên Giải Đấu', dataIndex: 'tournamentName', render: text => <Text strong className="text-blue-700">{text}</Text> },
         { title: 'Tên Chặng', dataIndex: 'name' },
+        { 
+            title: 'Cấp Chạy Yêu Cầu 🏆', 
+            render: (_, r) => {
+                const reqClass = r.requiredClass || r.raceClass || 4;
+                const classColor = reqClass === 1 ? 'gold' : reqClass === 2 ? 'purple' : reqClass === 3 ? 'green' : reqClass === 4 ? 'blue' : 'default';
+                return (
+                    <Tag color={classColor} className="font-bold text-sm px-2.5 py-0.5 border">
+                        Class {reqClass}
+                    </Tag>
+                );
+            }
+        },
         { title: 'Giờ Xuất Phát', dataIndex: 'raceTime', render: v => <Text strong>{dayjs(v).format('DD/MM/YYYY HH:mm')}</Text> },
         { title: 'Trạng Thái', dataIndex: 'status', render: s => {
                 if (s === 'REGISTRATION') return <Tag color="orange">ĐĂNG KÝ THI ĐẤU</Tag>;

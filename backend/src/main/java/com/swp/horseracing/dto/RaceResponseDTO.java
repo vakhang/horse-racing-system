@@ -27,4 +27,5 @@ public class RaceResponseDTO {
     private BigDecimal rakePercentage;
     private BigDecimal totalPool;
     private Integer raceClass;
+    private Integer requiredClass;
 }
