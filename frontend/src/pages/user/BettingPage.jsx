@@ -184,6 +184,30 @@ const BettingPage = () => {
             )
         },
         {
+            title: <div className="text-center font-bold">Tải Trọng Gánh (Handicap) ⚖️</div>,
+            key: 'handicap',
+            align: 'center',
+            render: (_, record) => {
+                const assigned = record.assignedWeight || 52.1;
+                const lead = record.leadWeight;
+                const isWeighed = record.isWeighedIn;
+                return (
+                    <div className="flex flex-col items-center">
+                        <Tag color="blue" className="font-bold text-xs">Assigned: {assigned} kg</Tag>
+                        {isWeighed ? (
+                            lead && lead > 0 ? (
+                                <Tag color="orange" className="font-bold text-xs mt-1">+ {lead} kg chì lá</Tag>
+                            ) : (
+                                <Tag color="green" className="text-xs mt-1">✓ Đã cân đủ tải</Tag>
+                            )
+                        ) : (
+                            <Text type="secondary" className="text-xs italic mt-1">Chờ trọng tài cân</Text>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
             title: <div className="text-center font-bold">Tỷ Lệ Cược Win (Live)</div>,
             dataIndex: 'calculatedOdds',
             key: 'calculatedOdds',

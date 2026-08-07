@@ -281,7 +281,30 @@ public class RegistrationServiceImpl implements RegistrationService {
         return mapToResponseDTO(registrationRepository.save(reg));
     }
 
+    private double calculateAssignedWeightKg(int rating, int classLevel) {
+        int floorRating = 0;
+        if (classLevel == 1) floorRating = 95;
+        else if (classLevel == 2) floorRating = 80;
+        else if (classLevel == 3) floorRating = 60;
+        else if (classLevel == 4) floorRating = 40;
+        else floorRating = 0;
+
+        int deltaRating = Math.max(0, rating - floorRating);
+        double assignedWeightLb = 115.0 + (deltaRating * 0.5);
+        double assignedWeightKg = assignedWeightLb * 0.45359237;
+        return Math.round(assignedWeightKg * 10.0) / 10.0;
+    }
+
     private RegistrationResponseDTO mapToResponseDTO(Registration reg) {
+        Double assignedKg = reg.getAssignedWeight();
+        if (assignedKg == null && reg.getHorse() != null) {
+            int rating = reg.getHorse().getRating() != null ? reg.getHorse().getRating() : 40;
+            int classLevel = reg.getHorse().getClassLevel() != null ? reg.getHorse().getClassLevel() : 4;
+            assignedKg = calculateAssignedWeightKg(rating, classLevel);
+        }
+
+        Double jockeyKg = (reg.getJockey() != null && reg.getJockey().getWeight() != null) ? reg.getJockey().getWeight() : null;
+
         return RegistrationResponseDTO.builder()
                 .id(reg.getId())
                 .raceId(reg.getRace() != null ? reg.getRace().getId() : null)
@@ -296,6 +319,11 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .note(reg.getNote())
                 .finishPosition(reg.getRank())
                 .gateNumber(reg.getGateNumber())
+                .assignedWeight(assignedKg)
+                .actualWeight(reg.getActualWeight())
+                .leadWeight(reg.getLeadWeight())
+                .isWeighedIn(Boolean.TRUE.equals(reg.getIsWeighedIn()))
+                .jockeyWeight(jockeyKg)
                 .build();
     }
 }

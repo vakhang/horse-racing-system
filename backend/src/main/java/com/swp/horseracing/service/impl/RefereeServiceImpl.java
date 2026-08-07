@@ -292,4 +292,61 @@ public class RefereeServiceImpl implements RefereeService {
 
         return "Đã ghi nhận sự cố NON_STARTER. Hệ thống đã hoàn tiền " + totalRefund + " VNĐ cho " + affectedBetsCount + " vé cược và cấu trúc lại bể cược.";
     }
+
+    private double calculateAssignedWeightKg(int rating, int classLevel) {
+        int floorRating = 0;
+        if (classLevel == 1) floorRating = 95;
+        else if (classLevel == 2) floorRating = 80;
+        else if (classLevel == 3) floorRating = 60;
+        else if (classLevel == 4) floorRating = 40;
+        else floorRating = 0;
+
+        int deltaRating = Math.max(0, rating - floorRating);
+        double assignedWeightLb = 115.0 + (deltaRating * 0.5);
+        double assignedWeightKg = assignedWeightLb * 0.45359237;
+        return Math.round(assignedWeightKg * 10.0) / 10.0;
+    }
+
+    @Override
+    @Transactional
+    public com.swp.horseracing.dto.RegistrationResponseDTO recordWeighIn(com.swp.horseracing.dto.RefereeWeighingRequestDTO request) {
+        Registration reg = registrationRepository.findById(request.getRegistrationId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Đơn đăng ký ID: " + request.getRegistrationId()));
+
+        int rating = reg.getHorse() != null && reg.getHorse().getRating() != null ? reg.getHorse().getRating() : 40;
+        int classLevel = reg.getHorse() != null && reg.getHorse().getClassLevel() != null ? reg.getHorse().getClassLevel() : 4;
+        
+        double assignedKg = reg.getAssignedWeight() != null ? reg.getAssignedWeight() : calculateAssignedWeightKg(rating, classLevel);
+        double actualKg = request.getActualWeight();
+        double leadKg = Math.max(0.0, Math.round((assignedKg - actualKg) * 10.0) / 10.0);
+
+        reg.setAssignedWeight(assignedKg);
+        reg.setActualWeight(actualKg);
+        reg.setLeadWeight(leadKg);
+        reg.setIsWeighedIn(true);
+        registrationRepository.save(reg);
+
+        Double jockeyKg = (reg.getJockey() != null && reg.getJockey().getWeight() != null) ? reg.getJockey().getWeight() : null;
+
+        return com.swp.horseracing.dto.RegistrationResponseDTO.builder()
+                .id(reg.getId())
+                .raceId(reg.getRace() != null ? reg.getRace().getId() : null)
+                .raceName(reg.getRace() != null ? reg.getRace().getName() : null)
+                .horseId(reg.getHorse() != null ? reg.getHorse().getId() : null)
+                .horseName(reg.getHorse() != null ? reg.getHorse().getName() : null)
+                .ownerId(reg.getOwner() != null ? reg.getOwner().getId() : null)
+                .ownerUsername(reg.getOwner() != null ? reg.getOwner().getUsername() : null)
+                .jockeyId(reg.getJockey() != null ? reg.getJockey().getId() : null)
+                .jockeyUsername(reg.getJockey() != null ? reg.getJockey().getUsername() : null)
+                .status(reg.getStatus())
+                .note(reg.getNote())
+                .finishPosition(reg.getRank())
+                .gateNumber(reg.getGateNumber())
+                .assignedWeight(assignedKg)
+                .actualWeight(actualKg)
+                .leadWeight(leadKg)
+                .isWeighedIn(true)
+                .jockeyWeight(jockeyKg)
+                .build();
+    }
 }

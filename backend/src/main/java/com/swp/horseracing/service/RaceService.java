@@ -22,5 +22,6 @@ public interface RaceService {
 
     java.util.List<com.swp.horseracing.dto.LiveOddsResponseDTO> getLiveOdds(Integer raceId);
     void payoutRace(Integer id);
+    RaceResponseDTO updateRaceReferee(Integer id, Integer refereeId);
 
 }

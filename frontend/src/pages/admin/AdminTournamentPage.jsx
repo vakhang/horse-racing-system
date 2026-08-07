@@ -40,6 +40,31 @@ const AdminTournamentPage = () => {
     // State Kháng cáo
     const [systemAppeals, setSystemAppeals] = useState([]);
 
+    // State Đổi trọng tài
+    const [isChangeRefereeModalVisible, setIsChangeRefereeModalVisible] = useState(false);
+    const [selectedRaceForChangeReferee, setSelectedRaceForChangeReferee] = useState(null);
+    const [selectedRefereeId, setSelectedRefereeId] = useState(null);
+
+    const openChangeRefereeModal = (race) => {
+        setSelectedRaceForChangeReferee(race);
+        setSelectedRefereeId(race.refereeId || null);
+        setIsChangeRefereeModalVisible(true);
+    };
+
+    const handleChangeRefereeSubmit = async () => {
+        if (!selectedRefereeId) {
+            return message.warning('Vui lòng chọn trọng tài mới!');
+        }
+        try {
+            await api.put(`/races/${selectedRaceForChangeReferee.id}/referee`, { refereeId: selectedRefereeId });
+            message.success('Cập nhật trọng tài cho chặng đua thành công! 👔');
+            setIsChangeRefereeModalVisible(false);
+            fetchTournaments();
+        } catch (error) {
+            message.error(error.response?.data?.error || 'Có lỗi khi cập nhật trọng tài!');
+        }
+    };
+
     const fetchTournaments = async () => {
         setLoading(true);
         try {
@@ -313,7 +338,17 @@ const AdminTournamentPage = () => {
                 title: 'Trọng Tài Phụ Trách',
                 key: 'referee',
                 render: (_, r) => {
-                    return r.refereeUsername ? <Tag color="blue" className="font-bold"><UserOutlined /> {r.refereeUsername}</Tag> : <Text type="secondary" italic>Chưa phân công</Text>;
+                    const canChange = r.status === 'REGISTRATION' || r.status === 'BETTING' || r.status === 'LOCK_SESSION';
+                    return (
+                        <Space>
+                            {r.refereeUsername ? <Tag color="blue" className="font-bold"><UserOutlined /> {r.refereeUsername}</Tag> : <Text type="secondary" italic>Chưa phân công</Text>}
+                            {canChange && (
+                                <Button size="small" type="dashed" className="text-yellow-400 border-yellow-500 font-bold" onClick={() => openChangeRefereeModal(r)}>
+                                    ✏️ Đổi
+                                </Button>
+                            )}
+                        </Space>
+                    );
                 }
             },
             {
@@ -660,6 +695,33 @@ const AdminTournamentPage = () => {
                         )}
                     />
                 )}
+            </Modal>
+
+            <Modal
+                title={<span className="text-xl">👔 Đổi Trọng Tài Phụ Trách: <Text type="danger">{selectedRaceForChangeReferee?.name}</Text></span>}
+                open={isChangeRefereeModalVisible}
+                onCancel={() => setIsChangeRefereeModalVisible(false)}
+                onOk={handleChangeRefereeSubmit}
+                okText="Xác Nhận Đổi"
+                cancelText="Hủy"
+                centered
+            >
+                <div className="py-4">
+                    <Text className="block mb-2 text-gray-300">Chọn Trọng Tài Phụ Trách Mới:</Text>
+                    <Select
+                        className="w-full"
+                        size="large"
+                        value={selectedRefereeId}
+                        onChange={setSelectedRefereeId}
+                        placeholder="-- Chọn Trọng Tài --"
+                    >
+                        {referees.map(r => (
+                            <Option key={r.id} value={r.id}>
+                                👨‍⚖️ {r.username} ({r.email})
+                            </Option>
+                        ))}
+                    </Select>
+                </div>
             </Modal>
         </div>
     );

@@ -16,4 +16,9 @@ public class LiveOddsResponseDTO {
     private Integer gateNumber;
     private Integer classLevel;
     private Integer rating;
+
+    private Double assignedWeight;
+    private Double actualWeight;
+    private Double leadWeight;
+    private Boolean isWeighedIn;
 }

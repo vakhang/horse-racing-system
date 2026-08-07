@@ -88,4 +88,14 @@ public class RaceController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{id}/referee")
+    public ResponseEntity<?> updateRaceReferee(@PathVariable Integer id, @RequestBody java.util.Map<String, Integer> body) {
+        try {
+            Integer refereeId = body.get("refereeId");
+            return ResponseEntity.ok(raceService.updateRaceReferee(id, refereeId));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

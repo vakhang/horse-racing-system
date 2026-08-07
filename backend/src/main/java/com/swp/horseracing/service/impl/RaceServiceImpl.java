@@ -362,6 +362,15 @@ public class RaceServiceImpl implements RaceService {
                 calculatedOdds = netPool.divide(totalBetOnHorse, 2, java.math.RoundingMode.HALF_UP);
             }
 
+            int rating = reg.getHorse() != null && reg.getHorse().getRating() != null ? reg.getHorse().getRating() : 40;
+            int classLevel = reg.getHorse() != null && reg.getHorse().getClassLevel() != null ? reg.getHorse().getClassLevel() : 4;
+            Double assignedKg = reg.getAssignedWeight();
+            if (assignedKg == null) {
+                int floorRating = (classLevel == 1) ? 95 : (classLevel == 2) ? 80 : (classLevel == 3) ? 60 : (classLevel == 4) ? 40 : 0;
+                int deltaRating = Math.max(0, rating - floorRating);
+                assignedKg = Math.round((115.0 + deltaRating * 0.5) * 0.45359237 * 10.0) / 10.0;
+            }
+
             oddsList.add(LiveOddsResponseDTO.builder()
                     .registrationId(reg.getId())
                     .horseName(reg.getHorse().getName())
@@ -370,8 +379,12 @@ public class RaceServiceImpl implements RaceService {
                     .status(reg.getStatus() != null ? reg.getStatus().name() : null)
                     .note(reg.getNote())
                     .gateNumber(reg.getGateNumber())
-                    .classLevel(reg.getHorse() != null ? reg.getHorse().getClassLevel() : 4)
-                    .rating(reg.getHorse() != null ? reg.getHorse().getRating() : 40)
+                    .classLevel(classLevel)
+                    .rating(rating)
+                    .assignedWeight(assignedKg)
+                    .actualWeight(reg.getActualWeight())
+                    .leadWeight(reg.getLeadWeight())
+                    .isWeighedIn(Boolean.TRUE.equals(reg.getIsWeighedIn()))
                     .build());
         }
 
@@ -589,6 +602,23 @@ public class RaceServiceImpl implements RaceService {
                 raceRepository.save(race);
             }
         }
+    }
+
+    @Override
+    @Transactional
+    public RaceResponseDTO updateRaceReferee(Integer id, Integer refereeId) {
+        Race race = raceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Chặng đua ID: " + id));
+
+        if (race.getStatus() == RaceStatus.RUNNING || race.getStatus() == RaceStatus.FINISHED || race.getStatus() == RaceStatus.COMPLETED) {
+            throw new RuntimeException("Không thể đổi Trọng tài khi chặng đua đã bắt đầu hoặc đã kết thúc!");
+        }
+
+        User referee = userRepository.findById(refereeId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy Trọng tài ID: " + refereeId));
+
+        race.setReferee(referee);
+        return mapToResponseDTO(raceRepository.save(race));
     }
 
 }

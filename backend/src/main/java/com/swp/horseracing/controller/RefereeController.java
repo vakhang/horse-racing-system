@@ -53,4 +53,13 @@ public class RefereeController {
             return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
+
+    @PostMapping("/weighing")
+    public ResponseEntity<?> recordWeighIn(@RequestBody com.swp.horseracing.dto.RefereeWeighingRequestDTO request) {
+        try {
+            return ResponseEntity.ok(refereeService.recordWeighIn(request));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
+        }
+    }
 }

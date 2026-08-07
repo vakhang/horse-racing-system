@@ -25,11 +25,45 @@ const RefereeDashboardPage = () => {
     const [formResult] = Form.useForm();
     const [formReport] = Form.useForm();
 
-    const [reportsHistory, setReportsHistory] = useState([]);
+    // State Cân Nài & Bù Chì
+    const [isWeighingModalVisible, setIsWeighingModalVisible] = useState(false);
+    const [weighingRace, setWeighingRace] = useState(null);
+    const [weighingList, setWeighingList] = useState([]);
+    const [actualWeights, setActualWeights] = useState({});
 
-    const [time, setTime] = useState(0);
-    const [isRunning, setIsRunning] = useState(false);
-    const timerRef = useRef(null);
+    const openWeighingModal = async (race) => {
+        setWeighingRace(race);
+        setIsWeighingModalVisible(true);
+        try {
+            const res = await api.get(`/registrations?raceId=${race.id}`);
+            setWeighingList(res.data);
+            const initialMap = {};
+            res.data.forEach(r => {
+                initialMap[r.id] = r.actualWeight || r.jockeyWeight || 52;
+            });
+            setActualWeights(initialMap);
+        } catch (err) {
+            message.error('Không thể tải danh sách thi đấu!');
+        }
+    };
+
+    const handleSaveWeighing = async (reg) => {
+        const val = actualWeights[reg.id];
+        if (!val || val <= 0) {
+            return message.warning('Vui lòng nhập khối lượng thực tế hợp lệ (kg)!');
+        }
+        try {
+            await api.post('/referees/weighing', {
+                registrationId: reg.id,
+                actualWeight: parseFloat(val)
+            });
+            message.success(`Đã xác nhận cân thực tế cho ${reg.horseName}! ⚖️`);
+            const res = await api.get(`/registrations?raceId=${weighingRace.id}`);
+            setWeighingList(res.data);
+        } catch (err) {
+            message.error(err.response?.data?.error || 'Lỗi khi lưu thông tin cân nài!');
+        }
+    };
 
     useEffect(() => {
         fetchRaces();
@@ -218,7 +252,10 @@ const RefereeDashboardPage = () => {
                 const isFinished = record.status === 'FINISHED';
 
                 return (
-                    <Space>
+                    <Space wrap>
+                        <Button size="small" type="primary" className="bg-amber-600 border-none font-bold" onClick={() => openWeighingModal(record)}>
+                            ⚖️ Cân Nài & Bù Chì
+                        </Button>
                         {isReadyToStart && (
                             <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record)}>BẮT ĐẦU ĐUA</Button>
                         )}
@@ -347,6 +384,91 @@ const RefereeDashboardPage = () => {
                     </Form.Item>
                     <Button type="primary" danger htmlType="submit" size="large" block className="mt-4 font-bold">LƯU BIÊN BẢN VÀO HỆ THỐNG</Button>
                 </Form>
+            </Modal>
+
+            <Modal
+                title={<span className="text-xl font-bold text-amber-600">⚖️ Cân Đo & Đeo Chì Chấp (Handicap): {weighingRace?.name}</span>}
+                open={isWeighingModalVisible}
+                onCancel={() => setIsWeighingModalVisible(false)}
+                footer={[
+                    <Button key="close" type="primary" onClick={() => setIsWeighingModalVisible(false)}>
+                        Đóng
+                    </Button>
+                ]}
+                width={900}
+                centered
+            >
+                <div className="py-2">
+                    <Alert
+                        message="Quy Trình Cân Nài Thực Địa (Handicap & Lead Weight)"
+                        description="Trước cuộc đua, Trọng tài đưa kỵ sĩ và yên cương lên bàn cân để ghi nhận Khối lượng thực tế. Nếu Khối lượng thực tế nhỏ hơn Trọng lượng chỉ định của ngựa, Trọng tài phát chì lá cho kỵ sĩ đút vào túi yên và nhấn nút 'ĐÃ KIỂM TRA & ĐEO CHÌ'."
+                        type="info"
+                        showIcon
+                        className="mb-4"
+                    />
+
+                    <Table
+                        dataSource={weighingList}
+                        rowKey="id"
+                        pagination={false}
+                        columns={[
+                            { title: 'Cổng', dataIndex: 'gateNumber', width: 60, render: g => <Text strong>#{g || '?'}</Text> },
+                            { title: 'Chiến Mã', dataIndex: 'horseName', render: (t, r) => <Text strong className="text-blue-700">{t}</Text> },
+                            { title: 'Nài Ngựa', dataIndex: 'jockeyUsername', render: (t, r) => (
+                                <div>
+                                    <Text strong>{t || 'Chưa rõ'}</Text>
+                                    <br/>
+                                    <Text type="secondary" className="text-xs">Khai báo: {r.jockeyWeight ? `${r.jockeyWeight} kg` : 'Chưa có'}</Text>
+                                </div>
+                            ) },
+                            { title: 'Tải Chỉ Định', dataIndex: 'assignedWeight', render: w => <Tag color="blue" className="font-bold">{w ? `${w} kg` : '52.1 kg'}</Tag> },
+                            {
+                                title: 'Khối Lượng Thực Tế (kg)',
+                                key: 'actualWeight',
+                                render: (_, r) => (
+                                    <InputNumber
+                                        min={30}
+                                        max={120}
+                                        step={0.1}
+                                        size="small"
+                                        className="w-28"
+                                        value={actualWeights[r.id] ?? r.actualWeight ?? r.jockeyWeight ?? 50}
+                                        onChange={(val) => setActualWeights(prev => ({ ...prev, [r.id]: val }))}
+                                    />
+                                )
+                            },
+                            {
+                                title: 'Bù Chì Thêm',
+                                key: 'leadWeight',
+                                render: (_, r) => {
+                                    const assigned = r.assignedWeight || 52.1;
+                                    const actual = actualWeights[r.id] ?? r.actualWeight ?? r.jockeyWeight ?? 50;
+                                    const lead = Math.max(0, Math.round((assigned - actual) * 10) / 10);
+                                    return lead > 0 ? (
+                                        <Tag color="orange" className="font-bold">+{lead} kg chì</Tag>
+                                    ) : (
+                                        <Tag color="green">Đủ tải trọng</Tag>
+                                    );
+                                }
+                            },
+                            {
+                                title: 'Xác Nhận',
+                                key: 'action',
+                                align: 'center',
+                                render: (_, r) => (
+                                    <Button
+                                        size="small"
+                                        type={r.isWeighedIn ? "default" : "primary"}
+                                        className={r.isWeighedIn ? "text-green-600 border-green-600 font-bold" : "bg-amber-600 font-bold"}
+                                        onClick={() => handleSaveWeighing(r)}
+                                    >
+                                        {r.isWeighedIn ? "✅ ĐÃ KIỂM TRA & ĐEO CHÌ" : "⚖️ XÁC NHẬN CÂN"}
+                                    </Button>
+                                )
+                            }
+                        ]}
+                    />
+                </div>
             </Modal>
         </div>
     );
