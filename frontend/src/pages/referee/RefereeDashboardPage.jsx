@@ -130,25 +130,7 @@ const RefereeDashboardPage = () => {
         }
     };
 
-    const handleRandomDrawGates = async () => {
-        if (!weighingList || weighingList.length === 0) return;
-        const gates = Array.from({ length: weighingList.length }, (_, i) => i + 1);
-        for (let i = gates.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [gates[i], gates[j]] = [gates[j], gates[i]];
-        }
 
-        try {
-            for (let i = 0; i < weighingList.length; i++) {
-                await api.put(`/registrations/${weighingList[i].id}/gate`, { gateNumber: gates[i] });
-            }
-            message.success('Đã bốc thăm ngẫu nhiên Cổng xuất phát cho tất cả chiến mã! 🎲');
-            const res = await api.get(`/registrations?raceId=${weighingRace.id}`);
-            setWeighingList(res.data);
-        } catch (err) {
-            message.error('Lỗi khi bốc thăm cổng!');
-        }
-    };
 
     // --- TRỌNG TÀI ẤN NÚT BẮT ĐẦU ĐUA ---
     const handleStartRace = async (race) => {
@@ -330,7 +312,7 @@ const RefereeDashboardPage = () => {
                 return (
                     <Space wrap>
                         <Button size="small" type="primary" className="bg-amber-600 border-none font-bold" onClick={() => openWeighingModal(record)}>
-                            🎲 Bốc Thăm Cổng & ⚖️ Cân Nài
+                            📋 Cổng Xuất Phát & ⚖️ Cân Nài
                         </Button>
                         {isReadyToStart && (
                             <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record)}>BẮT ĐẦU ĐUA</Button>
@@ -478,15 +460,12 @@ const RefereeDashboardPage = () => {
             </Modal>
 
             <Modal
-                title={<span className="text-xl font-bold text-amber-600">🎲 Bốc Thăm Cổng Xuất Phát & ⚖️ Cân Nài Bù Chì: {weighingRace?.name}</span>}
+                title={<span className="text-xl font-bold text-amber-600">📋 Xác Nhận Cổng Xuất Phát & ⚖️ Cân Nài Bù Chì: {weighingRace?.name}</span>}
                 open={isWeighingModalVisible}
                 onCancel={() => setIsWeighingModalVisible(false)}
                 footer={[
-                    <Button key="random" type="primary" className="bg-purple-600 border-none font-bold mr-2" onClick={handleRandomDrawGates}>
-                        🎲 BỐC THĂM CỔNG TỰ ĐỘNG
-                    </Button>,
-                    <Button key="close" onClick={() => setIsWeighingModalVisible(false)}>
-                        Đóng
+                    <Button key="close" type="primary" onClick={() => setIsWeighingModalVisible(false)} className="font-bold">
+                        Đóng Bảng
                     </Button>
                 ]}
                 width={950}
@@ -494,8 +473,8 @@ const RefereeDashboardPage = () => {
             >
                 <div className="py-2">
                     <Alert
-                        message="Xác Nhận Cổng Xuất Phát & Quy Trình Cân Nài Thực Địa"
-                        description="Trọng tài thực hiện Bốc thăm Cổng xuất phát (Gate #) cho từng chiến mã, sau đó đưa kỵ sĩ và yên cương lên bàn cân để xác nhận Khối lượng thực tế và phát chì lá bù tải trọng trước khi phát lệnh Bắt Đầu Đua."
+                        message="Xác Nhận Cổng Xuất Phát (Gate #) & Quy Trình Cân Nài Thực Địa"
+                        description="Sau khi kết quả bốc thăm cổng thực địa được chốt ở bên ngoài, Trọng tài chọn số Cổng xuất phát (Gate #) cho từng chiến mã, nhập Khối lượng thực tế của Kỵ sĩ & Yên cương để kiểm tra và phát chì lá bù tải trọng trước khi Bắt Đầu Đua."
                         type="info"
                         showIcon
                         className="mb-4"
