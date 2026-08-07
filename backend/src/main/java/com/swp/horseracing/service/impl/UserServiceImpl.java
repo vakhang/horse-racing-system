@@ -204,7 +204,8 @@ public class UserServiceImpl implements UserService {
             com.swp.horseracing.model.TransactionHistory th = com.swp.horseracing.model.TransactionHistory.builder()
                     .wallet(wallet)
                     .transactionCode("BONUS00" + savedUser.getId())
-                    .transactionType(TransactionType.BONUS)
+                    .type(TransactionType.BONUS)
+                    .direction(com.swp.horseracing.model.TransactionDirection.IN)
                     .amount(initialBalance)
                     .status(com.swp.horseracing.model.TransactionStatus.COMPLETED)
                     .build();
