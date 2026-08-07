@@ -9,8 +9,12 @@ import java.math.BigDecimal;
 public class LiveOddsResponseDTO {
     private Integer registrationId;
     private String horseName;
-    private BigDecimal totalBetOnHorse; // Tổng tiền cược riêng cho con ngựa này
-    private BigDecimal calculatedOdds;   // Tỷ lệ cược dự kiến (Real-time) trả về cho FE
+    private BigDecimal totalBetOnHorse; // Total WIN bet on this horse
+    private BigDecimal calculatedOdds;   // WIN Odds
+
+    private BigDecimal totalPlaceBetOnHorse; // Total PLACE bet on this horse
+    private BigDecimal placeOdds;             // PLACE Odds (32.5% pool)
+
     private String status;
     private String note;
     private Integer gateNumber;

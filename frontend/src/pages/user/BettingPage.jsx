@@ -208,18 +208,26 @@ const BettingPage = () => {
             }
         },
         {
-            title: <div className="text-center font-bold">Tỷ Lệ Cược Win (Live)</div>,
-            dataIndex: 'calculatedOdds',
+            title: <div className="text-center font-bold">{selectedBetType === 'PLACE' ? 'Tỷ Lệ Cược Place (32.5%)' : 'Tỷ Lệ Cược Win (65%)'}</div>,
             key: 'calculatedOdds',
             align: 'center',
-            render: (val, record) => {
+            render: (_, record) => {
                 if (record.status === 'DISQUALIFIED' || record.status === 'WITHDRAWN') {
                     return <Tag color="default" className="text-base px-3 py-1">Đã đóng</Tag>;
                 }
+                const val = selectedBetType === 'PLACE' ? record.placeOdds : record.calculatedOdds;
+                const poolBet = selectedBetType === 'PLACE' ? record.totalPlaceBetOnHorse : record.totalBetOnHorse;
                 return (
-                    <Tag color={val > 0 ? "green" : "default"} className="text-base font-bold px-3 py-1 bg-[#162a22] text-[#00ffb3] border-[#007355]">
-                        <LineChartOutlined /> {val > 0 ? `x${val}` : 'Chưa có cược'}
-                    </Tag>
+                    <div className="flex flex-col items-center">
+                        <Tag color={val > 0 ? "green" : "default"} className="text-base font-bold px-3 py-1 bg-[#162a22] text-[#00ffb3] border-[#007355]">
+                            <LineChartOutlined /> {val > 0 ? `x${val}` : 'Chưa có cược'}
+                        </Tag>
+                        {poolBet > 0 && (
+                            <Text type="secondary" className="text-xs mt-0.5">
+                                Bể cược: {Number(poolBet).toLocaleString()}đ
+                            </Text>
+                        )}
+                    </div>
                 );
             }
         },

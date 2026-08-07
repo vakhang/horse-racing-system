@@ -324,38 +324,43 @@ public class RaceServiceImpl implements RaceService {
         Race race = raceRepository.findById(raceId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chặng đua!"));
 
-        java.math.BigDecimal totalPool = race.getTotalPool();
-        java.math.BigDecimal rakePercentage = race.getRakePercentage();
+        List<Bet> allBets = betRepository.findByRaceId(raceId);
 
-        java.math.BigDecimal netPool = totalPool.multiply(
-                java.math.BigDecimal.valueOf(100).subtract(rakePercentage)
-        ).divide(java.math.BigDecimal.valueOf(100), 4, java.math.RoundingMode.HALF_UP);
+        // Separate Pool 1: WIN Pool (65% Payout Pool)
+        java.math.BigDecimal totalWinPool = allBets.stream()
+                .filter(b -> b.getBetType() == BetType.WIN && b.getStatus() != BetStatus.REFUNDED && b.getStatus() != BetStatus.CANCELED)
+                .map(Bet::getAmount)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal winPayoutPool = totalWinPool.multiply(new java.math.BigDecimal("0.65"));
 
-        PrizeConfig config = prizeConfigRepository.findById(1).orElse(
-                PrizeConfig.builder()
-                        .horseOwnerPercentage(new java.math.BigDecimal("0.05"))
-                        .jockeyPercentage(new java.math.BigDecimal("0.02"))
-                        .jackpotPool(java.math.BigDecimal.ZERO)
-                        .build()
-        );
-        java.math.BigDecimal currentJackpot = config.getJackpotPool() != null ? config.getJackpotPool() : java.math.BigDecimal.ZERO;
-        
-        // CỘNG DỒN JACKPOT CŨ VÀO NET POOL ĐỂ TÍNH TỶ LỆ KÍCH THÍCH KHÁN GIẢ
-        netPool = netPool.add(currentJackpot);
+        // Separate Pool 2: PLACE Pool (65% Payout Pool -> 32.5% for 1st, 32.5% for 2nd)
+        java.math.BigDecimal totalPlacePool = allBets.stream()
+                .filter(b -> b.getBetType() == BetType.PLACE && b.getStatus() != BetStatus.REFUNDED && b.getStatus() != BetStatus.CANCELED)
+                .map(Bet::getAmount)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal placePayoutSubPool = totalPlacePool.multiply(new java.math.BigDecimal("0.65")).multiply(new java.math.BigDecimal("0.50"));
 
         List<Registration> registrations = registrationRepository.findByRaceId(raceId);
         List<LiveOddsResponseDTO> oddsList = new java.util.ArrayList<>();
 
         for (Registration reg : registrations) {
-            java.math.BigDecimal totalBetOnHorse = betRepository.sumAmountByRaceIdAndRegistrationId(raceId, reg.getId());
-            if (totalBetOnHorse == null) {
-                totalBetOnHorse = java.math.BigDecimal.ZERO;
-            }
-            java.math.BigDecimal calculatedOdds = java.math.BigDecimal.ZERO;
+            // WIN bet on this horse
+            java.math.BigDecimal winBetOnHorse = allBets.stream()
+                    .filter(b -> b.getBetType() == BetType.WIN && b.getRegistration().getId().equals(reg.getId()) && b.getStatus() != BetStatus.REFUNDED && b.getStatus() != BetStatus.CANCELED)
+                    .map(Bet::getAmount)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+            java.math.BigDecimal winOdds = winBetOnHorse.compareTo(java.math.BigDecimal.ZERO) > 0 
+                    ? winPayoutPool.divide(winBetOnHorse, 2, java.math.RoundingMode.HALF_UP) 
+                    : java.math.BigDecimal.ZERO;
 
-            if (totalBetOnHorse.compareTo(java.math.BigDecimal.ZERO) > 0) {
-                calculatedOdds = netPool.divide(totalBetOnHorse, 2, java.math.RoundingMode.HALF_UP);
-            }
+            // PLACE bet on this horse
+            java.math.BigDecimal placeBetOnHorse = allBets.stream()
+                    .filter(b -> b.getBetType() == BetType.PLACE && b.getRegistration().getId().equals(reg.getId()) && b.getStatus() != BetStatus.REFUNDED && b.getStatus() != BetStatus.CANCELED)
+                    .map(Bet::getAmount)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+            java.math.BigDecimal placeOdds = placeBetOnHorse.compareTo(java.math.BigDecimal.ZERO) > 0 
+                    ? placePayoutSubPool.divide(placeBetOnHorse, 2, java.math.RoundingMode.HALF_UP) 
+                    : java.math.BigDecimal.ZERO;
 
             int rating = reg.getHorse() != null && reg.getHorse().getRating() != null ? reg.getHorse().getRating() : 40;
             int classLevel = reg.getHorse() != null && reg.getHorse().getClassLevel() != null ? reg.getHorse().getClassLevel() : 4;
@@ -363,14 +368,16 @@ public class RaceServiceImpl implements RaceService {
             if (assignedKg == null) {
                 int floorRating = (classLevel == 1) ? 95 : (classLevel == 2) ? 80 : (classLevel == 3) ? 60 : (classLevel == 4) ? 40 : 0;
                 int deltaRating = Math.max(0, rating - floorRating);
-                assignedKg = Math.round((115.0 + deltaRating * 0.5) * 0.45359237 * 10.0) / 10.0;
+                assignedKg = Math.round((52.1 + deltaRating * 0.5 * 0.45359237) * 10.0) / 10.0;
             }
 
             oddsList.add(LiveOddsResponseDTO.builder()
                     .registrationId(reg.getId())
                     .horseName(reg.getHorse().getName())
-                    .totalBetOnHorse(totalBetOnHorse)
-                    .calculatedOdds(calculatedOdds)
+                    .totalBetOnHorse(winBetOnHorse)
+                    .calculatedOdds(winOdds)
+                    .totalPlaceBetOnHorse(placeBetOnHorse)
+                    .placeOdds(placeOdds)
                     .status(reg.getStatus() != null ? reg.getStatus().name() : null)
                     .note(reg.getNote())
                     .gateNumber(reg.getGateNumber())
