@@ -164,7 +164,11 @@ const BettingPage = () => {
                 <div className="flex items-center gap-3">
                     <Tag color="gold" className="font-bold text-sm px-2 py-0.5">Cổng {record.gateNumber || '?'}</Tag>
                     <div className="flex flex-col">
-                        <span className="font-bold text-yellow-400 text-lg">{text}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-yellow-400 text-lg">{text}</span>
+                            <Tag color="green" className="font-bold text-xs m-0">Class {record.classLevel || 4}</Tag>
+                            <Tag color="cyan" className="font-bold text-xs m-0">⚡ {record.rating || 40} pts</Tag>
+                        </div>
                         {record.status === 'DISQUALIFIED' && (
                             <Tag color="red" className="mt-1 max-w-xs whitespace-normal">
                                 [BỊ TRUẤT QUYỀN] - {record.note || 'Vi phạm luật'}

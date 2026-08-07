@@ -80,14 +80,40 @@ public class RefereeServiceImpl implements RefereeService {
             }
         }
 
-        // 1. Cập nhật chỉ số cho TẤT CẢ các con ngựa tham gia
+        // 1. Cập nhật chỉ số và điểm Rating / Cấp chạy (Class) cho TẤT CẢ các con ngựa tham gia
         List<Registration> allRegs = registrationRepository.findByRaceId(race.getId());
         for (Registration reg : allRegs) {
             Horse h = reg.getHorse();
             h.setTotalRaces((h.getTotalRaces() != null ? h.getTotalRaces() : 0) + 1);
-            if (reg.getId().equals(winningReg.getId())) {
+            if (reg.getRank() != null && reg.getRank() == 1) {
                 h.setWinRaces((h.getWinRaces() != null ? h.getWinRaces() : 0) + 1);
             }
+
+            // Thuật toán V4: Cộng/Trừ điểm năng lực (Rating) sau cuộc đua
+            int currentRating = h.getRating() != null ? h.getRating() : 40;
+            int delta = 0;
+            if (reg.getStatus() == RegistrationStatus.DISQUALIFIED) {
+                delta = -3;
+            } else if (reg.getRank() != null) {
+                if (reg.getRank() == 1) delta = 8;
+                else if (reg.getRank() == 2) delta = 4;
+                else if (reg.getRank() == 3) delta = 2;
+                else if (reg.getRank() == 4 || reg.getRank() == 5) delta = 0;
+                else if (reg.getRank() >= 6) delta = -1;
+            }
+
+            int newRating = Math.max(0, currentRating + delta);
+            h.setRating(newRating);
+
+            // Tự động thăng hạng / xuống hạng (Class 1 -> Class 5)
+            int newClass = 5;
+            if (newRating >= 95) newClass = 1;
+            else if (newRating >= 80) newClass = 2;
+            else if (newRating >= 60) newClass = 3;
+            else if (newRating >= 40) newClass = 4;
+            else newClass = 5;
+
+            h.setClassLevel(newClass);
             horseRepository.save(h);
         }
 
@@ -105,9 +131,23 @@ public class RefereeServiceImpl implements RefereeService {
         Registration registration = registrationRepository.findById(request.getRegistrationId())
                 .orElseThrow(() -> new RuntimeException("Registration not found"));
 
-        // TRUẤT QUYỀN
+        // TRUẤT QUYỀN & TRỪ 3 ĐIỂM RATING
         registration.setStatus(RegistrationStatus.DISQUALIFIED);
         registrationRepository.save(registration);
+
+        Horse h = registration.getHorse();
+        if (h != null) {
+            int newRating = Math.max(0, (h.getRating() != null ? h.getRating() : 40) - 3);
+            h.setRating(newRating);
+            int newClass = 5;
+            if (newRating >= 95) newClass = 1;
+            else if (newRating >= 80) newClass = 2;
+            else if (newRating >= 60) newClass = 3;
+            else if (newRating >= 40) newClass = 4;
+            else newClass = 5;
+            h.setClassLevel(newClass);
+            horseRepository.save(h);
+        }
 
         // TÌM TẤT CẢ VÉ CƯỢC CỦA NGỰA BỊ TRUẤT QUYỀN VÀ CHUYỂN THÀNH LOST
         List<Bet> bets = betRepository.findByRaceId(race.getId());

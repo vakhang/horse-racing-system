@@ -368,6 +368,9 @@ public class RaceServiceImpl implements RaceService {
                     .calculatedOdds(calculatedOdds)
                     .status(reg.getStatus() != null ? reg.getStatus().name() : null)
                     .note(reg.getNote())
+                    .gateNumber(reg.getGateNumber())
+                    .classLevel(reg.getHorse() != null ? reg.getHorse().getClassLevel() : 4)
+                    .rating(reg.getHorse() != null ? reg.getHorse().getRating() : 40)
                     .build());
         }
 
