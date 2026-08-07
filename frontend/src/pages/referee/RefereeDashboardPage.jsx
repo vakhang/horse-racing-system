@@ -322,8 +322,15 @@ const RefereeDashboardPage = () => {
                                 📋 Cổng Xuất Phát & ⚖️ Cân Nài
                             </Button>
                         )}
-                        {(isReadyToStart || isBettingOpen) && (
-                            <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg" onClick={() => handleStartRace(record)}>BẮT ĐẦU ĐUA</Button>
+                        {isBettingOpen && (
+                            <Button size="small" type="default" disabled className="font-bold">
+                                🔒 Chờ Admin Khóa Cược
+                            </Button>
+                        )}
+                        {isReadyToStart && (
+                            <Button size="small" type="primary" className="bg-red-600 border-none font-bold shadow-lg animate-pulse" onClick={() => handleStartRace(record)}>
+                                🚀 BẮT ĐẦU ĐUA
+                            </Button>
                         )}
                         {isFinished && (
                             <Popconfirm title="Xác nhận kết quả cuối cùng?" onConfirm={() => handleConfirmResult(record.id)}>
