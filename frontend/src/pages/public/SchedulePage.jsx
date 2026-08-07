@@ -167,10 +167,9 @@ const SchedulePage = () => {
                             {selectedRace && (
                                 <div className="bg-[#1a2f24] p-4 rounded-xl border border-[#007355] shadow-md">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                                        <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/30 text-center">
+                                        <div className="bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/30 text-center flex flex-col justify-center">
                                             <Text className="text-xs text-yellow-400 font-bold uppercase block">🥇 GIẢI NHẤT (PRIZE 1)</Text>
                                             <Text className="text-xl font-black text-yellow-300">{Number(selectedRace.prize1 || 10000000).toLocaleString()} VNĐ</Text>
-                                            <Text className="text-[10px] text-gray-400 block mt-0.5">(Chủ 70% + 5% Pool | Nài 30% + 2% Pool)</Text>
                                         </div>
                                         <div className="bg-gray-400/10 p-3 rounded-lg border border-gray-400/30 text-center">
                                             <Text className="text-xs text-gray-300 font-bold uppercase block">🥈 GIẢI NHÌ (PRIZE 2)</Text>
