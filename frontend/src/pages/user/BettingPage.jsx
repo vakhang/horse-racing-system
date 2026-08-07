@@ -184,6 +184,20 @@ const BettingPage = () => {
             )
         },
         {
+            title: <div className="text-center font-bold">Tỷ Lệ Thắng</div>,
+            key: 'winRate',
+            align: 'center',
+            render: (_, record) => {
+                const rate = record.winRate || 0;
+                return (
+                    <div className="flex flex-col items-center">
+                        <Text strong className="text-green-300">{rate.toFixed(1)}%</Text>
+                        <Text type="secondary" className="text-xs mt-1">{(record.winRaces || 0)}/{(record.totalRaces || 0)} trận</Text>
+                    </div>
+                );
+            }
+        },
+        {
             title: <div className="text-center font-bold">Tải Trọng Gánh (Handicap) ⚖️</div>,
             key: 'handicap',
             align: 'center',

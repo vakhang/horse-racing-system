@@ -371,6 +371,10 @@ public class RaceServiceImpl implements RaceService {
                 assignedKg = Math.round((52.1 + deltaRating * 0.5 * 0.45359237) * 10.0) / 10.0;
             }
 
+            int horseTotalRaces = reg.getHorse().getTotalRaces() != null ? reg.getHorse().getTotalRaces() : 0;
+            int horseWinRaces = reg.getHorse().getWinRaces() != null ? reg.getHorse().getWinRaces() : 0;
+            float horseWinRate = horseTotalRaces > 0 ? ((float) horseWinRaces / horseTotalRaces) * 100 : 0f;
+
             oddsList.add(LiveOddsResponseDTO.builder()
                     .registrationId(reg.getId())
                     .horseName(reg.getHorse().getName())
@@ -387,6 +391,9 @@ public class RaceServiceImpl implements RaceService {
                     .actualWeight(reg.getActualWeight())
                     .leadWeight(reg.getLeadWeight())
                     .isWeighedIn(Boolean.TRUE.equals(reg.getIsWeighedIn()))
+                    .winRate(horseWinRate)
+                    .totalRaces(horseTotalRaces)
+                    .winRaces(horseWinRaces)
                     .build());
         }
 

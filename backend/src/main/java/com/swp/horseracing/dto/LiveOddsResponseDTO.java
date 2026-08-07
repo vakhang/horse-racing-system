@@ -25,4 +25,7 @@ public class LiveOddsResponseDTO {
     private Double actualWeight;
     private Double leadWeight;
     private Boolean isWeighedIn;
+    private Float winRate;
+    private Integer totalRaces;
+    private Integer winRaces;
 }
