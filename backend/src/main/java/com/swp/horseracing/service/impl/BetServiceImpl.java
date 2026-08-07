@@ -251,7 +251,7 @@ public class BetServiceImpl implements BetService {
 
         if (totalBetExacta.compareTo(BigDecimal.ZERO) == 0) {
             // Không ai trúng EXACTA -> Lưu Jackpot Carryover cho chặng đua cùng Class
-            String requiredClass = race.getTournament() != null && race.getTournament().getRequiredClass() != null ? race.getTournament().getRequiredClass() : "CLASS_4";
+            Integer requiredClass = (race.getTournament() != null && race.getTournament().getRequiredClass() != null) ? race.getTournament().getRequiredClass() : 4;
             SystemFund jackpot = systemFundRepository.findByFundTypeAndClassLevelWithPessimisticWrite("JACKPOT", requiredClass)
                     .orElse(null);
             if (jackpot != null) {

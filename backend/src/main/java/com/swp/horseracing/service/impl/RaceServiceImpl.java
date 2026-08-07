@@ -32,6 +32,7 @@ public class RaceServiceImpl implements RaceService {
     private final UserRepository userRepository;
     private final TransactionHistoryRepository transactionHistoryRepository;
     private final WalletRepository walletRepository;
+    private final AuditLogRepository auditLogRepository;
     private final PrizeConfigRepository prizeConfigRepository;
     private final com.swp.horseracing.repository.JockeyInvitationRepository jockeyInvitationRepository;
     private final com.swp.horseracing.repository.SystemFundRepository systemFundRepository;
