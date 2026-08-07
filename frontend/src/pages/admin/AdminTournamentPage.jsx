@@ -46,6 +46,7 @@ const AdminTournamentPage = () => {
     const [selectedRefereeId, setSelectedRefereeId] = useState(null);
 
     const openChangeRefereeModal = (race) => {
+        fetchReferees();
         setSelectedRaceForChangeReferee(race);
         setSelectedRefereeId(race.refereeId || null);
         setIsChangeRefereeModalVisible(true);
@@ -698,7 +699,7 @@ const AdminTournamentPage = () => {
             </Modal>
 
             <Modal
-                title={<span className="text-xl">👔 Đổi Trọng Tài Phụ Trách: <Text type="danger">{selectedRaceForChangeReferee?.name}</Text></span>}
+                title={<span className="text-xl font-bold">👔 Đổi Trọng Tài Phụ Trách: <Text type="danger">{selectedRaceForChangeReferee?.name}</Text></span>}
                 open={isChangeRefereeModalVisible}
                 onCancel={() => setIsChangeRefereeModalVisible(false)}
                 onOk={handleChangeRefereeSubmit}
@@ -707,20 +708,18 @@ const AdminTournamentPage = () => {
                 centered
             >
                 <div className="py-4">
-                    <Text className="block mb-2 text-gray-300">Chọn Trọng Tài Phụ Trách Mới:</Text>
+                    <Text className="block mb-2 text-gray-300 font-semibold">Chọn Trọng Tài Phụ Trách Mới:</Text>
                     <Select
                         className="w-full"
                         size="large"
                         value={selectedRefereeId}
                         onChange={setSelectedRefereeId}
                         placeholder="-- Chọn Trọng Tài --"
-                    >
-                        {referees.map(r => (
-                            <Option key={r.id} value={r.id}>
-                                👨‍⚖️ {r.username} ({r.email})
-                            </Option>
-                        ))}
-                    </Select>
+                        options={referees.map(r => ({
+                            value: r.id,
+                            label: `👨‍⚖️ ${r.username} (${r.email})`
+                        }))}
+                    />
                 </div>
             </Modal>
         </div>
