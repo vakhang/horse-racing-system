@@ -164,9 +164,9 @@ const BettingPage = () => {
                 <div className="flex items-center gap-3">
                     <Tag color="gold" className="font-bold text-sm px-2 py-0.5 whitespace-nowrap">Cổng {record.gateNumber || '?'}</Tag>
                     {record.horseAvatarUrl ? (
-                        <Image src={record.horseAvatarUrl} width={50} height={50} className="rounded-md object-cover border border-[#007355]" />
+                        <Image src={record.horseAvatarUrl} width={50} height={50} className="rounded-full aspect-square object-cover border border-[#007355]" />
                     ) : (
-                        <div className="w-[50px] h-[50px] bg-black/40 rounded-md border border-[#007355] flex items-center justify-center text-xs text-gray-500">No Img</div>
+                        <div className="w-[50px] h-[50px] bg-black/40 rounded-full border border-[#007355] flex items-center justify-center text-xs text-gray-500">No Img</div>
                     )}
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -177,7 +177,7 @@ const BettingPage = () => {
                         <div className="flex items-center gap-1 mt-1">
                             <span className="text-xs text-gray-400">Nài ngựa:</span>
                             {record.jockeyAvatarUrl ? (
-                                <Image src={record.jockeyAvatarUrl} width={20} height={20} className="rounded-full object-cover" />
+                                <Image src={record.jockeyAvatarUrl} width={20} height={20} className="rounded-full aspect-square object-cover" />
                             ) : (
                                 <Avatar size={20} className="bg-gray-600" />
                             )}
@@ -212,7 +212,7 @@ const BettingPage = () => {
             }
         },
         {
-            title: <div className="text-center font-bold">Tải Trọng Gánh (Handicap) ⚖️</div>,
+            title: <div className="text-center font-bold">Tải Trọng Gánh</div>,
             key: 'handicap',
             align: 'center',
             render: (_, record) => {
@@ -236,7 +236,7 @@ const BettingPage = () => {
             }
         },
         {
-            title: <div className="text-center font-bold">{selectedBetType === 'PLACE' ? 'Tỷ Lệ Cược Place (32.5%)' : 'Tỷ Lệ Cược Win (65%)'}</div>,
+            title: <div className="text-center font-bold">Tỷ lệ cược</div>,
             key: 'calculatedOdds',
             align: 'center',
             render: (_, record) => {
