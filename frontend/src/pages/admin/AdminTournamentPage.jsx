@@ -57,12 +57,20 @@ const AdminTournamentPage = () => {
             return message.warning('Vui lòng chọn trọng tài mới!');
         }
         try {
-            await api.put(`/races/${selectedRaceForChangeReferee.id}/referee`, { refereeId: selectedRefereeId });
+            try {
+                await api.put(`/races/${selectedRaceForChangeReferee.id}/referee`, { refereeId: selectedRefereeId });
+            } catch (err) {
+                if (err.response && err.response.status === 404) {
+                    await api.put(`/races/${selectedRaceForChangeReferee.id}`, { refereeId: selectedRefereeId });
+                } else {
+                    throw err;
+                }
+            }
             message.success('Cập nhật trọng tài cho chặng đua thành công! 👔');
             setIsChangeRefereeModalVisible(false);
             fetchTournaments();
         } catch (error) {
-            message.error(error.response?.data?.error || 'Có lỗi khi cập nhật trọng tài!');
+            message.error(error.response?.data?.error || error.response?.data?.message || 'Có lỗi khi cập nhật trọng tài!');
         }
     };
 

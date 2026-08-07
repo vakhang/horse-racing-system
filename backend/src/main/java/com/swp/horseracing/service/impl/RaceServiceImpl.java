@@ -166,11 +166,6 @@ public class RaceServiceImpl implements RaceService {
         if (request.getRefereeId() != null) {
             User referee = userRepository.findById(request.getRefereeId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy Trọng tài!"));
-            
-            boolean hasRefereeCert = referee.getAttachments().stream().anyMatch(a -> a.getDocType() == com.swp.horseracing.model.UserDocType.REFEREE_CERT);
-            if (!hasRefereeCert) {
-                throw new RuntimeException("Trọng tài này chưa cung cấp Bằng cấp hành nghề hợp lệ. Không thể phân công giám sát chặng đua!");
-            }
             race.setReferee(referee);
         }
         if (request.getPrize1() != null) race.setPrize1(request.getPrize1());
