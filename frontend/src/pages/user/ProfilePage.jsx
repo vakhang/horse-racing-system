@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber, Upload, Tabs, Table } from 'antd';
+import { Form, Input, Button, DatePicker, Card, Typography, message, Divider, Tag, InputNumber, Upload, Tabs, Table, Image } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SafetyCertificateOutlined, UploadOutlined, HistoryOutlined, DollarOutlined } from '@ant-design/icons';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../config/api.js';
@@ -204,7 +204,9 @@ const ProfilePage = () => {
         <Card className="shadow-2xl rounded-2xl border border-[#007355] bg-[#141f1c] text-white">
             <div className="flex items-center gap-4 mb-6 bg-[#007355]/20 p-4 rounded-xl border border-[#007355]/40">
                 {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-[#fcc200]" />
+                    <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#fcc200] flex-shrink-0">
+                        <Image src={user.avatarUrl} alt="Avatar" width={64} height={64} className="object-cover" style={{ display: 'block' }} />
+                    </div>
                 ) : (
                     <SafetyCertificateOutlined className="text-4xl text-[#fcc200]" />
                 )}

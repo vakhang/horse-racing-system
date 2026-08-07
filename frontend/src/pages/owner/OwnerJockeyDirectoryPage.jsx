@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tag, Card, Typography, Row, Col, Avatar, message } from 'antd';
+import { Table, Tag, Card, Typography, Row, Col, Avatar, message, Image } from 'antd';
 import { TeamOutlined, UserOutlined } from '@ant-design/icons';
 import api from "../../config/api.js";
 
@@ -30,7 +30,19 @@ const OwnerJockeyDirectoryPage = () => {
             title: 'Tên Nài Ngựa',
             render: (_, r) => (
                 <div className="flex items-center gap-4">
-                    <Avatar size={48} src={r.avatarUrl} icon={!r.avatarUrl && <UserOutlined />} className="bg-purple-500" />
+                    {r.avatarUrl ? (
+                        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-purple-500 flex-shrink-0">
+                            <Image
+                                width={48}
+                                height={48}
+                                src={r.avatarUrl}
+                                className="object-cover"
+                                style={{ display: 'block' }}
+                            />
+                        </div>
+                    ) : (
+                        <Avatar size={48} icon={<UserOutlined />} className="bg-purple-500 flex-shrink-0" />
+                    )}
                     <div>
                         <Text strong className="text-lg block">{r.username}</Text>
                         <Tag color={
