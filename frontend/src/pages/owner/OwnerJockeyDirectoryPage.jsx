@@ -30,7 +30,7 @@ const OwnerJockeyDirectoryPage = () => {
             title: 'Tên Nài Ngựa',
             render: (_, r) => (
                 <div className="flex items-center gap-4">
-                    <Avatar size={48} icon={<UserOutlined />} className="bg-purple-500" />
+                    <Avatar size={48} src={r.avatarUrl} icon={!r.avatarUrl && <UserOutlined />} className="bg-purple-500" />
                     <div>
                         <Text strong className="text-lg block">{r.username}</Text>
                         <Tag color={

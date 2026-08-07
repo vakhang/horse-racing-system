@@ -17,4 +17,5 @@ public class JockeyMarketResponseDTO {
     private String phone;
     private String email;
     private String status; // SẴN SÀNG, ĐANG CÓ LỊCH, CHỜ DUYỆT
+    private String avatarUrl;
 }

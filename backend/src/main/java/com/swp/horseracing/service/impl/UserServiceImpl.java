@@ -73,6 +73,11 @@ public class UserServiceImpl implements UserService {
                         status = "CHỜ DUYỆT";
                     }
 
+                    String avatarUrl = j.getAttachments().stream()
+                            .filter(a -> a.getDocType() == UserDocType.AVATAR)
+                            .map(UserAttachment::getFileUrl)
+                            .findFirst().orElse(null);
+
                     return com.swp.horseracing.dto.JockeyMarketResponseDTO.builder()
                             .id(j.getId())
                             .username(j.getUsername())
@@ -81,6 +86,7 @@ public class UserServiceImpl implements UserService {
                             .phone(j.getPhoneNumber())
                             .email(j.getEmail())
                             .status(status)
+                            .avatarUrl(avatarUrl)
                             .build();
                 })
                 .collect(Collectors.toList());
