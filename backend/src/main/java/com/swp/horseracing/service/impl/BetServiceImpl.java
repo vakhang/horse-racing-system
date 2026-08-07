@@ -49,11 +49,11 @@ public class BetServiceImpl implements BetService {
         // TÍNH TỔNG CƯỢC TRONG NGÀY ĐỂ CHECK LIMIT 1 TRIỆU
         java.time.LocalDateTime startOfDay = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh")).toLocalDate().atStartOfDay();
         java.time.LocalDateTime endOfDay = startOfDay.plusDays(1).minusSeconds(1);
-        
-        java.math.BigDecimal totalBetToday = betRepository.sumDailyBetAmountBySpectatorId(spectator.getId(), startOfDay, endOfDay);
-        if (totalBetToday == null) totalBetToday = java.math.BigDecimal.ZERO;
-            
-        if (totalBetToday.add(request.getAmount()).compareTo(new java.math.BigDecimal("1000000")) > 0) {
+
+        BigDecimal totalBetToday = betRepository.sumDailyBetAmountBySpectatorId(spectator.getId(), startOfDay, endOfDay);
+        if (totalBetToday == null) totalBetToday = BigDecimal.ZERO;
+
+        if (totalBetToday.add(request.getAmount()).compareTo(new BigDecimal("1000000")) > 0) {
             throw new RuntimeException("Bạn đã vượt quá hạn mức cược tối đa 1.000.000 VNĐ/ngày!");
         }
 
@@ -103,28 +103,32 @@ public class BetServiceImpl implements BetService {
         return savedBet;
     }
 
+    @Override
     @Transactional
     public void calculateAndPayoutRewards(Race race) {
         List<Bet> allBets = betRepository.findByRaceId(race.getId());
-        
-        // 1. Phân tách Total Pool cho 4 thể loại (giả định chia đều hoặc theo doanh thu thực tế của từng loại)
-        // Ở đây tính Payout Pool (65%) dựa trên tổng doanh thu của từng BetType
-        BigDecimal winPool = sumBetsByType(allBets, BetType.WIN).multiply(new BigDecimal("0.65"));
-        // BigDecimal placePool = sumBetsByType(allBets, BetType.PLACE).multiply(new BigDecimal("0.65"));
-        // BigDecimal quinellaPool = sumBetsByType(allBets, BetType.QUINELLA).multiply(new BigDecimal("0.65"));
-        BigDecimal exactaPool = sumBetsByType(allBets, BetType.EXACTA).multiply(new BigDecimal("0.65"));
 
-        // Giả sử lấy ngựa về Nhất và Nhì từ DB (Cần logic lấy rank từ Registration, ở đây demo cứng)
+        // Lấy ngựa về Nhất và Nhì
         Registration firstPlace = getRegistrationByRank(race, 1);
         Registration secondPlace = getRegistrationByRank(race, 2);
 
-        // Xử lý cược WIN
+        // 1. Phân tách Total Pool (65% Payout Pool cho từng thể loại cược)
+        BigDecimal winPool = sumBetsByType(allBets, BetType.WIN).multiply(new BigDecimal("0.65"));
+        BigDecimal placePool = sumBetsByType(allBets, BetType.PLACE).multiply(new BigDecimal("0.65"));
+        BigDecimal quinellaPool = sumBetsByType(allBets, BetType.QUINELLA).multiply(new BigDecimal("0.65"));
+        BigDecimal exactaPool = sumBetsByType(allBets, BetType.EXACTA).multiply(new BigDecimal("0.65"));
+
+        // Xử lý cược WIN (Đơn Thắng - 1st)
         processWinBets(allBets, firstPlace, winPool, race);
 
-        // Xử lý cược EXACTA
-        processExactaBets(allBets, firstPlace, secondPlace, exactaPool, race);
+        // Xử lý cược PLACE (Nhất Nhì - 1st hoặc 2nd, chia đôi 32.5% - 32.5%)
+        processPlaceBets(allBets, firstPlace, secondPlace, placePool, race);
 
-        // Các loại khác (Place, Quinella) tương tự...
+        // Xử lý cược QUINELLA (Cặp Đôi Top 2, không quan trọng thứ tự)
+        processQuinellaBets(allBets, firstPlace, secondPlace, quinellaPool, race);
+
+        // Xử lý cược EXACTA (Cặp Chính Xác 1st & 2nd + Jackpot Carryover nếu không ai trúng)
+        processExactaBets(allBets, firstPlace, secondPlace, exactaPool, race);
     }
 
     private BigDecimal sumBetsByType(List<Bet> bets, BetType type) {
@@ -135,25 +139,24 @@ public class BetServiceImpl implements BetService {
     }
 
     private Registration getRegistrationByRank(Race race, int rank) {
-        // Logic tìm ngựa theo rank
         return registrationRepository.findAll().stream()
                 .filter(r -> r.getRace().getId().equals(race.getId()) && r.getRank() != null && r.getRank() == rank)
                 .findFirst().orElse(null);
     }
 
+    // 2a. Cược Đơn Thắng (Win)
     private void processWinBets(List<Bet> allBets, Registration firstPlace, BigDecimal winPool, Race race) {
         if (firstPlace == null) return;
         List<Bet> winBets = allBets.stream().filter(b -> b.getBetType() == BetType.WIN).toList();
+        if (winBets.isEmpty()) return;
+
         BigDecimal totalBetWinner = winBets.stream()
                 .filter(b -> b.getRegistration().getId().equals(firstPlace.getId()))
                 .map(Bet::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (totalBetWinner.compareTo(BigDecimal.ZERO) == 0) {
-            // Không ai trúng cược -> Hoàn tiền 100% (Refund)
-            for (Bet b : winBets) {
-                refundBet(b);
-            }
+            for (Bet b : winBets) refundBet(b);
             return;
         }
 
@@ -170,23 +173,91 @@ public class BetServiceImpl implements BetService {
         }
     }
 
+    // 2b. Cược Nhất Nhì (Place): Chia đôi 65% thành 2 nửa 32.5% cho Nhất và 32.5% cho Nhì
+    private void processPlaceBets(List<Bet> allBets, Registration firstPlace, Registration secondPlace, BigDecimal placePool, Race race) {
+        List<Bet> placeBets = allBets.stream().filter(b -> b.getBetType() == BetType.PLACE).toList();
+        if (placeBets.isEmpty()) return;
+
+        BigDecimal pool1st = placePool.multiply(new BigDecimal("0.50")); // 32.5% của tổng cược Place
+        BigDecimal pool2nd = placePool.multiply(new BigDecimal("0.50")); // 32.5% của tổng cược Place
+
+        BigDecimal total1st = firstPlace != null ? placeBets.stream()
+                .filter(b -> b.getRegistration().getId().equals(firstPlace.getId()))
+                .map(Bet::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO;
+
+        BigDecimal total2nd = secondPlace != null ? placeBets.stream()
+                .filter(b -> b.getRegistration().getId().equals(secondPlace.getId()))
+                .map(Bet::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add) : BigDecimal.ZERO;
+
+        BigDecimal odds1st = total1st.compareTo(BigDecimal.ZERO) > 0 ? ensureMinusPoolProtection(pool1st.divide(total1st, 2, RoundingMode.HALF_UP), total1st, pool1st, race) : BigDecimal.ZERO;
+        BigDecimal odds2nd = total2nd.compareTo(BigDecimal.ZERO) > 0 ? ensureMinusPoolProtection(pool2nd.divide(total2nd, 2, RoundingMode.HALF_UP), total2nd, pool2nd, race) : BigDecimal.ZERO;
+
+        for (Bet b : placeBets) {
+            if (firstPlace != null && b.getRegistration().getId().equals(firstPlace.getId())) {
+                payoutWinningBet(b, odds1st);
+            } else if (secondPlace != null && b.getRegistration().getId().equals(secondPlace.getId())) {
+                payoutWinningBet(b, odds2nd);
+            } else {
+                b.setStatus(BetStatus.LOST);
+                betRepository.save(b);
+            }
+        }
+    }
+
+    // 2c. Cược Cặp Đôi (Quinella): 2 con về Top 2, không phân biệt thứ tự
+    private void processQuinellaBets(List<Bet> allBets, Registration firstPlace, Registration secondPlace, BigDecimal quinellaPool, Race race) {
+        if (firstPlace == null || secondPlace == null) return;
+        List<Bet> quinellaBets = allBets.stream().filter(b -> b.getBetType() == BetType.QUINELLA).toList();
+        if (quinellaBets.isEmpty()) return;
+
+        BigDecimal totalBetWinnerPair = quinellaBets.stream()
+                .filter(b -> (b.getRegistration().getId().equals(firstPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(secondPlace.getId())) ||
+                             (b.getRegistration().getId().equals(secondPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(firstPlace.getId())))
+                .map(Bet::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        if (totalBetWinnerPair.compareTo(BigDecimal.ZERO) == 0) {
+            for (Bet b : quinellaBets) refundBet(b);
+            return;
+        }
+
+        BigDecimal rawOdds = quinellaPool.divide(totalBetWinnerPair, 2, RoundingMode.HALF_UP);
+        BigDecimal finalOdds = ensureMinusPoolProtection(rawOdds, totalBetWinnerPair, quinellaPool, race);
+
+        for (Bet b : quinellaBets) {
+            boolean isWinner = (b.getRegistration().getId().equals(firstPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(secondPlace.getId())) ||
+                               (b.getRegistration().getId().equals(secondPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(firstPlace.getId()));
+            if (isWinner) {
+                payoutWinningBet(b, finalOdds);
+            } else {
+                b.setStatus(BetStatus.LOST);
+                betRepository.save(b);
+            }
+        }
+    }
+
+    // 2d. Cược Cặp Đôi Chính Xác (Exacta): Đoán chính xác tuyệt đối Con 1 Nhất & Con 2 Nhì + Jackpot Carryover
     private void processExactaBets(List<Bet> allBets, Registration firstPlace, Registration secondPlace, BigDecimal exactaPool, Race race) {
         if (firstPlace == null || secondPlace == null) return;
         List<Bet> exactaBets = allBets.stream().filter(b -> b.getBetType() == BetType.EXACTA).toList();
+        if (exactaBets.isEmpty()) return;
+
         BigDecimal totalBetExacta = exactaBets.stream()
                 .filter(b -> b.getRegistration().getId().equals(firstPlace.getId()) && b.getRegistration2() != null && b.getRegistration2().getId().equals(secondPlace.getId()))
                 .map(Bet::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         if (totalBetExacta.compareTo(BigDecimal.ZERO) == 0) {
-            // Không ai trúng EXACTA -> Lưu Jackpot
-            SystemFund jackpot = systemFundRepository.findByFundTypeAndClassLevelWithPessimisticWrite("JACKPOT", race.getTournament().getRequiredClass())
-                    .orElse(null); // Thực tế cần fetch từ Tournament classLevel
+            // Không ai trúng EXACTA -> Lưu Jackpot Carryover cho chặng đua cùng Class
+            String requiredClass = race.getTournament() != null && race.getTournament().getRequiredClass() != null ? race.getTournament().getRequiredClass() : "CLASS_4";
+            SystemFund jackpot = systemFundRepository.findByFundTypeAndClassLevelWithPessimisticWrite("JACKPOT", requiredClass)
+                    .orElse(null);
             if (jackpot != null) {
                 jackpot.setBalance(jackpot.getBalance().add(exactaPool));
                 systemFundRepository.save(jackpot);
             }
-            // Vé thua
             for (Bet b : exactaBets) {
                 b.setStatus(BetStatus.LOST);
                 betRepository.save(b);
@@ -211,12 +282,12 @@ public class BetServiceImpl implements BetService {
         BigDecimal minOdds = new BigDecimal("1.05");
         if (odds.compareTo(minOdds) < 0) {
             BigDecimal deficit = totalBetWinner.multiply(minOdds).subtract(payoutPool);
-            SystemFund riskReserve = systemFundRepository.findByFundTypeWithPessimisticWrite("RISK_RESERVE")
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy Quỹ RISK_RESERVE"));
-            
-            riskReserve.setBalance(riskReserve.getBalance().subtract(deficit));
-            systemFundRepository.save(riskReserve);
-
+            SystemFund riskReserve = systemFundRepository.findByFundTypeWithPessimisticWrite("RISK_RESERVE").orElse(null);
+            if (riskReserve != null && riskReserve.getBalance().compareTo(deficit) >= 0) {
+                riskReserve.setBalance(riskReserve.getBalance().subtract(deficit));
+                systemFundRepository.save(riskReserve);
+            }
+            if (race.getMinusPoolDeficit() == null) race.setMinusPoolDeficit(BigDecimal.ZERO);
             race.setMinusPoolDeficit(race.getMinusPoolDeficit().add(deficit));
             raceRepository.save(race);
 
@@ -226,13 +297,13 @@ public class BetServiceImpl implements BetService {
     }
 
     private void payoutWinningBet(Bet bet, BigDecimal odds) {
-        BigDecimal grossPayout = bet.getAmount().multiply(odds);
+        BigDecimal grossPayout = bet.getAmount().multiply(odds).setScale(2, RoundingMode.HALF_UP);
         BigDecimal profit = grossPayout.subtract(bet.getAmount());
         BigDecimal pit = BigDecimal.ZERO;
         BigDecimal threshold = new BigDecimal("10000000");
 
         if (profit.compareTo(threshold) > 0) {
-            pit = profit.subtract(threshold).multiply(new BigDecimal("0.10"));
+            pit = profit.subtract(threshold).multiply(new BigDecimal("0.10")).setScale(2, RoundingMode.HALF_UP);
         }
 
         BigDecimal netPayout = grossPayout.subtract(pit);
@@ -244,17 +315,43 @@ public class BetServiceImpl implements BetService {
         bet.setStatus(BetStatus.WON);
         betRepository.save(bet);
 
-        // Cộng tiền vào ví
+        // Cộng tiền vào ví khán giả
         Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
                 .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
         wallet.setBalance(wallet.getBalance().add(netPayout));
         walletRepository.save(wallet);
 
-        // Ghi transaction...
+        // Ghi log tiền thắng
+        TransactionHistory history = TransactionHistory.builder()
+                .transactionCode("RW-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .wallet(wallet)
+                .amount(grossPayout)
+                .type(TransactionType.REWARD)
+                .direction(TransactionDirection.IN)
+                .bet(bet)
+                .status(TransactionStatus.COMPLETED)
+                .build();
+        transactionRepository.save(history);
+
+        // Ghi log khấu trừ thuế PIT
+        if (pit.compareTo(BigDecimal.ZERO) > 0) {
+            TransactionHistory txTax = TransactionHistory.builder()
+                    .transactionCode("TAX-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                    .wallet(wallet)
+                    .amount(pit)
+                    .type(TransactionType.TAX)
+                    .direction(TransactionDirection.OUT)
+                    .bet(bet)
+                    .status(TransactionStatus.COMPLETED)
+                    .taxAmount(pit)
+                    .build();
+            transactionRepository.save(txTax);
+        }
     }
 
     private void refundBet(Bet bet) {
         bet.setStatus(BetStatus.REFUNDED);
+        bet.setReward(bet.getAmount());
         betRepository.save(bet);
 
         Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
