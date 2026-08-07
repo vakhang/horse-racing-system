@@ -1,0 +1,98 @@
+================================================================================
+     KỊCH BẢN TEST CƯỢC CHI TIẾT: 5 KHÁN GIẢ CƯỢC 4 CON NGỰA QUA 4 LOẠI CƯỢC
+================================================================================
+
+DANH SÁCH 4 CHIẾN MÃ TRONG CHẶNG DUA:
+- Ngựa 1: Sai (Cổng 1)
+- Ngựa 2: rồng (Cổng 2)
+- Ngựa 3: rouch (Cổng 3)
+- Ngựa 4: Kiwi (Cổng 4)
+
+DANH SÁCH 5 KHÁN GIẢ (Khách 1, Khách 2, Khách 3, Khách 4, Khách 5)
+
+--------------------------------------------------------------------------------
+1. CƯỢC WIN (ĐƠN THẮNG - 65% PAYOUT POOL)
+--------------------------------------------------------------------------------
+[Hành Động Cược]:
+- Khách 1 : Cược 100.000đ vào Ngựa 1 (Sai)
+- Khách 2 : Cược 100.000đ vào Ngựa 1 (Sai)
+- Khách 3 : Cược 100.000đ vào Ngựa 2 (rồng)
+- Khách 4 : Cược  50.000đ vào Ngựa 3 (rouch)
+- Khách 5 : Cược  50.000đ vào Ngựa 4 (Kiwi)
+
+[Kiểm Toán Bể Cược WIN]:
+- Tổng tiền cược bể Win = 100k + 100k + 100k + 50k + 50k = 400.000đ
+- Quỹ trả thưởng Khán giả Win (65%) = 400.000đ * 65% = 260.000đ
+
+[Tỷ Lệ Odds Live Hiển Thị Trên Màn Hình Cược Win]:
+- Ngựa 1 (Sai)   [Bể: 200.000đ] -> Odds = 260.000 / 200.000 = x1.30
+- Ngựa 2 (rồng)  [Bể: 100.000đ] -> Odds = 260.000 / 100.000 = x2.60
+- Ngựa 3 (rouch) [Bể:  50.000đ] -> Odds = 260.000 /  50.000 = x5.20
+- Ngựa 4 (Kiwi)  [Bể:  50.000đ] -> Odds = 260.000 /  50.000 = x5.20
+
+
+--------------------------------------------------------------------------------
+2. CƯỢC PLACE (TOP 2 - 32.5% PAYOUT POOL PER RANK)
+--------------------------------------------------------------------------------
+[Hành Động Cược]:
+- Khách 1 : Cược 100.000đ vào Ngựa 1 (Sai)
+- Khách 2 : Cược  50.000đ vào Ngựa 2 (rồng)
+- Khách 3 : Cược  50.000đ vào Ngựa 2 (rồng)
+- Khách 4 : Cược 100.000đ vào Ngựa 3 (rouch)
+- Khách 5 : Cược 100.000đ vào Ngựa 4 (Kiwi)
+
+[Kiểm Toán Bể Cược PLACE]:
+- Tổng tiền cược bể Place = 100k + 50k + 50k + 100k + 100k = 400.000đ
+- Quỹ trả thưởng Khán giả Place (65%) = 400.000đ * 65% = 260.000đ
+- Chia đôi 50/50 cho 1st Sub-pool và 2nd Sub-pool = 130.000đ (32.5% mỗi nửa)
+
+[Tỷ Lệ Odds Live Hiển Thị Trên Màn Hình Cược Place]:
+- Ngựa 1 (Sai)   [Bể: 100.000đ] -> Odds = 130.000 / 100.000 = x1.30
+- Ngựa 2 (rồng)  [Bể: 100.000đ] -> Odds = 130.000 / 100.000 = x1.30
+- Ngựa 3 (rouch) [Bể: 100.000đ] -> Odds = 130.000 / 100.000 = x1.30
+- Ngựa 4 (Kiwi)  [Bể: 100.000đ] -> Odds = 130.000 / 100.000 = x1.30
+
+
+--------------------------------------------------------------------------------
+3. CƯỢC QUINELLA (CẶP ĐÔI TOP 2 - 65% PAYOUT POOL)
+--------------------------------------------------------------------------------
+[Hành Động Cược]:
+- Khách 1 : Cược 100.000đ vào Cặp {Sai & rồng}
+- Khách 2 : Cược 100.000đ vào Cặp {Sai & rồng}
+- Khách 3 : Cược 100.000đ vào Cặp {Sai & rouch}
+- Khách 4 : Cược  50.000đ vào Cặp {rồng & Kiwi}
+- Khách 5 : Cược  50.000đ vào Cặp {rouch & Kiwi}
+
+[Kiểm Toán Bể Cược QUINELLA]:
+- Tổng tiền cược bể Quinella = 100k + 100k + 100k + 50k + 50k = 400.000đ
+- Quỹ trả thưởng Khán giả Quinella (65%) = 400.000đ * 65% = 260.000đ
+
+[Trả Thưởng Khi Kết Thúc Đua (Giả định Hạng 1 là Sai, Hạng 2 là rồng)]:
+- Cặp thắng {Sai & rồng} có tổng tiền cược = 200.000đ
+- Odds Quinella thắng = 260.000 / 200.000 = x1.30
+- Khách 1 thắng nhận: 100.000đ * 1.30 = 130.000đ
+- Khách 2 thắng nhận: 100.000đ * 1.30 = 130.000đ
+
+
+--------------------------------------------------------------------------------
+4. CƯỢC EXACTA (CẶP CHÍNH XÁC + JACKPOT CARRYOVER)
+--------------------------------------------------------------------------------
+[Hành Động Cược]:
+- Giả định chặng có Carryover từ chặng trước cùng Class = 140.000đ
+- Khách 1 : Cược 100.000đ vào Cặp Exacta (Sai 1st, rồng 2nd)
+- Khách 2 : Cược 100.000đ vào Cặp Exacta (Sai 1st, rồng 2nd)
+- Khách 3 : Cược 100.000đ vào Cặp Exacta (rồng 1st, Sai 2nd)
+- Khách 4 : Cược  50.000đ vào Cặp Exacta (Sai 1st, rouch 2nd)
+- Khách 5 : Cược  50.000đ vào Cặp Exacta (rouch 1st, Kiwi 2nd)
+
+[Kiểm Toán Bể Cược EXACTA]:
+- Tổng tiền cược bể Exacta chặng này = 400.000đ -> Quỹ 65% = 260.000đ
+- Tổng Bể Payout Exacta (Có cộng dồn Carryover) = 260.000đ + 140.000đ = 400.000đ
+- Tổng tiền cược cặp thắng (Sai 1st, rồng 2nd) = 200.000đ
+
+[Trả Thưởng Khi Kết Thúc Đua (Giả định Hạng 1 là Sai, Hạng 2 là rồng)]:
+- Odds Exacta thắng = 400.000đ / 200.000đ = x2.00
+- Khách 1 thắng nhận: 100.000đ * 2.00 = 200.000đ
+- Khách 2 thắng nhận: 100.000đ * 2.00 = 200.000đ
+- Quỹ Carryover của Class tự động reset về 0đ.
+================================================================================

@@ -418,6 +418,31 @@ const BettingPage = () => {
                     <Text className="font-bold text-yellow-400 text-lg">{Number(walletBalance).toLocaleString()} VNĐ</Text>
                 </div>
 
+                {/* THÔNG TIN CHẶNG ĐUA & CƠ CẤU GIẢI THƯỞNG */}
+                {selectedRace && (
+                    <div className="mb-4 bg-[#14261d] p-3 rounded-lg border border-[#007355] text-xs">
+                        <div className="grid grid-cols-3 gap-2 text-center mb-2">
+                            <div className="bg-yellow-500/10 p-1.5 rounded border border-yellow-500/30">
+                                <Text className="text-[10px] text-yellow-400 font-bold block">🥇 GIẢI NHẤT</Text>
+                                <Text className="font-bold text-yellow-300">{Number(selectedRace.prize1 || 10000000).toLocaleString()}đ</Text>
+                            </div>
+                            <div className="bg-gray-400/10 p-1.5 rounded border border-gray-400/30">
+                                <Text className="text-[10px] text-gray-300 font-bold block">🥈 GIẢI NHÌ</Text>
+                                <Text className="font-bold text-gray-200">{Number(selectedRace.prize2 || 5000000).toLocaleString()}đ</Text>
+                            </div>
+                            <div className="bg-amber-700/10 p-1.5 rounded border border-amber-700/30">
+                                <Text className="text-[10px] text-amber-500 font-bold block">🥉 GIẢI BA</Text>
+                                <Text className="font-bold text-amber-400">{Number(selectedRace.prize3 || 2000000).toLocaleString()}đ</Text>
+                            </div>
+                        </div>
+                        <div className="flex justify-between items-center text-gray-300 pt-1 border-t border-gray-700/50">
+                            <span>🏆 Quy Định: <strong className="text-yellow-400">Class {selectedRace.raceClass || selectedRace.requiredClass || 4}</strong></span>
+                            <span>💰 Tổng Bể Live: <strong className="text-green-400">{Number(selectedRace.totalPool || 0).toLocaleString()}đ</strong></span>
+                            <span>👨‍⚖️ Trọng Tài: <strong className="text-blue-400">{selectedRace.refereeUsername || 'Ban Trọng Tài'}</strong></span>
+                        </div>
+                    </div>
+                )}
+
                 {/* THIẾT LẬP 4 LOẠI CƯỢC */}
                 <div className="mb-4">
                     <Text strong className="text-gray-300 block mb-2">Chọn Thể Loại Đặt Cược:</Text>

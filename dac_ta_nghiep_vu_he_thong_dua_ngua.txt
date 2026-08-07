@@ -1,0 +1,95 @@
+================================================================================
+          ĐẶC TẢ CHI TIẾT LUỒNG NGHIỆP VỤ & RÀNG BUỘC THEO 5 ROLE
+              HỆ THỐNG ĐUA NGƯỢC THỂ THAO & CÁ CƯỢC BET989
+================================================================================
+
+--------------------------------------------------------------------------------
+ROLE 1: KHÁN GIẢ (SPECTATOR)
+--------------------------------------------------------------------------------
+1. Luồng Hoạt Động (Workflow):
+   - Khởi tạo Tài khoản & Ví tiền: Đăng ký tài khoản Khán giả -> Hệ thống tự động khởi tạo Ví cá nhân (Wallet, số dư 0 VNĐ). Nạp/rút tiền qua ví.
+   - Theo dõi Giải đấu & Kèo Cược Live: Xem thông tin các Chặng đua, Danh sách chiến mã, Tải trọng gánh (Handicap), Gate xuất phát và Bảng Tỷ lệ Cược Live (Pari-mutuel).
+   - Tham Gia Cá Cược 4 Thể Loại:
+     * Win (Đơn thắng): Chọn 1 chiến mã về Hạng 1 (Vô địch).
+     * Place (Top 2): Chọn 1 chiến mã về Hạng 1 hoặc Hạng 2.
+     * Quinella (Cặp đôi): Chọn cặp 2 chiến mã về Top 2 (không phân biệt thứ tự).
+     * Exacta (Cặp chính xác): Chọn 2 chiến mã đoán đúng tuyệt đối (Con A Hạng 1 & Con B Hạng 2).
+   - Nhận Tiền Thắng Cược & Thuế: Tiền thắng cộng tự động vào Ví. Khấu trừ thuế TNCN tại nguồn nếu phần tiền lãi vượt mức quy định.
+
+2. Các Ràng Buộc Hệ Thống (Business Constraints):
+   - Chặn cá cược theo Role: Nài ngựa (JOCKEY), Chủ ngựa (OWNER), Trọng tài (REFEREE) bị CHẶN TUYỆT ĐỐI không được cá cược để đảm bảo tính minh bạch.
+   - Hạn mức cược theo ngày: Tối đa 1.000.000 VNĐ / ngày / khán giả (sumDailyBetAmountBySpectatorId). Vượt hạn mức hệ thống lập tức báo lỗi.
+   - Khóa cược theo thời gian: Chỉ được cược khi chặng đua ở trạng thái 'BETTING'. Khóa cược tự động khi chặng đua chuyển sang 'LOCK_SESSION' hoặc trước giờ chạy 1 phút.
+   - Phân bổ Dòng tiền 100% Total Pool:
+     * 65% dành riêng trả thưởng cho Khán giả thắng cược (Không bị trích cho bất kỳ bên nào).
+     * 35% Doanh thu nhà cái: Trích 5% thưởng Chủ ngựa Hạng 1, 2% thưởng Nài ngựa Hạng 1, 28% Doanh thu ròng nhà cái (Net GGR).
+   - Exacta Jackpot Carryover: Nếu chặng đua không có ai trúng cược Exacta, 65% quỹ Exacta này sẽ tự động lưu dồn (Carryover) sang chặng đua cùng Cấp (Class) tiếp theo!
+   - Khấu trừ Thuế PIT: Nếu phần tiền LÃI > 10.000.000 VNĐ -> Hệ thống tự động khấu trừ 10% thuế TNCN cho phần vượt 10 triệu.
+
+
+--------------------------------------------------------------------------------
+ROLE 2: NÀI NGỰA (JOCKEY)
+--------------------------------------------------------------------------------
+1. Luồng Hoạt Động (Workflow):
+   - Đăng ký Hồ sơ Kỵ sĩ: Điền Cân nặng khai báo (kg), Chiều cao, Số năm kinh nghiệm -> Chờ Admin duyệt KYC.
+   - Nhận & Phản Hồi Lời Mời Thi Đấu: Nhận lời mời từ Chủ ngựa -> Bấm CHẤP NHẬN hoặc TỪ CHỐI.
+   - Quy Trình Cân Nài (Weighing In) Thực Địa: Trước giờ đua, Nài ngựa cùng Yên cương bước lên bàn cân thực địa của Trọng tài để xác nhận khối lượng thực tế.
+   - Nhận Tiền Công & Thưởng Chặng: Nhận thưởng % bể cược và % giải thưởng cố định khi về Top 1, Top 2, Top 3.
+
+2. Các Ràng Buộc Hệ Thống (Business Constraints):
+   - Độc quyền trong Chặng đua: Một Nài ngựa KHÔNG THỂ nhận điều khiển 2 con ngựa trong cùng 1 chặng đua.
+   - Quy tắc Bù Chì Lá (Lead Weight):
+     * Trọng lượng gánh chỉ định chuẩn: Assigned Weight (kg) = Làm tròn[(115 lb + (Rating - Floor) * 0.5 lb) * 0.45359237]. Mốc sàn Class 4 là 52.1 kg.
+     * Nếu Cân thực tế của Nài + Yên < Tải chỉ định -> Trọng tài đút thêm chì lá vào túi yên: Lead Weight = Tải chỉ định - Cân thực tế.
+     * Nếu Cân thực tế >= Tải chỉ định -> Không cần đút chì (Lead = 0 kg, hiển thị 'Đủ tải trọng').
+
+
+--------------------------------------------------------------------------------
+ROLE 3: CHỦ NGỰA (HORSE OWNER)
+--------------------------------------------------------------------------------
+1. Luồng Hoạt Động (Workflow):
+   - Quản lý Hồ sơ Chiến mã: Đăng ký ngựa mới (Tên, Giống, Ngày sinh, Giấy khám sức khỏe) -> Chờ Admin kiểm tra sức khỏe và duyệt phân Cấp (Class).
+   - Đăng ký Chặng đua & Mời Nài: Chọn Giải/Chặng đua phù hợp -> Đăng ký ngựa -> Gửi Lời mời thi đấu cho 1 Kỵ sĩ.
+   - Nhận Thưởng Chủ Sở Hữu: Nhận % bể cược và % giải thưởng cố định khi ngựa đoạt giải.
+
+2. Các Ràng Buộc Hệ Thống (Business Constraints):
+   - Ràng buộc Cấp chạy (Class Level): Ngựa chỉ được đăng ký chặng đua thuộc đúng Cấp chạy của nó hoặc Cấp mở tương ứng (Class 1: Rating >= 95, Class 2: 80-94, Class 3: 60-79, Class 4: 40-59).
+   - Tự động hủy đơn đăng ký lỗi: Khi chặng đua chuyển sang trạng thái 'BETTING', các đơn đăng ký chưa có Nài ngựa chấp nhận sẽ bị hệ thống tự động dọn dẹp/hủy (cleanupInvalidRegistrations).
+
+
+--------------------------------------------------------------------------------
+ROLE 4: TRỌNG TÀI (REFEREE)
+--------------------------------------------------------------------------------
+1. Luồng Hoạt Động (Workflow - 4 Bước Thực Địa):
+   - Bước 1: Xác Nhận Cổng Xuất Phát (Gate #) & Cân Nài Bù Chì:
+     * Nhập số Cổng xuất phát (Gate #1, Gate #2...) cho từng chiến mã sau khi bốc thăm thực địa bên ngoài.
+     * Nhập khối lượng thực tế (kg) của Kỵ sĩ + Yên cương trên bàn cân -> Bấm XÁC NHẬN CÂN.
+   - Bước 2: Phát Lệnh Bắt Đầu Đua (RUNNING): Bấm BẮT ĐẦU ĐUA khi tất cả kỵ sĩ đã cân đủ tải và sẵn sàng ở cổng.
+   - Bước 3: Nhập Kết Quả Thi Đấu & Xử Lý Vi Phạm: Nhập Thứ hạng về đích, Thời gian chạy (giây), lập biên bản xử phạt (Cảnh cáo, Trừ hạng, Truất quyền DISQUALIFIED).
+   - Bước 4: Xác Nhận Kết Quả (RESULT_CONFIRMED): Bấm XÁC NHẬN KẾT QUẢ -> Lập tức kích hoạt hệ thống tự động Payout trả thưởng.
+
+2. Các Ràng Buộc Hệ Thống (Business Constraints):
+   - Phân công Chặng đua: Trọng tài chỉ được quản lý và thao tác trên các Chặng đua được Admin phân công (referee_id).
+   - Ràng buộc Bù Chì bắt buộc: Trọng tài chỉ có thể bấm Bắt đầu đua sau khi toàn bộ kỵ sĩ trong chặng đã hoàn tất thủ tục cân nài.
+
+
+--------------------------------------------------------------------------------
+ROLE 5: QUẢN TRỊ VIÊN (ADMIN)
+--------------------------------------------------------------------------------
+1. Luồng Hoạt Động (Workflow):
+   - Quản lý Người dùng & Duyệt KYC: Duyệt/Từ chối hồ sơ KYC của Nài ngựa, Chủ ngựa, Trọng tài.
+   - Quản lý Giải đấu (Tournament) & Chặng đua (Race): Tạo mới Giải đấu, cấu hình Cấp chạy, tạo Chặng đua, phân công Trọng tài phụ trách, thay đổi Trọng tài nếu bận.
+   - Duyệt Chiến Mã: Kiểm tra hồ sơ sức khỏe chiến mã -> Duyệt nhập học & cấp Rating/Class ban đầu (Mặc định Class 4 - Rating 40).
+   - Quản lý Tài chính & Quỹ Hệ Thống: Kiểm toán Quỹ rủi ro (RISK_RESERVE), Quỹ tích lũy Exacta (JACKPOT), kiểm soát Doanh thu ròng nhà cái (28% Net GGR) và tiền Thuế TNCN đã khấu trừ.
+
+
+--------------------------------------------------------------------------------
+BẢNG TỔNG HỢP CƠ CẤU CHIA TIỀN THƯỞNG CUỐI CHẶNG (PAYOUT MATRIX)
+--------------------------------------------------------------------------------
+1. Khán Giả Trúng Cược : 65% Payout Pool (Win, Place, Quinella, Exacta)
+2. Chủ Ngựa (Owner) Top 1: 5% Total Pool + 70% Prize 1
+3. Nài Ngựa (Jockey) Top 1: 2% Total Pool + 30% Prize 1
+4. Chủ Ngựa Top 2 & Top 3: 70% Prize 2 & 70% Prize 3
+5. Nài Ngựa Top 2 & Top 3: 30% Prize 2 & 30% Prize 3
+6. Doanh Thu Ròng Nhà Cái : 28% Net GGR (35% - 5% - 2%)
+================================================================================

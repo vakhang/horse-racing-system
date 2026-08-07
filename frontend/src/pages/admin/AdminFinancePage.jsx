@@ -149,7 +149,7 @@ const AdminFinancePage = () => {
                 <Tabs size="large" items={[
                     {
                         key: 'WITHDRAW',
-                        label: `Duyệt Rút Tiền Quầy (${pendingWithdrawals.length})`,
+                        label: `Duyệt Lệnh Rút Tiền (${pendingWithdrawals.length})`,
                         children: (
                             <>
                                 <Input size="large" placeholder="Nhập mã lệnh rút..." prefix={<SearchOutlined />} className="mb-6 w-1/2" onChange={e => setSearchCodeWithdraw(e.target.value)} allowClear/>

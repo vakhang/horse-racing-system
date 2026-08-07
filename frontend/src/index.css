@@ -2,34 +2,49 @@
 @import "react-quill-new/dist/quill.snow.css";
 
 @theme {
-  --font-sans: "Lexend", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Montserrat", "Lexend", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Cinzel", Georgia, serif;
 }
 
 /* ==========================================
-   BET989 DESIGN SYSTEM THEME VARIABLES
+   BET989 RACING ARENA DESIGN SYSTEM
    ========================================== */
 :root {
-  --b989-bg-dark: #121212;
-  --b989-bg-card: #1e1e1e;
-  --b989-bg-card-alt: #242424;
-  --b989-bg-header: #005c44;
-  --b989-bg-header-dark: #004633;
-  --b989-green-accent: #007355;
-  --b989-green-light: #00b37e;
-  --b989-gold: #fcc200;
-  --b989-gold-hover: #e5b100;
-  --b989-text-light: #e0e0e0;
-  --b989-text-muted: #a0a0a0;
-  --b989-border: #333333;
-  --b989-border-light: #282828;
+  --b989-bg-dark: #0a110d;
+  --b989-bg-card: #13221a;
+  --b989-bg-card-alt: #1a2f24;
+  --b989-bg-header: #004d38;
+  --b989-bg-header-dark: #003627;
+  --b989-green-accent: #008763;
+  --b989-green-light: #00e699;
+  --b989-gold: #f59e0b;
+  --b989-gold-bright: #fbbf24;
+  --b989-text-light: #f3f4f6;
+  --b989-text-muted: #9ca3af;
+  --b989-border: #1f3a2c;
+  --b989-border-light: #2d5440;
+}
+
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 body {
     margin: 0;
     padding: 0;
-    background-color: #121212 !important;
-    color: #e0e0e0 !important;
-    font-family: "Lexend", sans-serif;
+    background-color: #0d1813 !important;
+    color: #f3f4f6 !important;
+    font-family: "Montserrat", "Lexend", sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Custom Racing Headings */
+h1, h2, h3, .royal-heading {
+    font-family: "Montserrat", sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.02em;
 }
 
 /* --- OVERRIDE TAILWIND DEFAULT LIGHT BACKGROUNDS TO BET989 DARK THEME --- */

@@ -45,11 +45,11 @@ const AdminTournamentPage = () => {
     const [selectedRaceForChangeReferee, setSelectedRaceForChangeReferee] = useState(null);
     const [selectedRefereeId, setSelectedRefereeId] = useState(null);
 
-    const openChangeRefereeModal = (race) => {
-        fetchReferees();
+    const openChangeRefereeModal = async (race) => {
         setSelectedRaceForChangeReferee(race);
         setSelectedRefereeId(race.refereeId || null);
         setIsChangeRefereeModalVisible(true);
+        await fetchReferees();
     };
 
     const handleChangeRefereeSubmit = async () => {
@@ -57,17 +57,12 @@ const AdminTournamentPage = () => {
             return message.warning('Vui lòng chọn trọng tài mới!');
         }
         try {
-            try {
-                await api.put(`/races/${selectedRaceForChangeReferee.id}/referee`, { refereeId: selectedRefereeId });
-            } catch (err) {
-                if (err.response && err.response.status === 404) {
-                    await api.put(`/races/${selectedRaceForChangeReferee.id}`, { refereeId: selectedRefereeId });
-                } else {
-                    throw err;
-                }
-            }
+            await api.put(`/races/${selectedRaceForChangeReferee.id}/referee`, { refereeId: selectedRefereeId });
             message.success('Cập nhật trọng tài cho chặng đua thành công! 👔');
             setIsChangeRefereeModalVisible(false);
+            if (selectedRaceForChangeReferee.tournamentId) {
+                await fetchRacesForTournament(selectedRaceForChangeReferee.tournamentId);
+            }
             fetchTournaments();
         } catch (error) {
             message.error(error.response?.data?.error || error.response?.data?.message || 'Có lỗi khi cập nhật trọng tài!');
@@ -95,9 +90,13 @@ const AdminTournamentPage = () => {
     const fetchReferees = async () => {
         try {
             const response = await api.get('/users');
-            setReferees(response.data.filter(u => u.role === 'REFEREE'));
+            const data = Array.isArray(response.data) ? response.data : [];
+            const refereeList = data.filter(u => u && u.role && String(u.role).toUpperCase() === 'REFEREE');
+            setReferees(refereeList);
+            return refereeList;
         } catch (error) {
             console.error("Lỗi lấy danh sách trọng tài", error);
+            return [];
         }
     };
 
@@ -380,16 +379,21 @@ const AdminTournamentPage = () => {
                 render: (_, record) => (
                     <Space wrap>
                         {record.status === 'REGISTRATION' && (
-                            <Popconfirm title="Chốt danh sách ngựa thi đấu và mở cổng nhận cược?" onConfirm={() => handleForceTransition(record, 'BETTING')}>
-                                <Button size="small" type="primary" style={{ backgroundColor: '#1890ff', fontWeight: 'bold' }}>🔓 CHỐT DANH SÁCH & MỞ CƯỢC</Button>
+                            <Popconfirm title="Chốt danh sách ngựa thi đấu (Chuyển sang bước Cân Nài & Gán Cổng)?" onConfirm={() => handleForceTransition(record, 'LOCK_SESSION')}>
+                                <Button size="small" type="primary" className="bg-amber-600 border-none font-bold">📋 CHỐT DANH SÁCH THI ĐẤU</Button>
+                            </Popconfirm>
+                        )}
+                        {record.status === 'LOCK_SESSION' && (
+                            <Popconfirm title="Mở cổng cho Khán giả đặt cược Pari-mutuel?" onConfirm={() => handleForceTransition(record, 'BETTING')}>
+                                <Button size="small" type="primary" className="bg-green-600 border-none font-bold shadow-md">🔓 MỞ ĐẶT CƯỢC (BETTING)</Button>
                             </Popconfirm>
                         )}
                         {record.status === 'BETTING' && (
-                            <Popconfirm title="Khóa cổng cược ngay lập tức?" onConfirm={() => handleForceTransition(record, 'LOCK_SESSION')}>
+                            <Popconfirm title="Khóa cổng cược ngay lập tức để chuẩn bị chạy?" onConfirm={() => handleForceTransition(record, 'LOCK_SESSION')}>
                                 <Button size="small" type="primary" style={{ backgroundColor: '#595959', fontWeight: 'bold' }}>🔒 KHÓA CỔNG NHẬN CƯỢC</Button>
                             </Popconfirm>
                         )}
-                        <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>Loại Ngựa</Button>
+                        <Button size="small" type="primary" className="bg-purple-600 border-none font-bold" onClick={() => openWithdrawModal(record)}>📋 Danh Sách Ngựa</Button>
                         <Button size="small" type="primary" ghost icon={<EditOutlined />} onClick={() => openEditRaceModal(record)}>Thiết Lập</Button>
                         {(record.status === 'RESULT_CONFIRMED' || record.status === 'COMPLETED') && (
                             <Button size="small" type="dashed" className="text-blue-600 font-bold" onClick={() => handleViewResult(record)}>🏆 XEM KẾT QUẢ</Button>
@@ -544,22 +548,46 @@ const AdminTournamentPage = () => {
                 </Form>
             </Modal>
 
-            {/* MODAL QUẢN LÝ NGỰA BỊ LOẠI */}
-            <Modal title={<span className="text-xl text-red-600 font-bold"><CloseCircleOutlined /> Đình Chỉ / Rút Lui Chiến Mã</span>} open={isWithdrawModalVisible} onCancel={() => setIsWithdrawModalVisible(false)} footer={null} centered>
-                <Alert message="Hoàn tiền tự động (Refund)" description="Việc đánh dấu một con ngựa 'Rút lui' sẽ lập tức hủy toàn bộ các vé cược liên quan đến riêng con ngựa đó và hoàn tiền 100% về ví khán giả." type="warning" showIcon className="mb-4" />
-                <ul className="space-y-3">
-                    {raceRegistrations.length === 0 && <Text className="text-gray-500">Chưa có ngựa nào đăng ký chặng này.</Text>}
+            {/* MODAL XEM DANH SÁCH THI ĐẤU & QUẢN LÝ LOẠI NGỰA */}
+            <Modal
+                title={<span className="text-xl text-amber-600 font-bold">📋 Danh Sách Đăng Ký Thi Đấu: {selectedRaceForWithdraw?.name}</span>}
+                open={isWithdrawModalVisible}
+                onCancel={() => setIsWithdrawModalVisible(false)}
+                footer={[
+                    <Button key="close" type="primary" onClick={() => setIsWithdrawModalVisible(false)}>
+                        Đóng
+                    </Button>
+                ]}
+                width={700}
+                centered
+            >
+                <Alert
+                    message="Kiểm Tra Danh Sách Trước Khi Chốt Thi Đấu"
+                    description="Admin kiểm tra số lượng chiến mã và Kỵ sĩ đã chấp nhận lời mời. Các đơn chưa có Kỵ sĩ chấp nhận sẽ bị tự động dọn dẹp khi Admin bấm 'Chốt Danh Sách Thi Đấu'."
+                    type="info"
+                    showIcon
+                    className="mb-4"
+                />
+                <ul className="space-y-3 max-h-96 overflow-y-auto pr-1">
+                    {raceRegistrations.length === 0 && <Text className="text-gray-500 italic block text-center py-4">Chưa có ngựa nào đăng ký chặng đua này.</Text>}
                     {raceRegistrations.map(r => (
                         <li key={r.id} className="flex justify-between items-center bg-white p-3 rounded-lg border shadow-sm">
-                            <div>
-                                <Text strong className="text-lg block">{r.horseName}</Text>
-                                <Text type="secondary">Nài: {r.jockeyUsername || 'Trống'}</Text>
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-2">
+                                    <Text strong className="text-lg text-amber-700">{r.horseName}</Text>
+                                    {r.gateNumber && <Tag color="gold" className="font-bold">Cổng #{r.gateNumber}</Tag>}
+                                </div>
+                                <Text type="secondary" className="text-xs mt-0.5">
+                                    🏇 Nài ngựa: <span className="font-bold text-gray-800">{r.jockeyUsername || '⚠️ Chưa có Nài'}</span> | 🐎 Chủ sở hữu: <span className="font-bold text-gray-800">{r.ownerUsername || 'Chủ ngựa'}</span>
+                                </Text>
                             </div>
-                            {r.status !== 'WITHDRAWN' ? (
-                                <Button type="primary" danger onClick={() => handleWithdrawHorse(r.id)}>Loại Ngựa</Button>
-                            ) : (
-                                <Tag color="error" className="font-bold text-sm px-3 py-1">ĐÃ RÚT LUI (REFUNDED)</Tag>
-                            )}
+                            <div>
+                                {r.status !== 'WITHDRAWN' ? (
+                                    <Button type="primary" danger size="small" onClick={() => handleWithdrawHorse(r.id)}>Loại Ngựa này</Button>
+                                ) : (
+                                    <Tag color="error" className="font-bold text-xs px-2 py-1">ĐÃ RÚT LUI (REFUNDED)</Tag>
+                                )}
+                            </div>
                         </li>
                     ))}
                 </ul>
@@ -720,12 +748,14 @@ const AdminTournamentPage = () => {
                     <Select
                         className="w-full"
                         size="large"
+                        showSearch
+                        optionFilterProp="label"
                         value={selectedRefereeId}
                         onChange={setSelectedRefereeId}
                         placeholder="-- Chọn Trọng Tài --"
                         options={referees.map(r => ({
                             value: r.id,
-                            label: `👨‍⚖️ ${r.username} (${r.email})`
+                            label: `👨‍⚖️ ${r.username} (${r.email || 'Hệ thống'})`
                         }))}
                     />
                 </div>
