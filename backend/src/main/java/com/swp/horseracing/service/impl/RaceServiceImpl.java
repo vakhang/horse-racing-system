@@ -286,7 +286,23 @@ public class RaceServiceImpl implements RaceService {
             if (race.getTournament() != null) {
                 tourId = race.getTournament().getId();
                 tourName = race.getTournament().getName();
+                
                 tourStatus = race.getTournament().getStatus();
+                if (tourStatus != com.swp.horseracing.model.TournamentStatus.CANCELED && tourStatus != com.swp.horseracing.model.TournamentStatus.POSTPONED) {
+                    java.time.LocalDateTime now = java.time.LocalDateTime.now(java.time.ZoneId.of("Asia/Ho_Chi_Minh"));
+                    if (race.getTournament().getStartDate() != null && race.getTournament().getEndDate() != null) {
+                        if (now.isBefore(race.getTournament().getStartDate())) {
+                            tourStatus = com.swp.horseracing.model.TournamentStatus.UPCOMING;
+                        } else if (now.isAfter(race.getTournament().getEndDate())) {
+                            tourStatus = com.swp.horseracing.model.TournamentStatus.COMPLETED;
+                        } else {
+                            tourStatus = com.swp.horseracing.model.TournamentStatus.ONGOING;
+                        }
+                    } else {
+                        tourStatus = com.swp.horseracing.model.TournamentStatus.UPCOMING;
+                    }
+                }
+
                 if (race.getTournament().getRequiredClass() != null) {
                     tourClass = race.getTournament().getRequiredClass();
                 }
