@@ -320,7 +320,7 @@ const OwnerRaceRegistrationPage = () => {
                     <Form.Item name="horseId" label={<Text strong>Chọn Chiến Mã</Text>} rules={[{ required: true }]}>
                         <Select placeholder="-- Chọn ngựa --" size="large">
                             {myHorses.map(horse => {
-                                const isAlreadyRegistered = currentRaceRegistrations.some(reg => reg.horseId === horse.id);
+                                const isAlreadyRegistered = currentRaceRegistrations.some(reg => reg.horseId === horse.id && reg.status !== 'WAITING_JOCKEY');
                                 const raceRequiredClass = selectedRace?.raceClass || 4;
                                 const isClassMismatch = horse.classLevel && horse.classLevel !== raceRequiredClass;
                                 const isDisabled = isAlreadyRegistered || isClassMismatch;

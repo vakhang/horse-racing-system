@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
                     for (JockeyInvitation inv : invitations) {
                         if (inv.getStatus() == InvitationStatus.ACCEPTED) {
                             RaceStatus rs = inv.getRegistration().getRace().getStatus();
-                            if (rs != RaceStatus.COMPLETED && rs != RaceStatus.CANCELED) {
+                            if (rs == RaceStatus.REGISTRATION || rs == RaceStatus.BETTING || rs == RaceStatus.LOCK_SESSION || rs == RaceStatus.RUNNING || rs == RaceStatus.PROVISIONAL_RESULT) {
                                 status = "ĐANG CÓ LỊCH";
                                 break;
                             }

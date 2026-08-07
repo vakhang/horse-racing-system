@@ -63,8 +63,15 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
 
         // CHỐNG TRÙNG LẶP ĐĂNG KÝ (FR-10)
-        if (registrationRepository.existsByRaceIdAndHorseId(race.getId(), horse.getId())) {
-            throw new RuntimeException("Ngựa này đã được đăng ký trong chặng đua này rồi!");
+        java.util.Optional<Registration> existingOpt = registrationRepository.findByRaceIdAndHorseId(race.getId(), horse.getId());
+        if (existingOpt.isPresent()) {
+            Registration existing = existingOpt.get();
+            if (existing.getStatus() == RegistrationStatus.WAITING_JOCKEY) {
+                existing.setNote(request.getNote());
+                return mapToResponseDTO(registrationRepository.save(existing));
+            } else {
+                throw new RuntimeException("Ngựa này đã được đăng ký trong chặng đua này rồi!");
+            }
         }
 
         Registration registration = Registration.builder()
