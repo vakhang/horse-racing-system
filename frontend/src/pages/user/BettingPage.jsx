@@ -156,40 +156,51 @@ const BettingPage = () => {
 
     const oddsColumns = [
         {
-            title: <div className="text-center font-bold">Cổng & Tên Chiến Mã</div>,
+            title: <div className="text-center font-bold px-2">Cổng</div>,
+            dataIndex: 'gateNumber',
+            key: 'gateNumber',
+            align: 'center',
+            width: 80,
+            render: (_, record) => <Tag color="gold" className="font-bold text-base px-3 py-1 whitespace-nowrap m-0">Số {record.gateNumber || '?'}</Tag>
+        },
+        {
+            title: <div className="text-center font-bold">Thông tin chiến mã</div>,
             dataIndex: 'horseName',
             key: 'horseName',
             align: 'left',
             render: (text, record) => (
-                <div className="flex items-center gap-3">
-                    <Tag color="gold" className="font-bold text-sm px-2 py-0.5 whitespace-nowrap">Cổng {record.gateNumber || '?'}</Tag>
-                    {record.horseAvatarUrl ? (
-                        <Image src={record.horseAvatarUrl} width={50} height={50} className="rounded-full aspect-square object-cover border border-[#007355]" />
-                    ) : (
-                        <div className="w-[50px] h-[50px] bg-black/40 rounded-full border border-[#007355] flex items-center justify-center text-xs text-gray-500">No Img</div>
-                    )}
+                <div className="flex items-center gap-4">
+                    <div className="flex-shrink-0">
+                        {record.horseAvatarUrl ? (
+                            <Image src={record.horseAvatarUrl} width={64} height={64} className="rounded-full aspect-square object-cover border-2 border-[#007355]" />
+                        ) : (
+                            <div className="w-[64px] h-[64px] bg-black/40 rounded-full border-2 border-[#007355] flex items-center justify-center text-xs text-gray-500">No Img</div>
+                        )}
+                    </div>
                     <div className="flex flex-col">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
                             <span className="font-bold text-yellow-400 text-lg">{text}</span>
                             <Tag color="green" className="font-bold text-xs m-0">Class {record.classLevel || 4}</Tag>
                             <Tag color="cyan" className="font-bold text-xs m-0">⚡ {record.rating || 40} pts</Tag>
                         </div>
-                        <div className="flex items-center gap-1 mt-1">
-                            <span className="text-xs text-gray-400">Nài ngựa:</span>
-                            {record.jockeyAvatarUrl ? (
-                                <Image src={record.jockeyAvatarUrl} width={20} height={20} className="rounded-full aspect-square object-cover" />
-                            ) : (
-                                <Avatar size={20} className="bg-gray-600" />
-                            )}
-                            <span className="text-xs font-semibold text-gray-300">{record.jockeyName || 'Chưa rõ'}</span>
+                        <div className="flex items-center gap-2 mt-1">
+                            <span className="text-sm text-gray-400">Nài ngựa:</span>
+                            <div className="flex-shrink-0">
+                                {record.jockeyAvatarUrl ? (
+                                    <Image src={record.jockeyAvatarUrl} width={28} height={28} className="rounded-full aspect-square object-cover border border-gray-600" />
+                                ) : (
+                                    <Avatar size={28} className="bg-gray-600" />
+                                )}
+                            </div>
+                            <span className="text-sm font-semibold text-gray-200">{record.jockeyName || 'Chưa rõ'}</span>
                         </div>
                         {record.status === 'DISQUALIFIED' && (
-                            <Tag color="red" className="mt-1 max-w-xs whitespace-normal">
+                            <Tag color="red" className="mt-2 w-fit">
                                 [BỊ TRUẤT QUYỀN] - {record.note || 'Vi phạm luật'}
                             </Tag>
                         )}
                         {record.status === 'WITHDRAWN' && (
-                            <Tag color="orange" className="mt-1 max-w-xs whitespace-normal">
+                            <Tag color="orange" className="mt-2 w-fit">
                                 [ĐÃ RÚT LUI] - {record.note || 'Sự cố thú y'}
                             </Tag>
                         )}
