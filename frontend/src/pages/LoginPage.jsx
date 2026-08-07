@@ -1,17 +1,13 @@
-import horseRacingBg from '../assets/horseracing.png';
 import React, { useState } from 'react';
 import { Form, Input, Button, Typography, message, ConfigProvider, theme, Modal } from 'antd';
-import { MailOutlined, LockOutlined, TrophyOutlined, FireOutlined } from '@ant-design/icons';
+import { MailOutlined, LockOutlined, TrophyOutlined, ArrowLeftOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../config/api';
 import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 
-// [Chức năng rõ ràng]: Trang Đăng Nhập
-// [Tác dụng]: Cung cấp Form nhập Username/Password, gọi API `/auth/login`, nhận JWT Token và lưu vào AuthContext/LocalStorage.
-// [Hướng dẫn sửa đổi]:
-// - Logic: Nếu sau này hỗ trợ Login bằng Google, hãy gọi SDK Google tại màn hình này.
+// [Chức năng rõ ràng]: Trang Đăng Nhập Chuẩn bet989 Racing System
 const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const [isBanModalVisible, setIsBanModalVisible] = useState(false);
@@ -23,7 +19,7 @@ const LoginPage = () => {
         setLoading(true);
         try {
             const response = await api.post('/auth/login', {
-                email: values.email, // Backend sẽ dùng chuỗi này quét cả cột email và cột sdt
+                email: values.email, // Backend hỗ trợ tìm cả email và số điện thoại
                 password: values.password
             });
 
@@ -52,71 +48,77 @@ const LoginPage = () => {
     };
 
     return (
-        <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorPrimary: '#facc15' } }}>
-            <div
-                className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
-                style={{
-                    backgroundImage: `url(${horseRacingBg})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                }}
-            >
-                <div className="absolute inset-0 z-0 bg-black/60"></div>
+        <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorPrimary: '#007355' } }}>
+            <div className="min-h-screen flex items-center justify-center p-6 relative bg-gradient-to-br from-[#0a1510] via-[#121212] to-[#0a1510] text-white">
+                {/* Visual Glow Background Elements */}
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#007355]/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#ffdf1b]/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                <div className="z-10 w-full max-w-md p-10 rounded-3xl shadow-[0_0_50px_rgba(250,204,21,0.15)] bg-black/40 backdrop-blur-md border border-white/10 transition-all hover:shadow-[0_0_60px_rgba(250,204,21,0.3)]">
+                <div className="z-10 w-full max-w-md p-8 md:p-10 rounded-3xl bg-[#162a22]/80 backdrop-blur-xl border border-[#007355]/50 shadow-[0_0_50px_rgba(0,115,85,0.25)] transition-all hover:shadow-[0_0_60px_rgba(0,115,85,0.4)]">
 
-                    <div className="text-center mb-10">
-                        <TrophyOutlined className="text-6xl text-yellow-400 mb-4 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" />
-                        <Title level={2} className="m-0 text-white uppercase tracking-widest font-bold">
-                            Horse Race
+                    {/* BRANDING LOGO HEADER */}
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center mb-3">
+                            <div className="bg-[#007355] text-white font-black text-2xl tracking-wider px-4 py-1.5 rounded-lg border border-[#00ffb3] shadow-[0_0_15px_rgba(0,255,179,0.3)]">
+                                bet <span className="bg-[#ffdf1b] text-black px-2 py-0.5 rounded font-black text-xl">989</span> RACING
+                            </div>
+                        </div>
+                        <Title level={3} className="m-0 text-white font-bold tracking-wide">
+                            ĐẮNG NHẬP HỆ THỐNG
                         </Title>
-                        <Text className="text-yellow-400 font-medium tracking-widest text-xs uppercase flex items-center justify-center gap-1 mt-2">
-                            <FireOutlined /> Đẳng Cấp Thượng Lưu <FireOutlined />
+                        <Text className="text-gray-400 text-xs uppercase tracking-widest block mt-1">
+                            Hệ Thống Đặt Cược Đua Ngựa Chuyên Nghiệp
                         </Text>
                     </div>
 
                     <Form name="login" layout="vertical" onFinish={handleLogin} size="large">
-                        {/* Đã sửa Label thành Email hoặc SDT */}
-                        <Form.Item name="email" rules={[{ required: true, message: 'Vui lòng nhập định danh đăng nhập!' }]}>
+                        <Form.Item
+                            name="email"
+                            label={<Text className="text-gray-300 font-semibold">Email hoặc Số điện thoại</Text>}
+                            rules={[{ required: true, message: 'Vui lòng nhập Email hoặc SĐT đăng nhập!' }]}
+                        >
                             <Input
-                                prefix={<MailOutlined className="text-gray-400" />}
-                                placeholder="Nhập Email hoặc Số điện thoại..."
+                                prefix={<MailOutlined className="text-[#00ffb3]" />}
+                                placeholder="Nhập Email hoặc SĐT..."
                                 autoComplete="username"
-                                className="bg-black/60 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl px-4 py-3"
+                                className="bg-[#121212] border-gray-700 text-white hover:border-[#007355] focus:border-[#00ffb3] rounded-xl px-4 py-3"
                             />
                         </Form.Item>
 
-                        <Form.Item name="password" rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}>
+                        <Form.Item
+                            name="password"
+                            label={<Text className="text-gray-300 font-semibold">Mật khẩu bảo mật</Text>}
+                            rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
+                        >
                             <Input.Password
-                                prefix={<LockOutlined className="text-gray-400" />}
+                                prefix={<LockOutlined className="text-[#00ffb3]" />}
                                 placeholder="Mật khẩu của bạn..."
                                 autoComplete="current-password"
-                                className="bg-black/60 border-gray-600 text-white hover:border-yellow-400 focus:border-yellow-400 rounded-xl px-4 py-3"
+                                className="bg-[#121212] border-gray-700 text-white hover:border-[#007355] focus:border-[#00ffb3] rounded-xl px-4 py-3"
                             />
                         </Form.Item>
 
-                        <Form.Item className="mt-8 mb-4">
+                        <Form.Item className="mt-6 mb-4">
                             <Button
                                 type="primary"
                                 htmlType="submit"
                                 loading={loading}
                                 block
-                                className="h-14 bg-gradient-to-r from-yellow-500 to-yellow-600 border-none text-black font-bold text-lg rounded-xl shadow-[0_4px_15px_rgba(250,204,21,0.5)] hover:scale-105 transition-transform duration-300"
+                                className="h-13 bg-[#007355] hover:bg-[#005740] border-none text-white font-bold text-lg rounded-xl shadow-[0_0_20px_rgba(0,115,85,0.5)] hover:scale-[1.02] transition-all duration-300"
                             >
-                                {loading ? 'ĐANG KẾT NỐI...' : 'ĐĂNG NHẬP HỆ THỐNG'}
+                                {loading ? 'ĐANG KẾT NỐI...' : 'ĐĂNG NHẬP BET989'}
                             </Button>
                         </Form.Item>
                     </Form>
 
-                    <div className="text-center">
-                        <Text className="text-gray-400">Chưa có tài khoản?</Text>{' '}
-                        <Link to="/register" className="text-yellow-400 font-bold hover:text-white transition-colors">
+                    <div className="text-center mt-6 pt-4 border-t border-gray-800">
+                        <Text className="text-gray-400 text-sm">Chưa có tài khoản?</Text>{' '}
+                        <Link to="/register" className="text-[#00ffb3] font-bold hover:text-yellow-400 transition-colors text-sm">
                             Đăng Ký Ngay
                         </Link>
                         <div className="mt-4">
-                            <Link to="/" className="text-gray-400 hover:text-white transition-colors text-sm flex items-center justify-center gap-1">
-                                Quay về Trang chủ
+                            <Link to="/" className="text-gray-400 hover:text-white transition-colors text-xs flex items-center justify-center gap-1">
+                                <ArrowLeftOutlined /> Quay về Trang chủ
                             </Link>
                         </div>
                     </div>
@@ -124,7 +126,7 @@ const LoginPage = () => {
 
                 {/* MODAL THÔNG BÁO BANNED / REJECTED TÀI KHOẢN */}
                 <Modal
-                    title={<span className="text-xl font-black text-red-500 uppercase">❌ TRUY CẬP BỊ TỪ CHỐI</span>}
+                    title={<span className="text-xl font-bold text-red-500 uppercase flex items-center gap-2"><SafetyCertificateOutlined /> TRUY CẬP BỊ TỪ CHỐI</span>}
                     open={isBanModalVisible}
                     onCancel={() => setIsBanModalVisible(false)}
                     footer={[
@@ -133,42 +135,29 @@ const LoginPage = () => {
                         </Button>
                     ]}
                     centered
-                    className="custom-ban-modal"
                 >
-                    <div className="text-base text-gray-300 space-y-4 my-6">
-                        <div className="bg-red-900/40 p-4 rounded-xl border border-red-500/50 text-red-200">
-                            {banReason || "Tài khoản của bạn đã bị Quản trị viên (Admin) khóa do nghi ngờ vi phạm quy định của hệ thống hoặc có hành vi gian lận trong quá trình tham gia."}
+                    <div className="text-base text-gray-300 space-y-4 my-4">
+                        <div className="bg-red-950/60 p-4 rounded-xl border border-red-500/50 text-red-200">
+                            {banReason || "Tài khoản của bạn đã bị Quản trị viên (Admin) khóa do nghi ngờ vi phạm quy định của hệ thống hoặc chưa được phê duyệt KYC."}
                         </div>
-                        <p>Nếu bạn cho rằng đây là sự nhầm lẫn hoặc muốn được hướng dẫn thêm, vui lòng liên hệ ngay với Ban Quản Trị qua các kênh dưới đây để được hỗ trợ:</p>
+                        <p>Vui lòng liên hệ với Ban Quản Trị qua các kênh hỗ trợ để được kiểm tra:</p>
 
-                        <div className="bg-white/10 p-5 rounded-xl border border-white/20 shadow-inner space-y-4">
+                        <div className="bg-[#121212] p-4 rounded-xl border border-gray-800 space-y-3">
                             <div className="flex items-center gap-3">
-                                <span className="text-2xl">📞</span>
+                                <span className="text-xl">📞</span>
                                 <div>
                                     <span className="text-xs font-bold uppercase block text-gray-400">Hotline / Zalo</span>
-                                    <span className="text-lg font-bold text-blue-400">0971 966 715</span>
+                                    <span className="text-base font-bold text-emerald-400">0971 966 715</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="text-2xl">📧</span>
+                                <span className="text-xl">📧</span>
                                 <div>
                                     <span className="text-xs font-bold uppercase block text-gray-400">Email Hỗ Trợ</span>
-                                    <span className="text-base font-bold text-gray-200">xuankhang2412@gmail.com</span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-2xl">🌐</span>
-                                <div>
-                                    <span className="text-xs font-bold uppercase block text-gray-400">Facebook Admin</span>
-                                    <a href="https://www.facebook.com/grizzcute/" target="_blank" rel="noreferrer" className="text-base font-bold text-blue-400 hover:text-blue-300">
-                                        Ngô Xuân Khang (Grizz)
-                                    </a>
+                                    <span className="text-sm font-bold text-gray-200">xuankhang2412@gmail.com</span>
                                 </div>
                             </div>
                         </div>
-                        <p className="italic text-sm text-gray-500 text-center mt-4">
-                            * Vui lòng cung cấp Email đăng ký khi liên hệ để được hỗ trợ nhanh nhất.
-                        </p>
                     </div>
                 </Modal>
             </div>

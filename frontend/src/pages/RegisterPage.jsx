@@ -218,38 +218,33 @@ const RegisterPage = () => {
     };
 
     return (
-        <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorPrimary: '#facc15' } }}>
-            <div
-                className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden"
-                style={{
-                    backgroundImage: `url(${horseBg})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
-                }}
-            >
-                <div className="absolute inset-0 bg-gray-950/75 z-0"></div>
+        <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorPrimary: '#007355' } }}>
+            <div className="min-h-screen flex items-center justify-center p-6 relative bg-gradient-to-br from-[#0a1510] via-[#121212] to-[#0a1510] text-white">
+                <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#007355]/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#ffdf1b]/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                <div className="z-10 w-full max-w-6xl bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-[0_0_50px_rgba(250,204,21,0.15)] flex overflow-hidden transition-all duration-500 hover:shadow-[0_0_60px_rgba(250,204,21,0.3)]">
+                <div className="z-10 w-full max-w-6xl bg-[#162a22]/80 backdrop-blur-xl border border-[#007355]/50 rounded-3xl shadow-[0_0_50px_rgba(0,115,85,0.25)] flex overflow-hidden transition-all duration-500 hover:shadow-[0_0_60px_rgba(0,115,85,0.4)]">
                     <Row className="w-full m-0">
                         {/* CỘT TRÁI - DECORATION */}
-                        <Col xs={0} lg={8} className="bg-black/40 p-10 flex flex-col items-center justify-center text-center border-r border-white/10">
-                            <div className="animate-pulse">
-                                <TrophyOutlined className="text-8xl text-yellow-400 mb-6 drop-shadow-[0_0_15px_rgba(250,204,21,0.8)]" />
+                        <Col xs={0} lg={8} className="bg-[#0a1510]/80 p-10 flex flex-col items-center justify-center text-center border-r border-[#007355]/30">
+                            <div className="inline-flex items-center justify-center mb-4">
+                                <div className="bg-[#007355] text-white font-black text-2xl tracking-wider px-4 py-1.5 rounded-lg border border-[#00ffb3] shadow-[0_0_15px_rgba(0,255,179,0.3)]">
+                                    bet <span className="bg-[#ffdf1b] text-black px-2 py-0.5 rounded font-black text-xl">989</span> RACING
+                                </div>
                             </div>
-                            <Title level={2} style={{ color: 'white', margin: 0, textTransform: 'uppercase', letterSpacing: '3px' }}>
-                                HORSE RACE
+                            <Title level={3} style={{ color: 'white', margin: 0, textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 'bold' }}>
+                                ĐĂNG KÝ HỆ THỐNG
                             </Title>
-                            <Text className="text-yellow-400 font-medium tracking-widest text-xs uppercase flex items-center justify-center gap-1 mt-2 mb-8">
-                                <FireOutlined /> Đẳng Cấp Thượng Lưu <FireOutlined />
+                            <Text className="text-[#00ffb3] font-semibold tracking-widest text-xs uppercase flex items-center justify-center gap-1 mt-2 mb-8">
+                                <FireOutlined /> Đổi Mới & Thượng Lưu <FireOutlined />
                             </Text>
-                            <Text className="text-gray-300 text-base mb-8 px-4">
-                                Hệ thống cá cược và quản lý giải đua ngựa chuyên nghiệp hàng đầu. Vui lòng điền thông tin chính xác để tuân thủ pháp luật về cá cược.<br /><br />
+                            <Text className="text-gray-300 text-sm mb-8 px-4 leading-relaxed">
+                                Hệ thống cá cược và quản lý giải đua ngựa chuyên nghiệp hàng đầu. Vui lòng điền thông tin chính xác để hoàn tất xác minh eKYC.<br /><br />
                             </Text>
                             <div className="w-full px-6">
-                                <Text className="text-gray-400">Đã có tài khoản?</Text><br />
+                                <Text className="text-gray-400 text-sm">Đã có tài khoản?</Text><br />
                                 <Link to="/login">
-                                    <Button type="button" className="w-full mt-6 bg-transparent border-2 border-yellow-500 text-yellow-500 font-bold text-base h-12 rounded-xl hover:bg-yellow-500 hover:text-black transition-all duration-300">
+                                    <Button type="button" className="w-full mt-4 bg-transparent border-2 border-[#007355] text-[#00ffb3] font-bold text-base h-12 rounded-xl hover:bg-[#007355] hover:text-white transition-all duration-300">
                                         ĐĂNG NHẬP NGAY
                                     </Button>
                                 </Link>
@@ -257,7 +252,7 @@ const RegisterPage = () => {
                         </Col>
 
                         {/* CỘT PHẢI - FORM */}
-                        <Col xs={24} lg={16} className="p-8 h-[85vh] overflow-y-auto custom-scrollbar" id="register-scroll-area">
+                        <Col xs={24} lg={16} className="p-8 h-[85vh] overflow-y-auto custom-scrollbar bg-[#121212]/60" id="register-scroll-area">
                             <Title level={3} className="text-center mb-8 text-white uppercase tracking-wider">Mở Tài Khoản Thành Viên</Title>
 
                             <Form
