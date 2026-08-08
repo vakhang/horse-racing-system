@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
     // - Data: Thêm thuộc tính vào class này nếu muốn Frontend hiển thị thêm dữ liệu (ví dụ: ngày giờ cược).
 public class BetHistoryResponseDTO {
     private Integer id;
+    private String tournamentName;
     private String raceName;
     private String horseName;
     private BigDecimal amount;

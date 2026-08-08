@@ -431,6 +431,7 @@ public class UserServiceImpl implements UserService {
         return betRepository.findBySpectatorIdOrderByCreatedAtDesc(userId).stream()
                 .map(bet -> BetHistoryResponseDTO.builder()
                         .id(bet.getId())
+                        .tournamentName(bet.getRace().getTournament() != null ? bet.getRace().getTournament().getName() : "Không xác định")
                         .raceName(bet.getRace().getName())
                         .horseName(bet.getRegistration().getHorse().getName())
                         .amount(bet.getAmount())

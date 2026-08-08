@@ -62,6 +62,7 @@ const HomePage = () => {
     };
 
     const betColumns = [
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', key: 'tournamentName', render: (val) => <span className="font-bold text-yellow-500">{val}</span> },
         { title: 'Chặng Đua', dataIndex: 'raceName', key: 'raceName' },
         { title: 'Ngựa Đặt', dataIndex: 'horseName', key: 'horseName', render: (val) => <span className="font-semibold text-blue-600">{val}</span> },
         { title: 'Tiền Cược', dataIndex: 'amount', key: 'amount', render: (val) => `${Number(val || 0).toLocaleString()} đ` },
