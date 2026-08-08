@@ -455,6 +455,9 @@ public class RaceServiceImpl implements RaceService {
                 cleanupInvalidRegistrations(race.getId());
             }
 
+            if (newStatus == RaceStatus.CANCELED && race.getStatus() != RaceStatus.CANCELED) {
+                cancelRaceLogic(race, "Hủy chặng đua khẩn cấp");
+            }
             race.setStatus(newStatus);
             return mapToResponseDTO(raceRepository.save(race));
         } catch (IllegalArgumentException e) {

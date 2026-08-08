@@ -1,0 +1,45 @@
+ID,Username,Email,Role,Status,Password
+1,Admin,admin@gmail.com,ADMIN,APPROVED,Testpass123*
+45,admin,admin@horseracing.com,ADMIN,APPROVED,Testpass123*
+32,jockey1,jockey1@gmail.com,JOCKEY,APPROVED,Testpass123*
+48,jockey_hung,jockey_hung@horseracing.com,JOCKEY,APPROVED,Testpass123*
+49,jockey_tuan,jockey_tuan@horseracing.com,JOCKEY,APPROVED,Testpass123*
+50,jockey_bao,jockey_bao@horseracing.com,JOCKEY,APPROVED,Testpass123*
+65,Nguyễn Văn Nài,naingua@gmail.com,JOCKEY,APPROVED,Testpass123*
+69,Long trân,naingua1@gmail.com,JOCKEY,APPROVED,Testpass123*
+71,Trần Rồng,ngaingua3@gmail.com,JOCKEY,APPROVED,Testpass123*
+72,trần công,naingua4@gmail.com,JOCKEY,APPROVED,Testpass123*
+33,owner1,owner1@gmail.com,OWNER,APPROVED,Testpass123*
+46,owner_dinh,owner_dinh@horseracing.com,OWNER,APPROVED,Testpass123*
+47,owner_minh,owner_minh@horseracing.com,OWNER,APPROVED,Testpass123*
+64,Nguyễn Văn Chủ,chungua@gmail.com,OWNER,APPROVED,Testpass123*
+66,Nguyễn Văn chủ một,chungua1@gmail.com,OWNER,APPROVED,Testpass123*
+67,nguyễn văn chủ hai,chungua2@gmail.com,OWNER,APPROVED,Testpass123*
+68,nguyễn văn song,chungua3@gmail.com,OWNER,APPROVED,Testpass123*
+81,Dương Anh,duonganh@gmail.com,OWNER,APPROVED,Testpass123*
+34,referee1,referee1@gmail.com,REFEREE,APPROVED,Testpass123*
+51,referee2,referee2@horseracing.com,REFEREE,APPROVED,Testpass123*
+73,Nguyễn văn Tài Ngựa,trongtai@gmail.com,REFEREE,APPROVED,Testpass123*
+30,spectator1,spectator1@gmail.com,SPECTATOR,APPROVED,Testpass123*
+31,spectator1,spectator2@gmail.com,SPECTATOR,APPROVED,Testpass123*
+35,Võ Anh Khang,khangvo@gmail.com,SPECTATOR,APPROVED,Testpass123*
+52,khang,khang@horseracing.com,SPECTATOR,APPROVED,Testpass123*
+53,nam,nam@horseracing.com,SPECTATOR,APPROVED,Testpass123*
+54,lan,lan@horseracing.com,SPECTATOR,APPROVED,Testpass123*
+55,Dương Thị Kim Anh,kimanhduong@gmail.com,SPECTATOR,APPROVED,Testpass123*
+56, Lý Quốc Bảo,baoly.it@gmail.com,SPECTATOR,APPROVED,Testpass123*
+57,Đặng Văn Hả,danghaiqb@gmail.com,SPECTATOR,APPROVED,Testpass123*
+58,Bùi Thị Ngọc,buingoc96@gmail.com,SPECTATOR,APPROVED,Testpass123*
+59,Mai Văn Nam,maivannam91@gmail.com,SPECTATOR,APPROVED,Testpass123*
+60,Trương Thị Kiều Oanh,kieuoanh1995@gmail.com,SPECTATOR,APPROVED,Testpass123*
+61,Đinh Công Thành,thanhcongdinh@gmail.com,SPECTATOR,APPROVED,Testpass123*
+62,Hồ Thị Thanh Thảo,hothanhthao96@gmail.com,SPECTATOR,APPROVED,Testpass123*
+63,Phan Văn Bình,phanvanbinh93@gmail.com,SPECTATOR,APPROVED,Testpass123*
+70,Trần Thắng,naingua2@gmail.com,SPECTATOR,PENDING,Testpass123*
+74,Bùi Văn Nam,namvb@gmail.com,SPECTATOR,APPROVED,Testpass123*
+75,khang Ngô,xuankhang2412@gmail.com,SPECTATOR,APPROVED,Testpass123*
+76,Phan Văn Bình (test odds),phan.van.binh.odds.test@horseracing.local,SPECTATOR,APPROVED,Testpass123*
+77,Hồ Thị Thanh Thảo (test odds),ho.thi.thanh.thao.odds.test@horseracing.local,SPECTATOR,APPROVED,Testpass123*
+78,Đinh Công Thành (test odds),dinh.cong.thanh.odds.test@horseracing.local,SPECTATOR,APPROVED,Testpass123*
+79,Trương Thị Kiều Oanh (test odds),truong.thi.kieu.oanh.odds.test@horseracing.local,SPECTATOR,APPROVED,Testpass123*
+80,Mai Văn Nam (test odds),mai.van.nam.odds.test@horseracing.local,SPECTATOR,APPROVED,Testpass123*

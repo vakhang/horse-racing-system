@@ -487,7 +487,7 @@ public class UserServiceImpl implements UserService {
                 java.math.BigDecimal totalPool = betRepository.findByRaceId(reg.getRace().getId()).stream()
                         .map(com.swp.horseracing.model.Bet::getAmount)
                         .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
-                jockeyPool = totalPool.multiply(new java.math.BigDecimal("0.30")).setScale(2, java.math.RoundingMode.HALF_UP);
+                jockeyPool = totalPool.multiply(new java.math.BigDecimal("0.02")).setScale(2, java.math.RoundingMode.HALF_UP);
             }
             
             map.put("reward", jockeyFixed.add(jockeyPool));

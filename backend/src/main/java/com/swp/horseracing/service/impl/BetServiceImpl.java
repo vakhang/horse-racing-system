@@ -57,7 +57,7 @@ public class BetServiceImpl implements BetService {
             throw new RuntimeException("Bạn đã vượt quá hạn mức cược tối đa 1.000.000 VNĐ/ngày!");
         }
 
-        Wallet wallet = walletRepository.findByUserId(spectator.getId())
+        Wallet wallet = walletRepository.findByUserIdForUpdate(spectator.getId())
                 .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
 
         if (wallet.getBalance().compareTo(request.getAmount()) < 0) {
@@ -339,7 +339,7 @@ public class BetServiceImpl implements BetService {
         betRepository.save(bet);
 
         // Cộng tiền vào ví khán giả
-        Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
+        Wallet wallet = walletRepository.findByUserIdForUpdate(bet.getSpectator().getId())
                 .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
         wallet.setBalance(wallet.getBalance().add(netPayout));
         walletRepository.save(wallet);
@@ -377,7 +377,7 @@ public class BetServiceImpl implements BetService {
         bet.setReward(bet.getAmount());
         betRepository.save(bet);
 
-        Wallet wallet = walletRepository.findByUserId(bet.getSpectator().getId())
+        Wallet wallet = walletRepository.findByUserIdForUpdate(bet.getSpectator().getId())
                 .orElseThrow(() -> new RuntimeException("Tài khoản chưa có ví!"));
         wallet.setBalance(wallet.getBalance().add(bet.getAmount()));
         walletRepository.save(wallet);

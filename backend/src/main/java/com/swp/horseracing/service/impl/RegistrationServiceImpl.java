@@ -149,8 +149,10 @@ public class RegistrationServiceImpl implements RegistrationService {
         Race race = reg.getRace();
 
         for (Bet bet : bets) {
-            // Chỉ dò tìm những vé cược đặt vào DUY NHẤT con ngựa bị rút lui này
-            if (bet.getRegistration().getId().equals(reg.getId()) && bet.getStatus() == BetStatus.PENDING) {
+            // Dò tìm những vé cược đặt vào con ngựa bị rút lui này (kể cả Exacta/Quinella có liên quan)
+            if (bet.getStatus() == BetStatus.PENDING && 
+               (bet.getRegistration().getId().equals(reg.getId()) || 
+               (bet.getRegistration2() != null && bet.getRegistration2().getId().equals(reg.getId())))) {
                 bet.setStatus(BetStatus.REFUNDED);
                 betRepository.save(bet);
                 

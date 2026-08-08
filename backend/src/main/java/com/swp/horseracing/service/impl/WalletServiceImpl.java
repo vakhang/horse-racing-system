@@ -43,7 +43,11 @@ public class WalletServiceImpl implements WalletService {
             throw new RuntimeException("Số tiền nạp phải lớn hơn 0!");
         }
 
-        Wallet wallet = getWalletByUserId(userId);
+        Wallet wallet = walletRepository.findByUserIdForUpdate(userId).orElseGet(() -> {
+            User user = userRepository.findById(userId).orElseThrow();
+            Wallet newWallet = Wallet.builder().user(user).balance(BigDecimal.ZERO).build();
+            return walletRepository.save(newWallet);
+        });
 
         wallet.setBalance(wallet.getBalance().add(amount));
         Wallet savedWallet = walletRepository.save(wallet);
@@ -66,7 +70,11 @@ public class WalletServiceImpl implements WalletService {
     @Override
     @Transactional
     public String requestWithdrawal(Integer userId, BigDecimal amount, String bankName, String accNumber, String accName) {
-        Wallet wallet = getWalletByUserId(userId);
+        Wallet wallet = walletRepository.findByUserIdForUpdate(userId).orElseGet(() -> {
+            User user = userRepository.findById(userId).orElseThrow();
+            Wallet newWallet = Wallet.builder().user(user).balance(BigDecimal.ZERO).build();
+            return walletRepository.save(newWallet);
+        });
 
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Số tiền rút phải lớn hơn 0!");
