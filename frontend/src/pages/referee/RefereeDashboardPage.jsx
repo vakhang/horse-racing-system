@@ -353,6 +353,7 @@ const RefereeDashboardPage = () => {
     const historyColumns = [
         { title: 'Ngày Lập', dataIndex: 'date', render: d => dayjs(d).format('HH:mm DD/MM/YYYY') },
         { title: 'Người Lập', dataIndex: 'refereeName', render: n => <Text strong className="text-blue-600">{n}</Text> },
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', render: t => <Text strong className="text-yellow-500">{t}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', render: t => <Text strong>{t}</Text> },
         { title: 'Nội Dung', dataIndex: 'target', render: (t, record) => record.penalty === 'KẾT QUẢ THI ĐẤU' ? <Text type="success">Xác nhận kết quả chung cuộc</Text> : t },
         { title: 'Loại/Mức Phạt', dataIndex: 'penalty', render: p => p === 'KẾT QUẢ THI ĐẤU' ? <Tag color="green">KẾT QUẢ</Tag> : <Tag color="red">{p}</Tag> },

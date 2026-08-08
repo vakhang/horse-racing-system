@@ -143,6 +143,7 @@ const ProfilePage = () => {
     // Định nghĩa cột cho Bảng Lịch Sử Cược
     const betColumns = [
         { title: 'Mã Cược', dataIndex: 'id', key: 'id', render: id => <Text type="secondary">#{id}</Text> },
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', key: 'tournamentName', render: text => <Text strong className="text-yellow-500">{text}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', key: 'raceName', render: text => <Text strong className="text-blue-700">{text}</Text> },
         { title: 'Chiến Mã Chọn', dataIndex: 'horseName', key: 'horseName', render: text => <Text strong>{text}</Text> },
         { title: 'Số Tiền Cược', dataIndex: 'amount', key: 'amount', render: val => <Text className="font-bold text-red-600">{Number(val || 0).toLocaleString()} VNĐ</Text> },

@@ -200,6 +200,7 @@ const OwnerRaceRegistrationPage = () => {
 
     const historyColumns = [
         { title: 'Tên Chiến Mã', dataIndex: 'horseName', render: text => <Text strong>{text}</Text> },
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', render: text => <Text strong className="text-yellow-500">{text}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName' },
         { title: 'Nài Ngựa Được Mời', dataIndex: 'jockeyUsername' },
         { title: 'Trạng Thái', dataIndex: 'status', render: s => {

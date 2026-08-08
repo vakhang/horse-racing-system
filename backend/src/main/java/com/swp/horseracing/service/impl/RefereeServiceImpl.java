@@ -176,6 +176,7 @@ public class RefereeServiceImpl implements RefereeService {
         return refereeReportRepository.findAll().stream().map(report -> {
             java.util.Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", report.getId());
+            map.put("tournamentName", report.getRace().getTournament() != null ? report.getRace().getTournament().getName() : "Không xác định");
             map.put("raceName", report.getRace().getName());
             map.put("target", report.getRegistration().getHorse().getName());
             map.put("refereeName", report.getReferee().getUsername());

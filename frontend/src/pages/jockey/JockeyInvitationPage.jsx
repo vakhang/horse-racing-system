@@ -71,6 +71,7 @@ const JockeyInvitationPage = () => {
                 id: Date.now(),
                 jockeyId: user.id,
                 jockeyName: user.username,
+                tournamentName: selectedInv?.tournamentName || 'Giải đấu',
                 raceName: selectedInv?.raceName || 'Chặng đua',
                 horseName: selectedInv?.horseName || 'Chiến mã',
                 reason: values.reason,
@@ -149,6 +150,7 @@ const JockeyInvitationPage = () => {
     // 3. Cột bảng Kháng cáo
     const appealColumns = [
         { title: 'Mã Đơn', dataIndex: 'id', render: id => <Text type="secondary">#{id}</Text> },
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', render: t => <Text strong className="text-yellow-500">{t}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', render: t => <Text strong>{t}</Text> },
         { title: 'Chiến Mã', dataIndex: 'horseName' },
         { title: 'Lý Do Kháng Cáo', dataIndex: 'reason' },

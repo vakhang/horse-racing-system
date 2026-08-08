@@ -471,6 +471,7 @@ public class UserServiceImpl implements UserService {
         for (Registration reg : regs) {
             java.util.Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", reg.getId());
+            map.put("tournamentName", reg.getRace().getTournament() != null ? reg.getRace().getTournament().getName() : "Không xác định");
             map.put("raceName", reg.getRace().getName());
             map.put("horseName", reg.getHorse().getName());
             map.put("rank", reg.getRank());

@@ -307,6 +307,7 @@ const AdminTournamentPage = () => {
     const appealColumns = [
         { title: 'Mã Đơn', dataIndex: 'id', render: id => <Text type="secondary">#{id}</Text> },
         { title: 'Người Kháng Cáo', render: (_, r) => <Text strong className="text-blue-700">{r.jockeyName || r.ownerName || 'Người dùng'} ({r.jockeyName ? 'Nài Ngựa' : 'Chủ Ngựa'})</Text> },
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', render: t => <Text strong className="text-yellow-500">{t}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', render: t => <Text strong>{t}</Text> },
         { title: 'Chiến Mã', dataIndex: 'horseName' },
         { title: 'Nội Dung Kháng Cáo', dataIndex: 'reason' },

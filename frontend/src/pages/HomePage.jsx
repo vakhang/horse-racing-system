@@ -79,6 +79,7 @@ const HomePage = () => {
     ];
 
     const rewardColumns = [
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', key: 'tournamentName', render: (val) => <span className="font-bold text-yellow-500 text-base">{val}</span> },
         { title: 'Tên Chặng Đua', dataIndex: 'raceName', key: 'raceName', render: (val) => <span className="font-bold text-blue-700 text-base">{val}</span> },
         { title: 'Chiến Mã Điều Khiển', dataIndex: 'horseName', key: 'horseName', render: (val, record) => (
             <Space>
