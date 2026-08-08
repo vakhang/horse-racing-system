@@ -203,7 +203,7 @@ public class UserServiceImpl implements UserService {
         if (initialBalance.compareTo(BigDecimal.ZERO) > 0) {
             com.swp.horseracing.model.TransactionHistory th = com.swp.horseracing.model.TransactionHistory.builder()
                     .wallet(wallet)
-                    .transactionCode("BONUS00" + savedUser.getId())
+                    .transactionCode("BONUS-" + savedUser.getId())
                     .type(TransactionType.BONUS)
                     .direction(com.swp.horseracing.model.TransactionDirection.IN)
                     .amount(initialBalance)

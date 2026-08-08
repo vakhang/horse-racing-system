@@ -139,9 +139,7 @@ public class BetServiceImpl implements BetService {
     }
 
     private Registration getRegistrationByRank(Race race, int rank) {
-        return registrationRepository.findAll().stream()
-                .filter(r -> r.getRace().getId().equals(race.getId()) && r.getRank() != null && r.getRank() == rank)
-                .findFirst().orElse(null);
+        return registrationRepository.findByRaceIdAndRank(race.getId(), rank).orElse(null);
     }
 
     // 2a. Cược Đơn Thắng (Win)

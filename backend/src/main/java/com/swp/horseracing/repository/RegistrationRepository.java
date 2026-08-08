@@ -14,6 +14,7 @@ import java.util.List;
     // - Data: Khi sửa đổi câu lệnh `@Query` thống kê Top Nài Ngựa/Chủ Ngựa, hãy cẩn thận với cấu trúc JOIN các bảng.
 public interface RegistrationRepository extends JpaRepository<Registration, Integer> {
     List<Registration> findByRaceId(Integer raceId);
+    java.util.Optional<Registration> findByRaceIdAndRank(Integer raceId, Integer rank);
 
     boolean existsByRaceIdAndHorseId(Integer raceId, Integer horseId);
     java.util.Optional<Registration> findByRaceIdAndHorseId(Integer raceId, Integer horseId);
