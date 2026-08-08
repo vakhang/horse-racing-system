@@ -171,6 +171,7 @@ public class JockeyInvitationServiceImpl implements JockeyInvitationService {
         return InvitationResponseDTO.builder()
                 .id(inv.getId())
                 .registrationId(inv.getRegistration().getId())
+                .tournamentName(inv.getRegistration().getRace().getTournament() != null ? inv.getRegistration().getRace().getTournament().getName() : "Không xác định")
                 .raceName(inv.getRegistration().getRace().getName())
                 .horseName(inv.getRegistration().getHorse().getName())
                 .jockeyId(inv.getJockey().getId())

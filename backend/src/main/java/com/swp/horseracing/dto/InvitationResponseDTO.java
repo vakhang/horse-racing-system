@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 public class InvitationResponseDTO {
     private Integer id;
     private Integer registrationId;
+    private String tournamentName;
     private String raceName;
     private String horseName;
     private Integer jockeyId;

@@ -107,6 +107,7 @@ const JockeyInvitationPage = () => {
 
     // 1. Cột bảng Lời mời
     const invitationColumns = [
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', key: 'tournamentName', render: t => <Text strong className="text-yellow-500">{t}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', key: 'raceName', render: t => <Text strong className="text-blue-700">{t}</Text> },
         { title: 'Chiến Mã Điều Khiển', dataIndex: 'horseName', key: 'horseName', render: t => <Text strong>{t}</Text> },
         { title: 'Thời Gian Mời', dataIndex: 'invitedAt', render: v => dayjs(v).format('DD/MM/YYYY HH:mm') },
@@ -134,6 +135,7 @@ const JockeyInvitationPage = () => {
     // 2. Cột bảng Lịch thi đấu cá nhân đã nhận lời
     const acceptedInvitations = invitations.filter(i => i.status === 'ACCEPTED');
     const scheduleColumns = [
+        { title: 'Giải Đấu', dataIndex: 'tournamentName', render: t => <Text strong className="text-yellow-500">{t}</Text> },
         { title: 'Chặng Đua', dataIndex: 'raceName', render: t => <Text strong className="text-blue-700">{t}</Text> },
         { title: 'Chiến Mã Cưỡi', dataIndex: 'horseName', render: t => <Text strong>{t}</Text> },
         { title: 'Giờ Thi Đấu', dataIndex: 'invitedAt', render: v => dayjs(v).format('DD/MM/YYYY HH:mm') },
